@@ -24,7 +24,7 @@ import { IPropertyAutocompleteComponentProps } from '../components/formDesigner/
 import { ISwitchProps } from '../components/formDesigner/components/switch/switch';
 import AlertComponent, { IAlertProps } from '../components/formDesigner/components/alert';
 
-interface ToolbarSettingsProp extends Omit<IConfigurableFormComponent, 'type'> {}
+interface ToolbarSettingsProp extends Omit<IConfigurableFormComponent, 'type'> { }
 
 type DropdownType = ToolbarSettingsProp & Omit<IDropdownProps, 'type'>;
 
@@ -87,7 +87,7 @@ export class DesignerToolbarSettings<T> {
 
   public addAlert(props: AlertType | ((data: T) => AlertType)) {
     return this.addProperty(props, AlertComponent.type);
-  }  
+  }
 
   public addButtons(props: ButtonGroupType | ((data: T) => ButtonGroupType)) {
     return this.addProperty(props, 'buttons');
@@ -207,7 +207,7 @@ export class DesignerToolbarSettings<T> {
     return this.form;
   }
 
-  public toJsonString() {
+  public m() {
     return JSON?.stringify(this.form);
   }
 }

@@ -1,14 +1,14 @@
 import React, { FC } from 'react';
 import { IToolboxComponent } from '../../../../interfaces';
-import { FormMarkup, IConfigurableFormComponent } from '../../../../providers/form/models';
+import { IConfigurableFormComponent } from '../../../../providers/form/models';
 import { HomeOutlined } from '@ant-design/icons';
 import { InputProps } from 'antd/lib/input';
 import ConfigurableFormItem from '../formItem';
-import settingsFormJson from './settingsForm.json';
 import { AutoCompletePlaces } from '../../../';
 import { getStyle, validateConfigurableComponentSettings } from '../../../../providers/form/utils';
 import { useForm, useFormData } from '../../../../providers';
 import ReadOnlyDisplayFormItem from '../../../readOnlyDisplayFormItem';
+import { getSettings } from './settings';
 
 export interface IAddressCompomentProps extends IConfigurableFormComponent {
   placeholder?: string;
@@ -16,8 +16,6 @@ export interface IAddressCompomentProps extends IConfigurableFormComponent {
   suffix?: string;
   hideBorder?: boolean;
 }
-
-const settingsForm = settingsFormJson as FormMarkup;
 
 const AddressCompoment: IToolboxComponent<IAddressCompomentProps> = {
   type: 'address',
@@ -34,8 +32,8 @@ const AddressCompoment: IToolboxComponent<IAddressCompomentProps> = {
       </ConfigurableFormItem>
     );
   },
-  settingsFormMarkup: settingsForm,
-  validateSettings: model => validateConfigurableComponentSettings(settingsForm, model),
+  settingsFormMarkup: data => getSettings(data),
+  validateSettings: model => validateConfigurableComponentSettings(getSettings(model), model),
 };
 
 interface IAutoCompletePlacesFieldProps extends IAddressCompomentProps {
