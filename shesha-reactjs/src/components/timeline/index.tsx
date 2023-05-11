@@ -11,6 +11,7 @@ import moment from 'moment';
 export const ShaTimeline: FC<ITimelineProps> = ({ properties, ownerId, entityType, customApiUrl, apiSource }) => {
   const useGetAll = apiSource === 'custom' ? useGet : useEntitiesGetAll;
 
+  //timeline icons
   const { globalState } = useGlobalState();
   const getAllProps =
     apiSource === 'custom' ? { path: customApiUrl + `?id=${ownerId}` || '', lazy: true } : { lazy: true };
