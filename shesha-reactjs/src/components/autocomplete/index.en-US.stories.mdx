@@ -1,19 +1,179 @@
 import { Meta } from '@storybook/blocks';
 
-<Meta title="Components/Autocomplete/Introduction" />
+<Meta title="Components/Basic/Autocomplete/Introduction" />
 
-# AppliedCustomFilters
+# Autocomplete
 
 ## Description
 
-A component for displaying applied column filters
+Autocomplete function of input field.
+
+## A Quick Demo
+
+<iframe
+  width="1000"
+  height="615"
+  src="https://www.youtube.com/embed/GF69TPNjrAw"
+  title="YouTube video player"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+  allowfullscreen
+></iframe>
 
 ## When To Use
 
-- When you have rendered an IndexTable and want you want to view the custom filters that you have applied. Please note that this component needs to be wrapped inside
+- When you need an input box instead of a selector.
+- When you need input suggestions or helping text.
 
-## Example
+## Properties
 
-## API
+<table>
+  <tr>
+    <td>**Property**</td>
+    <td>**Description**</td>
+    <td>**Type**</td>
+    <td>**Default**</td>
+  </tr>
+  <tr>
+    <td>Name</td>
+    <td>A property autocomplete to bind the form to the entity that has been selected.</td>
+    <td>string</td>
+    <td>Name of the component</td>
+  </tr>
+  <tr>
+    <td>Label align</td>
+    <td>Position of label relative to the input - Left or Right</td>
+    <td>Dropdown</td>
+    <td>Right</td>
+  </tr>
+  <tr>
+    <td>Selection Mode</td>
+    <td>How many inputs from the autocomplete can be selected - Single or Multiple</td>
+    <td>Dropdown</td>
+    <td>Single</td>
+  </tr>
+  <tr>
+    <td>Placeholder</td>
+    <td>The placeholder of input.</td>
+    <td>string</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>Additional explanation of the autocomplete.</td>
+    <td>string</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td>Visibility</td>
+    <td>Used to toggle visibility on the payload and UI.</td>
+    <td>Dropdown</td>
+    <td>Yes (Display on UI and include in payload)</td>
+  </tr>
+  <tr>
+    <td>Disable Search</td>
+    <td>Restricts the user from typing freely.</td>
+    <td>Boolean</td>
+    <td>False</td>
+  </tr>
+  <tr>
+    <td>Hide Label</td>
+    <td>Whether to show input label</td>
+    <td>Boolean</td>
+    <td>False</td>
+  </tr>
+  <tr>
+    <td>Disabled</td>
+    <td>Whether disabled select</td>
+    <td>Boolean</td>
+    <td>False</td>
+  </tr>
+  <tr>
+    <td>Read Only</td>
+    <td>Whether you can make changes to the component.</td>
+    <td>Boolean</td>
+    <td>False</td>
+  </tr>
+  <tr>
+    <td>Hide Border</td>
+    <td>Whether to show the border of the input.</td>
+    <td>Boolean</td>
+    <td>False</td>
+  </tr>
+  <tr>
+    <td>Data Source Type</td>
+    <td>Where the autocomplete should source the data to be selected - Entities List or Url</td>
+    <td>Dropdown</td>
+    <td>Entities List</td>
+  </tr>
+  <tr>
+    <td>Entity Type</td>
+    <td>The entity to be linked to the autocomplete - the GetAll endpoint of that entity is used.</td>
+    <td>Autocomplete Dropdown of Entities</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td>Display Property</td>
+    <td>
+      Name of the property that should be displayed in the autocomplete. Live empty to use default display property
+      defined on the back-end.
+    </td>
+    <td>string</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td>Entity Filter</td>
+    <td>Enables creation of a filter using a query builder.</td>
+    <td>Json</td>
+    <td>-</td>
+  </tr>
+     <tr>
+        <td>Use Expression</td>
+        <td>Enables the entity filter to take in dynamic values - using "mustache" templating structure</td>
+        <td>Boolean</td>
+        <td>False</td>
+    </tr>
+        <tr>
+        <td>Use Raw Values</td>
+        <td>Whether to save the autocomplete selection as an object with Item and ItemValue keys or as a string of the ID of the entry that was selected.</td>
+        <td>Boolean</td>
+        <td>False</td>
+    </tr>
+    <tr>
+        <td>onChange</td>
+        <td>Allows enter a custom event handler on changing of event. (form, value, option) are exposed. Called when select an option or input value change</td>
+        <td>ReactNode</td>
+        <td>-</td>
+    </tr>
+    <tr>
+        <td>Subscribed Event Names</td>
+        <td>This is a list of event that, when dispatched, will trigger the refetching of items for the component</td>
+        <td>List</td>
+        <td>-</td>
+    </tr>
+    <tr>
+        <td>Style</td>
+        <td>A script that returns the style of the element as an object. This should conform to CSSProperties</td>
+        <td>ReactNode</td>
+        <td>-</td>
+    </tr>
+        <tr>
+        <td>Size</td>
+        <td>The size of the input - small, middle, large</td>
+        <td>Dropdown</td>
+        <td>-</td>
+    </tr>
+    <tr>
+        <td>Custom Visibility</td>
+        <td>Enter custom visibility code. You must return true to show the component. The global variable data is provided, and allows you to access the data of any form component, by using its API key.</td>
+        <td>ReactNode</td>
+        <td>-</td>
+    </tr>
+    <tr>
+        <td>Custom Enabled</td>
+        <td>Enter custom enabled code. You must return true to enable the component. The global variable data is provided, and allows you to access the data of any form component, by using its API key.</td>
+        <td>ReactNode</td>
+        <td>-</td>
+    </tr>
 
-### AppliedCustomFilters
+</table>

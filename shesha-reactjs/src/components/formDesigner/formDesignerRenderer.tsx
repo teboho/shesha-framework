@@ -2,7 +2,6 @@ import React, { FC, useState } from 'react';
 import { SidebarContainer, ConfigurableFormRenderer } from '../../components';
 import { Row, Col, Divider, Typography, Space } from 'antd';
 import Toolbox from './toolbox';
-import FormDesignerToolbar from './formDesignerToolbar';
 import ComponentPropertiesPanel from './componentPropertiesPanel';
 import ComponentPropertiesTitle from './componentPropertiesTitle';
 import { useForm } from '../../providers/form';
@@ -14,6 +13,7 @@ import StatusTag from '../statusTag';
 import { FORM_STATUS_MAPPING } from '../../utils/configurationFramework/models';
 import { getFormFullName } from '../../utils/form';
 import HelpTextPopover from '../helpTextPopover';
+import FormDesignerToolbarStory from './formDesignerToolbarStory';
 
 const { Title } = Typography;
 
@@ -56,7 +56,7 @@ export const FormDesignerRenderer: FC = ({}) => {
             </MetadataProvider>
           )}
         >
-          <FormDesignerToolbar />
+          <FormDesignerToolbarStory />
           <SidebarContainer
             leftSidebarProps={
               readOnly

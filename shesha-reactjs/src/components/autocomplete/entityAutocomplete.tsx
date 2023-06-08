@@ -153,23 +153,6 @@ export const EntityAutocomplete = <TValue,>(props: IEntityAutocompleteProps<TVal
     } else onChange(selectedValue);
   };
 
-  /*
-  if (readOnly) {
-    const wrappedValue = wrapValue(value);
-
-    let displayValue: any;
-
-    if (Array.isArray(wrappedValue)) {
-      displayValue = wrappedValue?.map(({ label, value: keyId }: any) =>
-        readOnlyMultipleMode === 'raw' && typeof label === 'string' ? label : <Tag key={keyId}>{label}</Tag>
-      );
-
-      if (readOnlyMultipleMode === 'raw') displayValue = (displayValue as any[])?.join(', ');
-    } else {
-      displayValue = (wrappedValue as any)?.label;
-    }
-  }
-  */
 
   const dataLoaded = fetchedData && fetchedData.length > 0;
   const autocompleteValue = value || dataLoaded || fetchError ? wrapValue(value) : undefined;
