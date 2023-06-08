@@ -1,0 +1,91 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Components/Basic/Alert/Introduction" />
+
+# Alert
+
+## Description
+
+Alert component for feedback
+
+## A Quick Demo
+
+<iframe
+  width="1000"
+  height="615"
+  src="https://www.youtube.com/embed/GF69TPNjrAw"
+  title="YouTube video player"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+  allowfullscreen
+></iframe>
+
+## When To Use
+
+- When you need to show alert messages to users.
+- When you need a persistent static container which is closable by user action.
+
+## Properties
+
+<table>
+  <tr>
+    <td>Property</td>
+    <td>Description</td>
+    <td>Type</td>
+    <td>Default</td>
+  </tr>
+  <tr>
+    <td>Name</td>
+    <td>A property autocomplete to bind the form to the entity that has been selected.</td>
+    <td>string</td>
+    <td>Name of the component</td>
+  </tr>
+  <tr>
+    <td>Type</td>
+    <td>Type of alert styles, options: Success, Info, Warning, Error.</td>
+    <td>Dropdown</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td>Text</td>
+    <td>Content of Alert.</td>
+    <td>ReactNode</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td>Description</td>
+    <td>Additional Content of Alert.</td>
+    <td>String</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td>ShowIcon</td>
+    <td>Whether to show icon.</td>
+    <td>Boolean</td>
+    <td>false</td>
+  </tr>
+  <tr>
+    <td>Closable</td>
+    <td>Whether Alert can be closed.</td>
+    <td>Boolean</td>
+    <td>false</td>
+  </tr>
+  <tr>
+    <td>Icon</td>
+    <td>Custom icon, effective when &#39;showIcon&#39; is true.</td>
+    <td>Icon Picker</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td>Style</td>
+    <td>A script that returns the style of the element as an object.</td>
+    <td>ReactNode</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td>Custom Visibility</td>
+    <td>Whether or not the Alert should show based on certain conditions.</td>
+    <td>ReactNode</td>
+    <td>-</td>
+  </tr>
+</table>

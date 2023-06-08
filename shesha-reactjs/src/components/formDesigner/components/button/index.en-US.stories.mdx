@@ -1,0 +1,126 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Components/Basic/Buttons/Basic/Introduction" />
+
+# Basic Button
+
+## Description
+
+To trigger an operation.
+
+## A Quick Demo
+
+<iframe
+  width="1000"
+  height="615"
+  src="https://www.youtube.com/embed/GF69TPNjrAw"
+  title="YouTube video player"
+  frameborder="0"
+  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+  allowfullscreen
+></iframe>
+
+## When To Use
+
+- A button means an operation (or a series of operations). Clicking a button will trigger corresponding business logic.
+
+## Properties
+
+<table>
+  <tr>
+    <td>Property</td>
+    <td>Description</td>
+    <td>Type</td>
+    <td>Default</td>
+  </tr>
+  <tr>
+    <td>Name</td>
+    <td>A property autocomplete to bind the form to the entity that has been selected.</td>
+    <td>string</td>
+    <td>Name of the component</td>
+  </tr>
+  <tr>
+    <td>Label</td>
+    <td>The button text</td>
+    <td>string</td>
+    <td>Submit</td>
+  </tr>
+  <tr>
+    <td>Tooltip</td>
+    <td>Text that appears when a user hovers their cursor over the button.</td>
+    <td>string</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td>Button Type</td>
+    <td>Different Button Types - Primary, Default, Ghost, Dashed, Link, Text</td>
+    <td>Dropdown</td>
+    <td>Default</td>
+  </tr>
+  <tr>
+    <td>Danger</td>
+    <td>Used for actions of risk, like deletion or authorization.</td>
+    <td>Boolean</td>
+    <td>False</td>
+  </tr>
+  <tr>
+    <td>Visibility</td>
+    <td>Used to toggle visibility on the payload and UI.</td>
+    <td>Dropdown</td>
+    <td>Yes (Display on UI and include in payload)</td>
+  </tr>
+  <tr>
+    <td>Disabled</td>
+    <td>When actions are not available.</td>
+    <td>Boolean</td>
+    <td>false</td>
+  </tr>
+  <tr>
+    <td>Action Name</td>
+    <td>Action to be performed by the button</td>
+    <td>Dropdown</td>
+    <td>Form: Submit</td>
+  </tr>
+  <tr>
+    <td>Handle Success</td>
+    <td>Action to be performed if the first operation was successful</td>
+    <td>Boolean</td>
+    <td>False</td>
+  </tr>
+  <tr>
+    <td>Handle Failure</td>
+    <td>Action to be performed if the first operation was unsuccessful</td>
+    <td>Boolean</td>
+    <td>False</td>
+  </tr>
+  <tr>
+    <td>Style</td>
+    <td>A script that returns the style of the element as an object. This should conform to CSSProperties</td>
+    <td>ReactNode</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td>Size</td>
+    <td>The size of the input - small, middle, large</td>
+    <td>Dropdown</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td>Custom Visibility</td>
+    <td>
+      Enter custom visibility code. You must return true to show the component. The global variable data is provided,
+      and allows you to access the data of any form component, by using its API key.
+    </td>
+    <td>ReactNode</td>
+    <td>-</td>
+  </tr>
+  <tr>
+    <td>Custom Enabled</td>
+    <td>
+      Enter custom enabled code. You must return true to enable the component. The global variable data is provided, and
+      allows you to access the data of any form component, by using its API key.
+    </td>
+    <td>ReactNode</td>
+    <td>-</td>
+  </tr>
+</table>
