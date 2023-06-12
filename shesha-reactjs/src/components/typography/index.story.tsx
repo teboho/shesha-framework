@@ -26,7 +26,7 @@ const toolbarItems: IToolbarItem[] = [
 ];
 
 // Create a master template for mapping args to render the Button component
-const Template: Story<IActionButtonGroupProps> = args => <ActionButtonGroup items={toolbarItems} {...args} />;
+const Template: Story<IActionButtonGroupProps> = (args) => <ActionButtonGroup items={toolbarItems} {...args} />;
 
 // Reuse that template for creating different stories
 export const Basic = Template.bind({});
