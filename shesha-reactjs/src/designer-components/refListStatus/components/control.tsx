@@ -21,11 +21,16 @@ const RefListStatusControl: FC<IProps> = ({ model, value }) => {
   const { globalState } = useGlobalState();
   const { referenceListId, showIcon, solidBackground, style, showReflistName } = model;
 
-  const listItem = useReferenceListItem(referenceListId?.module, referenceListId?.name, value);  
+  const listItem = useReferenceListItem(referenceListId?.module, referenceListId?.name, value);
 
   if (listItem?.error && !listItem?.loading) {
     return (
-      <Alert showIcon message="Something went during Reflists fetch" description={listItem.error.message} type="error" />
+      <Alert
+        showIcon
+        message="Something went during Reflists fetch"
+        description={listItem.error.message}
+        type="error"
+      />
     );
   }
 
@@ -41,7 +46,7 @@ const RefListStatusControl: FC<IProps> = ({ model, value }) => {
 
   return (
     <Skeleton loading={listItem?.loading}>
-      <div className='sha-status-tag-container'>
+      <div className="sha-status-tag-container">
         <Tag
           className="sha-status-tag"
           color={memoizedColor}
@@ -50,18 +55,15 @@ const RefListStatusControl: FC<IProps> = ({ model, value }) => {
         >
           {showReflistName && itemData?.item}
         </Tag>
-        {(((itemData?.description && showReflistName) ||
-          (!showReflistName && (itemData?.item || itemData?.description))) &&
-          (
-            <Tooltip
-              placement="rightTop"
-              title={<ToolTipTittle showReflistName={showReflistName} currentStatus={itemData} />}
-            >
-
-              <QuestionCircleOutlined className='sha-help-icon' />
-
-            </Tooltip>
-          ))}
+        {((itemData?.description && showReflistName) ||
+          (!showReflistName && (itemData?.item || itemData?.description))) && (
+          <Tooltip
+            placement="rightTop"
+            title={<ToolTipTittle showReflistName={showReflistName} currentStatus={itemData} />}
+          >
+            <QuestionCircleOutlined className="sha-help-icon" />
+          </Tooltip>
+        )}
       </div>
     </Skeleton>
   );
