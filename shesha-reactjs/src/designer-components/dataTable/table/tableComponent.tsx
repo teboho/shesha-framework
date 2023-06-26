@@ -127,7 +127,7 @@ export const TableWrapper: FC<ITableComponentProps> = (props) => {
       ? items
       : items
         ?.filter(({ permissions }) => anyOfPermissionsGranted(permissions || []))
-        .filter(filterVisibility(filterVisibility({ data: formData, globalState })));
+        .filter(filterVisibility({ data: formData, globalState }));
 
     registerConfigurableColumns(id, permissibleColumns);
   }, [items, isDesignMode]);
@@ -224,14 +224,17 @@ export const TableWrapper: FC<ITableComponentProps> = (props) => {
         containerStyle={getStyle(containerStyle, formData, globalState)}
 
         canAddInline={props.canAddInline}
+        canAddInlineExpression={props.canAddInlineExpression}
         customCreateUrl={props.customCreateUrl}
         newRowCapturePosition={props.newRowCapturePosition}
         onNewRowInitialize={props.onNewRowInitialize}
 
         canEditInline={props.canEditInline}
+        canEditInlineExpression={props.canEditInlineExpression}
         customUpdateUrl={props.customUpdateUrl}
 
         canDeleteInline={props.canDeleteInline}
+        canDeleteInlineExpression={props.canDeleteInlineExpression}
         customDeleteUrl={props.customDeleteUrl}
 
         onRowSave={props.onRowSave}

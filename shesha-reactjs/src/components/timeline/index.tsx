@@ -37,11 +37,12 @@ export const ShaTimeline: FC<ITimelineProps> = ({ properties, ownerId, entityTyp
   }, [properties, globalState]);
 
   const debouncedRefresh = useDebouncedCallback(() => {
-    fetchEntities({ queryParams });  }, 300);
+    fetchEntities({ queryParams });
+  }, 300);
 
   const timelineData: any[] = apiSource === 'custom' ? data?.result : data?.result?.items;
-
-  const sortedTimelineData = timelineData.sort((item1, item2) => {
+  //sort values
+  const sortedTimelineData = timelineData?.sort((item1, item2) => {
     const actionDataA = item1?.actionData;
     const actionDataB = item2?.actionData;
 
@@ -60,13 +61,14 @@ export const ShaTimeline: FC<ITimelineProps> = ({ properties, ownerId, entityTyp
 
   return (
     <Spin spinning={isFetchingEntities}>
-      {(!timelineData?.length && <Empty description="Empty timeline" />) || (        <Timeline>
-          {sortedTimelineData?.map(({ title, body, toPerson, actionDate, type }) => {
+      {(!sortedTimelineData?.length && <Empty description="Empty timeline" />) || (
+        <Timeline>
+          {sortedTimelineData?.map(({ title, body, fromPerson, actionDate, channel }) => {
             return (
               <TimelineItem
                 title={title}
-                toPerson={toPerson?._displayName}
-                type={type}
+                toPerson={fromPerson?._displayName}
+                channel={channel}
                 actionDate={moment(actionDate).format('DD/MM/YYYY HH:mm')}
                 body={body}
               />
