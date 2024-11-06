@@ -1,28 +1,29 @@
-import React, {
-  FC,
-  PropsWithChildren,
-  useEffect,
-  useMemo,
-  useState
-  } from 'react';
+import { entitiesGet } from '@/apis/entities';
+import { ConfigurableForm } from '@/components/';
 import ValidationErrors from '@/components/validationErrors';
+import { FormItemProvider, FormMarkupWithSettings, FormProvider, MetadataProvider, useSheshaApplication } from '@/providers';
+import { useConfigurationItemsLoader } from '@/providers/configurationItemsLoader';
+import { useFormConfiguration } from '@/providers/form/api';
+import { FormIdentifier } from '@/providers/form/models';
+import { getStyle } from '@/providers/form/utils';
+import { get } from '@/utils/fetchers';
 import {
   Button,
   notification,
   Popover,
   PopoverProps,
   Spin
-  } from 'antd';
-import { ConfigurableForm } from '@/components/';
-import { FormItemProvider, FormMarkupWithSettings, MetadataProvider, useSheshaApplication } from '@/providers';
-import { useConfigurationItemsLoader } from '@/providers/configurationItemsLoader';
-import { useFormConfiguration } from '@/providers/form/api';
-import { entitiesGet } from '@/apis/entities';
-import { FormIdentifier } from '@/providers/form/models';
-import { get } from '@/utils/fetchers';
-import { getQuickViewInitialValues } from './utils';
+} from 'antd';
+import React, {
+  FC,
+  PropsWithChildren,
+  useEffect,
+  useMemo,
+  useState
+} from 'react';
 import { useStyles } from '../entityReference/styles/styles';
-import { getStyle } from '@/providers/form/utils';
+import { getQuickViewInitialValues } from './utils';
+import { useShaFormRef } from '@/providers/form/providers/shaFormProvider';
 
 export interface IQuickViewProps extends PropsWithChildren {
   /** The id or guid for the entity */
@@ -48,7 +49,6 @@ export interface IQuickViewProps extends PropsWithChildren {
 
   popoverProps?: PopoverProps;
 
-  disabled?: boolean;
   style?: string;
 }
 
@@ -77,7 +77,6 @@ const QuickView: FC<Omit<IQuickViewProps, 'formType'>> = ({
   width = 600,
   popoverProps,
   dataProperties = [],
-  disabled,
   style
 }) => {
   const [formData, setFormData] = useState(initialFormData);
@@ -89,10 +88,14 @@ const QuickView: FC<Omit<IQuickViewProps, 'formType'>> = ({
 
   const cssStyle = getStyle(style, formData);
 
+  const shaFormRef = useShaFormRef();
+  // shaFormRef?.current?.setInitialValues(formData);
+
   useEffect(() => {
     if (formIdentifier) {
       fetchForm().then((response) => {
         setFormMarkup(response);
+        shaFormRef.current?.initByRawMarkup({ rawMarkup: response, initialValues: formData });
       });
     }
   }, [formIdentifier]);
@@ -115,7 +118,16 @@ const QuickView: FC<Omit<IQuickViewProps, 'formType'>> = ({
   }, [entityId, getEntityUrl, formMarkup]);
 
   const formContent = useMemo(() => {
+    console.log(formMarkup);
+    console.log('shaFormRef', shaFormRef);
     return formMarkup && formData ? (
+      // <FormProvider
+      //   mode='readonly'
+      //   name='quickview-form'
+      //   formSettings={formMarkup?.formSettings}
+      //   isActionsOwner={false}
+      //   shaForm={shaFormRef.current}
+      //   children={(
       <FormItemProvider namePrefix={undefined}>
         <MetadataProvider id="dynamic" modelType={formMarkup?.formSettings.modelType}>
           <ConfigurableForm
@@ -126,6 +138,9 @@ const QuickView: FC<Omit<IQuickViewProps, 'formType'>> = ({
           />
         </MetadataProvider>
       </FormItemProvider>
+      //   )}
+      // >
+      // </FormProvider>
     ) : (
       <></>
     );
@@ -147,13 +162,6 @@ const QuickView: FC<Omit<IQuickViewProps, 'formType'>> = ({
     );
   };
 
-  if (disabled)
-   return (
-    <Button className={styles.entityReferenceBtn} disabled type="link">
-      {formTitle}
-      </Button>
-      );
-
   return (
     <Popover
       content={<div style={{ width }}>{formContent}</div>}
@@ -171,13 +179,13 @@ export const GenericQuickView: FC<IQuickViewProps> = (props) => {
 
   useEffect(() => {
     if (props.className && !formConfig)
-      getEntityFormId(props.className, props.formType ?? 'Quickview').then((f) => {
-        setFormConfig(f);
+      getEntityFormId(props.className, props.formType ?? 'Quickview').then((formFullName) => {
+        setFormConfig(formFullName);
       });
   }, [props.className, props.formType, formConfig]);
 
   return formConfig ? (
-    <QuickView {...props} formIdentifier={formConfig}/>
+    <QuickView {...props} formIdentifier={formConfig} />
   ) : (
     <Button type="link">
       <span>

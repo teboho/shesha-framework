@@ -13,7 +13,7 @@ import { migrateFormApi } from '../_common-migrations/migrateFormApi1';
 
 export type IActionParameters = [{ key: string; value: string }];
 
-export interface IEntityReferenceControlProps extends IEntityReferenceProps, IConfigurableFormComponent {}
+export interface IEntityReferenceControlProps extends IEntityReferenceProps, IConfigurableFormComponent { }
 
 const EntityReferenceComponent: IToolboxComponent<IEntityReferenceControlProps> = {
   type: 'entityReference',
@@ -23,20 +23,20 @@ const EntityReferenceComponent: IToolboxComponent<IEntityReferenceControlProps> 
   icon: <LinkExternalOutlined />,
   Factory: ({ model: passedModel }) => {
     const { style, hidden, readOnly, ...model } = passedModel;
-    
+
     if (hidden)
       return null;
 
     return (
       <ConfigurableFormItem model={model}>
         {(value) => {
-          return <EntityReference {...model} disabled={readOnly} value={value} style={style}/>;
+          return <EntityReference {...model} value={value} style={style} />;
         }}
       </ConfigurableFormItem>
     );
   },
   settingsFormFactory: (props) => {
-    return <EntityReferenceSettingsForm {...props}/>;
+    return <EntityReferenceSettingsForm {...props} />;
   },
   migrator: m => m
     .add<IEntityReferenceControlProps>(0, prev => {
@@ -52,8 +52,8 @@ const EntityReferenceComponent: IToolboxComponent<IEntityReferenceControlProps> 
     })
     .add<IEntityReferenceControlProps>(1, (prev) => migratePropertyName(migrateCustomFunctions(prev)))
     .add<IEntityReferenceControlProps>(2, (prev) => migrateVisibility(prev))
-    .add<IEntityReferenceControlProps>(3, (prev) => ({ 
-      ...prev, 
+    .add<IEntityReferenceControlProps>(3, (prev) => ({
+      ...prev,
       onSuccess: migrateNavigateAction(prev.onSuccess),
       onFail: migrateNavigateAction(prev.onFail),
     }))
@@ -64,7 +64,7 @@ const EntityReferenceComponent: IToolboxComponent<IEntityReferenceControlProps> 
         ? 'default'
         : prev.footerButtons ?? prev.showModalFooter ? 'default' : 'none',
     }))
-    .add<IEntityReferenceControlProps>(6, (prev) => ({...migrateFormApi.eventsAndProperties(prev)}))
+    .add<IEntityReferenceControlProps>(6, (prev) => ({ ...migrateFormApi.eventsAndProperties(prev) }))
   ,
   linkToModelMetadata: (model, propMetadata): IEntityReferenceControlProps => {
     return {

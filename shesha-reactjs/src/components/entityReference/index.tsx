@@ -4,14 +4,14 @@ import React, {
   useEffect,
   useMemo,
   useState
-  } from 'react';
+} from 'react';
 import { axiosHttp, get } from '@/utils/fetchers';
 import {
   Button,
   message,
   notification,
   Spin
-  } from 'antd';
+} from 'antd';
 import { entitiesGet } from '@/apis/entities';
 import { GenericQuickView } from '@/components/quickView';
 import { IConfigurableActionConfiguration } from '@/interfaces/configurableAction';
@@ -34,6 +34,7 @@ import { isPropertiesArray } from '@/interfaces/metadata';
 import { ModalFooterButtons } from '@/providers/dynamicModal/models';
 import { getStyle, useAvailableConstantsData } from '@/providers/form/utils';
 import { getFormApi } from '@/providers/form/formApi';
+import { IArgumentsEvaluationContext } from '@/providers/configurableActionsDispatcher/contexts';
 
 export type EntityReferenceTypes = 'NavigateLink' | 'Quickview' | 'Dialog';
 
@@ -41,7 +42,6 @@ export interface IEntityReferenceProps {
   // common properties
   entityReferenceType: EntityReferenceTypes;
   value?: any;
-  disabled?: boolean;
   placeholder?: string;
   entityType?: string;
   formSelectionMode: 'name' | 'dynamic';
@@ -112,6 +112,10 @@ export const EntityReference: FC<IEntityReferenceProps> = (props) => {
   const style = getStyle(props.style, formData);
 
   useEffect(() => {
+    console.log('formMode', formMode);
+  }, [formMode]);
+
+  useEffect(() => {
     if (
       !Boolean(formIdentifier) &&
       props.formSelectionMode === 'dynamic' &&
@@ -161,8 +165,7 @@ export const EntityReference: FC<IEntityReferenceProps> = (props) => {
     if (!!props?.value?._displayName) setDisplayText(props?.value?._displayName);
   }, [entityId, entityType]);
 
-  /* Dialog */
-
+  /** Dialog */
   const dialogExecute = (event: React.MouseEvent<HTMLElement, MouseEvent>) => {
     event.stopPropagation(); // Don't collapse the CollapsiblePanel when clicked
 
@@ -177,8 +180,9 @@ export const EntityReference: FC<IEntityReferenceProps> = (props) => {
       actionArguments: {
         formId: formIdentifier,
         modalTitle: props.modalTitle,
-        buttons: props.buttons,
-        footerButtons: props?.footerButtons,
+        formMode: formMode,
+        buttons: formMode === 'readonly' ? null : props.buttons,
+        footerButtons: formMode === 'readonly' ? null : props?.footerButtons,
         additionalProperties:
           Boolean(props.additionalProperties) && props.additionalProperties?.length > 0
             ? props.additionalProperties
@@ -191,7 +195,7 @@ export const EntityReference: FC<IEntityReferenceProps> = (props) => {
       },
     };
 
-    const evaluationContext = {
+    const evaluationContext: IArgumentsEvaluationContext = {
       ...executionContext,
       entityReference: { id: entityId, entity: props.value },
       data: formData,
@@ -219,13 +223,6 @@ export const EntityReference: FC<IEntityReferenceProps> = (props) => {
         </Button>
       );
 
-    if (props.disabled && props.entityReferenceType !== 'Quickview')
-      return (
-        <Button className={styles.entityReferenceBtn} disabled type="link">
-          {displayText}
-        </Button>
-      );
-
     if (props.entityReferenceType === 'NavigateLink')
       return (
         <Button className={styles.entityReferenceBtn} style={style} type="link">
@@ -247,17 +244,17 @@ export const EntityReference: FC<IEntityReferenceProps> = (props) => {
           width={props.quickviewWidth}
           formIdentifier={formIdentifier}
           formType={formType}
-          disabled={props.disabled}
           style={props.style}
         />
       );
 
+    // Modal dialog box
     return (
       <Button className={styles.entityReferenceBtn} style={style} type="link" onClick={dialogExecute}>
         {displayText}
       </Button>
     );
-  }, [formIdentifier, displayText, entityId, props.disabled, property.length]);
+  }, [formIdentifier, displayText, entityId, formMode, property.length]);
 
   if (props.formSelectionMode === 'name' && !Boolean(formIdentifier))
     return (
