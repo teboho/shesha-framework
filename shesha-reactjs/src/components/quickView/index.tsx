@@ -89,7 +89,6 @@ const QuickView: FC<Omit<IQuickViewProps, 'formType'>> = ({
   const cssStyle = getStyle(style, formData);
 
   const shaFormRef = useShaFormRef();
-  // shaFormRef?.current?.setInitialValues(formData);
 
   useEffect(() => {
     if (formIdentifier) {
@@ -118,16 +117,7 @@ const QuickView: FC<Omit<IQuickViewProps, 'formType'>> = ({
   }, [entityId, getEntityUrl, formMarkup]);
 
   const formContent = useMemo(() => {
-    console.log(formMarkup);
-    console.log('shaFormRef', shaFormRef);
     return formMarkup && formData ? (
-      // <FormProvider
-      //   mode='readonly'
-      //   name='quickview-form'
-      //   formSettings={formMarkup?.formSettings}
-      //   isActionsOwner={false}
-      //   shaForm={shaFormRef.current}
-      //   children={(
       <FormItemProvider namePrefix={undefined}>
         <MetadataProvider id="dynamic" modelType={formMarkup?.formSettings.modelType}>
           <ConfigurableForm
@@ -138,9 +128,6 @@ const QuickView: FC<Omit<IQuickViewProps, 'formType'>> = ({
           />
         </MetadataProvider>
       </FormItemProvider>
-      //   )}
-      // >
-      // </FormProvider>
     ) : (
       <></>
     );

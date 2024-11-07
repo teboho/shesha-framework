@@ -112,10 +112,6 @@ export const EntityReference: FC<IEntityReferenceProps> = (props) => {
   const style = getStyle(props.style, formData);
 
   useEffect(() => {
-    console.log('formMode', formMode);
-  }, [formMode]);
-
-  useEffect(() => {
     if (
       !Boolean(formIdentifier) &&
       props.formSelectionMode === 'dynamic' &&
@@ -140,7 +136,6 @@ export const EntityReference: FC<IEntityReferenceProps> = (props) => {
   useEffect(() => {
     // fetch data only for NavigateLink and Dialog mode. Quickview will fetch data later
     if (!fetched && props.entityReferenceType !== 'Quickview' && entityId) {
-      //
       const queryParams = {
         id: entityId,
         properties: `id ${Boolean(props.displayProperty) ? props.displayProperty : ''}`,
