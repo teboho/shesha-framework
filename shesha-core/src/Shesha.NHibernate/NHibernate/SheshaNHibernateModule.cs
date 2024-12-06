@@ -93,11 +93,11 @@ namespace Shesha.NHibernate
 
             if (!SkipDbContextRegistration)
             {
-                if (config.DatabaseType == DbmsType.NotSpecified) 
+                if (config.DatabaseType == DbmsType.NotSpecified)
                 {
                     // backward compatibility
-                    config.UseMsSql();
-
+                    //    config.UseMsSql();
+                    config.UsePostgreSql();
                     // throw new DbmsTypeNotSpecified();
                 }
 

@@ -8,6 +8,7 @@ using ElmahCore.Mvc;
 using GraphQL;
 using GraphQL.NewtonsoftJson;
 using Hangfire;
+using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -105,7 +106,10 @@ namespace Shesha.Web.Host.Startup
             services.AddHttpContextAccessor();
             services.AddHangfire(config =>
             {
-                config.UseSqlServerStorage(_appConfiguration.GetConnectionString("Default"));
+                if (_appConfiguration["DbmsType"] == "PostgreSql")
+                    config.UsePostgreSqlStorage(_appConfiguration.GetConnectionString("Default"));
+                else
+                    config.UseSqlServerStorage(_appConfiguration.GetConnectionString("Default"));
             });
             services.AddHangfireServer();
 
