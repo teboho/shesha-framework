@@ -28,6 +28,8 @@ export const ShaFormStyles = createGlobalStyle`
         border: none;
         &.${formClassNames.shaEditMode} {
             border: 1px ${(p) => p.theme.colorPrimary} solid;
+            padding-bottom: 0;
+            z-index: 10;
         }
     }
     .${formClassNames.shaForm} {

@@ -10,6 +10,8 @@ export const useStyles = createStyles(({ css, cx, responsive, token, prefixCls }
   const shaBorder = '1px solid #d3d3d3';
   const shaSiderExpandedWidth = '250px'; // @sha-sider-expanded-width
   const shaSiderCollapsedWidth = '60px'; // @sha-sider-collapsed-width
+  const antLayoutSiderTriggerHeight = '50px'; // @ant-layout-sider-trigger-height
+  const antLayoutHeaderHeight = '50px'; // @ant-layout-header-height
 
   const shaAntTransition = 'all 0.3s cubic-bezier(0.2, 0, 0, 1) 0s'; // @sha-ant-transition
   const antdTransition = css`
@@ -45,11 +47,13 @@ export const useStyles = createStyles(({ css, cx, responsive, token, prefixCls }
         display: flex;
         align-items: center;
     `;
+
   const antLayoutHeader = cx(css`
     border-bottom: ${shaBorder};
     position: fixed;
     z-index: 3;
     width: 100%;
+    height: ${antLayoutHeaderHeight} !important;
     padding: unset;
     overflow: hidden;
   `);
@@ -170,6 +174,7 @@ export const useStyles = createStyles(({ css, cx, responsive, token, prefixCls }
       top: 0 !important; // By default, the trigger is at the bottom. But we want it to be at the top for the sake of of
       width: ${shaSiderExpandedWidth} !important;
       font-size: 18px;
+      height: ${antLayoutSiderTriggerHeight} !important;
     }
 
     &.${prefixCls}-layout-sider-collapsed {
@@ -184,6 +189,7 @@ export const useStyles = createStyles(({ css, cx, responsive, token, prefixCls }
 
       .${prefixCls}-layout-sider-trigger {
         width: ${shaSiderCollapsedWidth} !important;
+        height: ${antLayoutSiderTriggerHeight} !important;
       }
     }
   `;
