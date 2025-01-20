@@ -4,12 +4,14 @@ import ConfigurableFormItem from '@/components/formDesigner/components/formItem'
 import { LinkExternalOutlined } from '@/icons/linkExternalOutlined';
 import { IToolboxComponent } from '@/interfaces';
 import { IConfigurableFormComponent } from '@/providers/form/models';
-import { EntityReferenceSettingsForm } from './settings';
 import { migratePropertyName, migrateCustomFunctions, migrateReadOnly } from '@/designer-components/_common-migrations/migrateSettings';
 import { isEntityReferencePropertyMetadata } from '@/interfaces/metadata';
 import { migrateVisibility } from '@/designer-components/_common-migrations/migrateVisibility';
 import { migrateNavigateAction } from '../_common-migrations/migrate-navigate-action';
 import { migrateFormApi } from '../_common-migrations/migrateFormApi1';
+import { getSettings } from './settingsForm';
+import { validateConfigurableComponentSettings } from '@/formDesignerUtils';
+import { migratePrevStyles } from '../_common-migrations/migrateStyles';
 
 export type IActionParameters = [{ key: string; value: string }];
 
@@ -35,9 +37,8 @@ const EntityReferenceComponent: IToolboxComponent<IEntityReferenceControlProps> 
       </ConfigurableFormItem>
     );
   },
-  settingsFormFactory: (props) => {
-    return <EntityReferenceSettingsForm {...props}/>;
-  },
+  settingsFormFactory: (data) => getSettings(data as any) as any,
+  validateSettings: (model) => validateConfigurableComponentSettings(getSettings(model), model),
   migrator: m => m
     .add<IEntityReferenceControlProps>(0, prev => {
       return {
@@ -65,7 +66,7 @@ const EntityReferenceComponent: IToolboxComponent<IEntityReferenceControlProps> 
         : prev.footerButtons ?? prev.showModalFooter ? 'default' : 'none',
     }))
     .add<IEntityReferenceControlProps>(6, (prev) => ({...migrateFormApi.eventsAndProperties(prev)}))
-  ,
+    .add<IEntityReferenceControlProps>(7, (prev) => ({ ...migratePrevStyles(prev) })),
   linkToModelMetadata: (model, propMetadata): IEntityReferenceControlProps => {
     return {
       ...model,

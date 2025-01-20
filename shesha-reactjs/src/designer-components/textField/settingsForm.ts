@@ -9,7 +9,6 @@ import { repeatOptions } from '../_settings/utils/background/utils';
 export const getSettings = (data: ITextFieldComponentProps) => {
 
     return {
-
         components: new DesignerToolbarSettings(data)
             .addSearchableTabs({
                 id: 'W_m7doMyCpCYwAYDfRh6I',

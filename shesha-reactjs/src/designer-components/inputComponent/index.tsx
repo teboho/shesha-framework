@@ -1,6 +1,6 @@
 import React, { FC, useCallback } from 'react';
 import { Button, Input, InputNumber, Radio, Select, Space, Switch, Tooltip } from "antd";
-import { ButtonGroupConfigurator, CodeEditor, ColorPicker, EditableTagGroup, FormAutocomplete, IconType, LabelValueEditor, PermissionAutocomplete, PropertyAutocomplete, SectionSeparator, ShaIcon } from '@/components';
+import { ButtonGroupConfigurator, CodeEditor, ColorPicker, EditableTagGroup, EndpointsAutocomplete, FormAutocomplete, IconType, LabelValueEditor, PermissionAutocomplete, PropertyAutocomplete, SectionSeparator, ShaIcon } from '@/components';
 import TextArea from 'antd/es/input/TextArea';
 import { IObjectMetadata } from '@/interfaces/metadata';
 import { executeScript, useAvailableConstantsData, useFormData } from '@/index';
@@ -25,6 +25,7 @@ import { QueryBuilderWrapper } from '../queryBuilder/queryBuilderWrapper';
 import { QueryBuilder } from '../queryBuilder/queryBuilder';
 import { ColumnsConfig } from '../dataTable/table/columnsEditor/columnsConfig';
 import { DynamicActionsConfigurator } from '../dynamicActionsConfigurator/configurator';
+import { ConfigurableActionConfigurator } from '../configurableActionsConfigurator/configurator';
 
 export const InputComponent: FC<ISettingsInputProps> = (props) => {
     const icons = require('@ant-design/icons');
@@ -90,6 +91,18 @@ export const InputComponent: FC<ISettingsInputProps> = (props) => {
         : <CodeEditorWithStandardConstants {...codeEditorProps} />;
 
     switch (type) {
+        case 'configurableActionConfig':
+            return <ConfigurableActionConfigurator editorConfig={null} level={0} />;
+        case 'fullIdFormAutocomplete':
+            return <FormAutocomplete readOnly={readOnly} convertToFullId={true} />;
+        case 'typeAutoComplete':
+            return <Autocomplete.Raw
+                dataSourceType="url"
+                dataSourceUrl="/api/services/app/Metadata/TypeAutocomplete"
+                readOnly={readOnly}
+            />;
+        case 'endpointsAutoComplete':
+            return <EndpointsAutocomplete readOnly={readOnly} />;
         case 'color':
             return <ColorPicker size={size} value={value} readOnly={readOnly} allowClear onChange={onChange} />;
         case 'dropdown':
