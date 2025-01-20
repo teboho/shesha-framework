@@ -69,7 +69,7 @@ const EntityReferenceSettings: FC<ISettingsFormFactoryArgs<IEntityReferenceContr
         </SettingsFormItem>
 
         <SettingsFormItem name="getEntityUrl" label="Get entity URL" jsSetting>
-          <EndpointsAutocomplete readOnly={readOnly} />
+          <EndpointsAutocomplete readOnly={readOnly}  />
         </SettingsFormItem>
 
         <SettingsFormItem name="entityType" label="Entity type" style={{ width: '100%' }} jsSetting>

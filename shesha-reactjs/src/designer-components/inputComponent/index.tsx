@@ -1,5 +1,5 @@
-import React, { FC, useCallback } from 'react';
-import { Button, Input, InputNumber, Radio, Select, Space, Switch, Tooltip } from "antd";
+import React, { FC, useCallback, useState } from 'react';
+import { AutoComplete, Button, Input, InputNumber, Radio, Select, Space, Switch, Tooltip } from "antd";
 import { ButtonGroupConfigurator, CodeEditor, ColorPicker, EditableTagGroup, EndpointsAutocomplete, FormAutocomplete, IconType, LabelValueEditor, PermissionAutocomplete, PropertyAutocomplete, SectionSeparator, ShaIcon } from '@/components';
 import TextArea from 'antd/es/input/TextArea';
 import { IObjectMetadata } from '@/interfaces/metadata';
@@ -27,10 +27,17 @@ import { ColumnsConfig } from '../dataTable/table/columnsEditor/columnsConfig';
 import { DynamicActionsConfigurator } from '../dynamicActionsConfigurator/configurator';
 import { ConfigurableActionConfigurator } from '../configurableActionsConfigurator/configurator';
 
+const formTypes = ['Table', 'Create', 'Edit', 'Details', 'Quickview', 'ListItem', 'Picker'];
+
 export const InputComponent: FC<ISettingsInputProps> = (props) => {
     const icons = require('@ant-design/icons');
     const { styles } = useStyles();
 
+    const [formTypesOptions, setFormTypesOptions] = useState<{ value: string }[]>(
+        formTypes.map((i) => {
+            return { value: i };
+        })
+    );
     const metadataBuilderFactory = useMetadataBuilderFactory();
     const { data: formData } = useFormData();
     const { size, className, value, type: type, dropdownOptions, buttonGroupOptions,
@@ -91,6 +98,23 @@ export const InputComponent: FC<ISettingsInputProps> = (props) => {
         : <CodeEditorWithStandardConstants {...codeEditorProps} />;
 
     switch (type) {
+        case 'formTypeAutocomplete':
+            return <AutoComplete
+                disabled={readOnly}
+                options={formTypesOptions}
+                onSearch={(t) =>
+                    setFormTypesOptions(
+                        (t
+                            ? formTypes.filter((f) => {
+                                return f.toLowerCase().includes(t.toLowerCase());
+                            })
+                            : formTypes
+                        ).map((i) => {
+                            return { value: i };
+                        })
+                    )
+                }
+            />;
         case 'configurableActionConfig':
             return <ConfigurableActionConfigurator editorConfig={null} level={0} />;
         case 'fullIdFormAutocomplete':

@@ -74,53 +74,6 @@ export const getSettings = (data: IEntityReferenceControlProps) => {
                 .addSettingsInputRow({
                   id: nanoid(),
                   parentId: commonTabId,
-                  readOnly: false,
-                  inputs: [
-                    {
-                      type: 'text', 
-                      id: nanoid(),
-                      propertyName: "initialValue",
-                      parentId: commonTabId,
-                      label: "Default Value",
-                      jsSetting: true,
-                      size: "small",
-                    },
-                    {
-                      type: 'switch',
-                      id: nanoid(),
-                      propertyName: 'passEmptyStringByDefault',
-                      label: 'Empty as default',
-                      jsSetting: true,
-                      parentId: commonTabId,
-                    }
-                  ]
-                })
-                .addSettingsInputRow({
-                  id: nanoid(),
-                  parentId: commonTabId,
-                  readOnly: false,
-                  inputs: [
-                    {
-                      type: 'switch',
-                      id: nanoid(),
-                      propertyName: 'autoSize',
-                      parentId: commonTabId,
-                      label: 'Auto Size',
-                      jsSetting: true,
-                    },
-                    {
-                      type: 'switch',
-                      id: nanoid(),
-                      propertyName: 'allowClear',
-                      parentId: commonTabId,
-                      label: 'Allow Clear',
-                      jsSetting: true,
-                    }
-                  ]
-                })
-                .addSettingsInputRow({
-                  id: nanoid(),
-                  parentId: commonTabId,
                   readOnly: { _code: 'return getSettingValue(data?.readOnly);', _mode: 'code', _value: false } as any,
                   inputs: [
                     {
@@ -131,28 +84,6 @@ export const getSettings = (data: IEntityReferenceControlProps) => {
                       size: 'small',
                       jsSetting: true,
                     },
-                    {
-                      type: 'switch',
-                      id: hiddenId,
-                      propertyName: 'hidden',
-                      label: 'Hide',
-                      jsSetting: true,
-                      layout: 'horizontal',
-                    },
-                  ],
-                })
-                .addSettingsInputRow({
-                  id: nanoid(),
-                  parentId: commonTabId,
-                  readOnly: false,
-                  inputs: [
-                    {
-                      type: 'switch',
-                      id: nanoid(),
-                      propertyName: 'showCount',
-                      parentId: commonTabId,
-                      label: 'Show Chars Count',
-                    }                   
                   ],
                 })
                 .toJson()
@@ -232,12 +163,12 @@ export const getSettings = (data: IEntityReferenceControlProps) => {
                       })
                       .addSettingsInput({
                         id: nanoid(),
-                        propertyName: 'formName',
-                        label: 'Form Name',
+                        propertyName: 'formIdentifier',
+                        label: 'Form Identifier',
                         parentId: mainSettingsTabId,
                         inputType: 'fullIdFormAutocomplete',
                         jsSetting: true,
-                        hidden: { _code: 'return getSettingValue(data?.formSelectionMode) !== "name";', _mode: 'code', _value: false } as any,
+                        // hidden: { _code: 'return getSettingValue(data?.formSelectionMode) !== "name";', _mode: 'code', _value: false } as any,
                       })
                       .addCollapsiblePanel({
                         id: nanoid(),
@@ -320,7 +251,7 @@ export const getSettings = (data: IEntityReferenceControlProps) => {
                                   { value: 'POST', label: 'POST' },
                                   { value: 'PUT', label: 'PUT' },
                                 ],
-                                injectedDefaultValue: 'POST',
+                                defaultValue: 'POST',
                                 hidden: { _code: 'return getSettingValue(data?.footerButtons) === "default";', _mode: 'code', _value: false } as any,
                               })
                               .addSettingsInput({
@@ -388,6 +319,7 @@ export const getSettings = (data: IEntityReferenceControlProps) => {
                   label: 'Get Entity URL',
                   jsSetting: true,
                   parentId: mainSettingsTabId,
+                  size: 'small',
                   inputType: 'endpointsAutoComplete',
                 })
                 .addSettingsInput({
@@ -418,9 +350,9 @@ export const getSettings = (data: IEntityReferenceControlProps) => {
                   propertyName: 'formType',
                   label: 'Form Type',
                   parentId: mainSettingsTabId,
-                  inputType: 'formAutocomplete',
+                  inputType: 'formTypeAutocomplete',
                   jsSetting: true,
-                  hidden: { _code: 'return getSettingValue(data?.formSelectionMode) !== "dynamic";', _mode: 'code', _value: false } as any,
+                  // hidden: { _code: 'return getSettingValue(data?.formSelectionMode) !== "dynamic";', _mode: 'code', _value: false } as any,
                 })
                 .toJson()
             ]
@@ -505,6 +437,15 @@ export const getSettings = (data: IEntityReferenceControlProps) => {
                   },
                   components: [
                     ...new DesignerToolbarSettings()
+                      .addSettingsInput(
+                        {
+                          inputType: 'switch',
+                          id: hiddenId,
+                          propertyName: 'hidden',
+                          label: 'Hide',
+                          jsSetting: true,
+                          layout: 'horizontal',
+                        },)
                       .addCollapsiblePanel({
                         id: nanoid(),
                         propertyName: 'stylingBox',
@@ -607,7 +548,7 @@ export const getSettings = (data: IEntityReferenceControlProps) => {
                           { value: '80%', label: 'Large' },
                           { value: 'custom', label: 'Custom' },
                         ],
-                        hidden: { _code: 'return getSettingValue(data?.entityReferenceType) !== "dialog";', _mode: 'code', _value: false } as any,
+                        // hidden: { _code: 'return getSettingValue(data?.entityReferenceType) !== "dialog";', _mode: 'code', _value: false } as any,
                       })
                       .addSettingsInput({
                         id: nanoid(),
@@ -620,7 +561,7 @@ export const getSettings = (data: IEntityReferenceControlProps) => {
                           { value: '%', label: 'Percentage (%)' },
                           { value: 'px', label: 'Pixels (px)' },
                         ],
-                        hidden: { _code: 'return getSettingValue(data?.modalWidth) !== "custom";', _mode: 'code', _value: false } as any,
+                        // hidden: { _code: 'return getSettingValue(data?.modalWidth) !== "custom";', _mode: 'code', _value: false } as any,
                       })
                       .addSettingsInput({
                         id: nanoid(),
@@ -630,7 +571,7 @@ export const getSettings = (data: IEntityReferenceControlProps) => {
                         inputType: 'number',
                         jsSetting: true,
                         min: 0,
-                        hidden: { _code: 'return getSettingValue(data?.modalWidth) !== "custom";', _mode: 'code', _value: false } as any,
+                        // hidden: { _code: 'return getSettingValue(data?.modalWidth) !== "custom";', _mode: 'code', _value: false } as any,
                       })
                       .toJson(),
                   ]
