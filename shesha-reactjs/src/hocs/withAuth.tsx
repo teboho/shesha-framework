@@ -31,7 +31,7 @@ export const ComponentWithAuth: FC<IComponentWithAuthProps> = (props) => {
 };
 
 /**
- * Ensures that a particular page cannot be accessed if you're not authenticated
+ * Ensures that a particular page cannot be accessed if you're not authenticated  
  */
 export const withAuth =
   <P extends object>(Component: ComponentType<P>, unauthorizedRedirectUrl = '/login', landingPage = '/'): FC<P> =>
