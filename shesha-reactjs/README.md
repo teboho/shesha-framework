@@ -1,4 +1,4 @@
-# @shesha-io/reactjs
+# @shesha-io/reactjs on npm
 
 [![GPL-3.0](https://img.shields.io/npm/l/@shesha-io/reactjs.svg?style=flat-square)](https://github.com/shesha-io/shesha-framework/blob/main/LICENSE.md)
 [![docs](https://readthedocs.org/projects/pip/badge/?version=latest&style=plastic)](https://docs.shesha.io/docs/get-started/Introduction)
