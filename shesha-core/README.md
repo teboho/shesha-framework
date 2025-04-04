@@ -18,6 +18,10 @@ shesha-core
  |-- test  
  |-- ...
 
+### Install / Restore dependencies
+
+> dotnet restore
+
 ### Build
 
 > dotnet build 
