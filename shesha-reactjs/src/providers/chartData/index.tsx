@@ -3,8 +3,9 @@ import React, { FC, PropsWithChildren, useContext, useReducer } from "react";
 import { SetChartFiltersAction, SetControlPropsAction, SetDataAction, SetFilterdDataAction, SetIsFilterVisibleAction, SetIsLoadedAction, SetUrlTypeDataAction } from "./actions";
 import { ChartDataActionsContext, ChartDataStateContext, INITIAL_STATE } from "./context";
 import { chartDataReducer } from "./reducer";
+import { MetadataProvider } from "@/index";
 
-const ChartDataProvider: FC<PropsWithChildren<{}>> = ({ children }: PropsWithChildren<{}>) => {
+const ChartDataProvider: FC<PropsWithChildren<{modelType: string}>> = ({ children, modelType }: PropsWithChildren<{modelType: string}>) => {
   const [state, dispatch] = useReducer(chartDataReducer, INITIAL_STATE);
 
   const setData = (data: IChartData[]) => {
@@ -36,6 +37,7 @@ const ChartDataProvider: FC<PropsWithChildren<{}>> = ({ children }: PropsWithChi
   };
 
   return (
+    <MetadataProvider modelType={modelType}>
     <ChartDataStateContext.Provider value={state}>
       <ChartDataActionsContext.Provider value={{
         setData,
@@ -48,7 +50,8 @@ const ChartDataProvider: FC<PropsWithChildren<{}>> = ({ children }: PropsWithChi
       }}>
         {children}
       </ChartDataActionsContext.Provider>
-    </ChartDataStateContext.Provider>
+      </ChartDataStateContext.Provider>
+    </MetadataProvider>
   );
 };
 

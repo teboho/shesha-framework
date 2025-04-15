@@ -22,7 +22,7 @@ const ChartComponent: IToolboxComponent<IChartProps> = {
       <ConfigurableFormItem model={model}>
         {() => {
           return (
-            <ChartDataProvider>
+            <ChartDataProvider modelType={model.entityType}>
               {model.dataMode === 'url' ? <ChartControlURL {...model} /> : <ChartControl {...model} />}
             </ChartDataProvider>
           );

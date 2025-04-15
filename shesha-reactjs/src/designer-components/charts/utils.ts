@@ -20,15 +20,18 @@ export const stringifyValues = (data: object[]) => {
  * @param str the enjoined properties string to remove duplicates from
  * @returns the string without duplicates
  */
-function removePropertyDuplicates(str) {
+function removePropertyDuplicates(str?: string) {
   // Split the string into an array by commas
   const arr = str.split(',');
 
   // Use a Set to remove duplicates and convert it back to an array
   const uniqueArr = [...new Set(arr)];
 
+  // also remove empty strings
+  const filteredArr = uniqueArr.filter((item: string) => item?.trim() !== '' && item !== undefined && item !== null);
+
   // Join the array back into a string
-  return uniqueArr.join(',');
+  return filteredArr.join(',');
 }
 
 /**
@@ -37,10 +40,13 @@ function removePropertyDuplicates(str) {
  * @param array array of nested properties
  * @returns the array in object format
  */
-function convertNestedPropertiesToObjectFormat(array?: string[]) {
+export function convertNestedPropertiesToObjectFormat(array?: string[]) {
   if (!array) return '';
 
-  return array?.filter(path => path && path?.trim() !== '').map(path => {
+  return array?.filter(path => path && (path ?? "").trim() !== '').map(path => {
+    if (!path.includes('.')) {
+      return path;
+    }
     let parts = path.split('.');
     let result = '';
     let indentation = 0;
@@ -76,12 +82,12 @@ function convertNestedPropertiesToObjectFormat(array?: string[]) {
  */
 export const getChartDataRefetchParams = (entityType: string, dataProperty: string, filters: string, legendProperty?: string, axisProperty?: string, filterProperties?: string[], orderBy?: string, orderDirection?: TOrderDirection) => {
   return {
-    path: `/api/services/app/Entities/GetAll`,
+    path: `/api/services/app/Charts/GetAllData`,
     queryParams: {
       entityType: entityType,
-      properties: removePropertyDuplicates((convertNestedPropertiesToObjectFormat([dataProperty, legendProperty, axisProperty]) + ", " + convertNestedPropertiesToObjectFormat(filterProperties)).replace(/\s/g, '')),
-      filter: filters,
-      sorting: orderBy ? `${orderBy} ${orderDirection ?? 'asc'}` : '',
+      properties: removePropertyDuplicates((([dataProperty, legendProperty, axisProperty]).join(', ') + ", " + (filterProperties ?? [])).replace(/\s/g, '')),
+      // filter: filters,
+      // sorting: orderBy ? `${orderBy} ${orderDirection ?? 'asc'}` : '',
     },
   };
 };
