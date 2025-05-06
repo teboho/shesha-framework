@@ -8,7 +8,7 @@ import {
     CloseOutlined
 } from "@ant-design/icons";
 import { IDropdownOption } from "../background/interfaces";
-import { addPx } from "../../utils";
+import { addPx } from '@/utils/style';
 import { nanoid } from "@/utils/uuid";
 import { DesignerToolbarSettings } from "@/interfaces/toolbarSettings";
 import { IRadioOption } from "@/designer-components/settingsInput/interfaces";
@@ -115,7 +115,8 @@ export const borderSides = [
     { value: "top", icon: "BorderTopOutlined", title: "Top" },
     { value: "right", icon: "BorderRightOutlined", title: "Right" },
     { value: "bottom", icon: "BorderBottomOutlined", title: "Bottom" },
-    { value: "left", icon: "BorderLeftOutlined", title: "Left" }
+    { value: "left", icon: "BorderLeftOutlined", title: "Left" },
+    { value: "middle", icon: "BorderHorizontalOutlined", title: "Middle" }
 ];
 
 
@@ -133,7 +134,7 @@ const generateCode = (type: string, isCustom: boolean, isResponsive: boolean, pa
     return `return getSettingValue(${devicePath}${path ? '?.' + path : ''}?.border?.${type}) !== "${isCustom ? "custom" : "all"}";`;
 };
 
-export const getBorderInputs = (path = '', isResponsive: boolean = true) => {
+export const getBorderInputs = (path = '', isResponsive: boolean = true, hasMiddle: boolean = false) => {
 
     const borderProp = path ? `${path}.border.border` : 'border.border';
 
@@ -147,17 +148,15 @@ export const getBorderInputs = (path = '', isResponsive: boolean = true) => {
         })
         .addSettingsInputRow({
             id: nanoid(),
-            parentId: 'borderStylePnl',
             inline: true,
-            readOnly: false,
             hidden: { _code: generateCode('borderType', false, isResponsive, path), _mode: 'code', _value: false } as any,
             inputs: [
                 {
                     id: nanoid(),
                     type: 'tooltip',
-                    label: 'Icon',
+                    label: '',
                     hideLabel: true,
-                    propertyName: 'borderIcon',
+                    propertyName: '',
                     icon: 'BorderOutlined',
                     width: 20,
                     tooltip: `Styles will apply to all border`,
@@ -176,7 +175,6 @@ export const getBorderInputs = (path = '', isResponsive: boolean = true) => {
                     type: "dropdown",
                     hideLabel: true,
                     width: 60,
-                    readOnly: { _code: 'return getSettingValue(data?.readOnly);', _mode: 'code', _value: false } as any,
                     dropdownOptions: borderStyles,
                 },
                 {
@@ -184,24 +182,20 @@ export const getBorderInputs = (path = '', isResponsive: boolean = true) => {
                     label: `Color`,
                     propertyName: `${borderProp}.all.color`,
                     type: "colorPicker",
-                    readOnly: { _code: 'return getSettingValue(data?.readOnly);', _mode: 'code', _value: false } as any,
                     hideLabel: true,
                 }
             ]
         })
         .addContainer({
-            id: 'borderStyleRow',
-            parentId: 'borderStylePnl',
+            id: nanoid(),
             hidden: { _code: generateCode('borderType', true, isResponsive, path), _mode: 'code', _value: false } as any,
-            components: borderSides.map(sideValue => {
+            components: borderSides.slice(0, hasMiddle ? 5 : 4).map(sideValue => {
                 const side = sideValue.value;
 
                 return new DesignerToolbarSettings()
                     .addSettingsInputRow({
                         id: nanoid(),
-                        parentId: 'borderStylePnl',
                         inline: true,
-                        readOnly: false,
                         inputs: [
                             {
                                 id: nanoid(),
@@ -229,7 +223,6 @@ export const getBorderInputs = (path = '', isResponsive: boolean = true) => {
                                 type: "dropdown",
                                 hideLabel: true,
                                 width: 60,
-                                readOnly: { _code: 'return getSettingValue(data?.readOnly);', _mode: 'code', _value: false } as any,
                                 dropdownOptions: borderStyles,
                             },
                             {
@@ -237,7 +230,6 @@ export const getBorderInputs = (path = '', isResponsive: boolean = true) => {
                                 label: `Color`,
                                 propertyName: `${borderProp}.${side}.color`,
                                 type: "colorPicker",
-                                readOnly: { _code: 'return getSettingValue(data?.readOnly);', _mode: 'code', _value: false } as any,
                                 hideLabel: true,
                             }
                         ]
@@ -267,14 +259,11 @@ export const getCornerInputs = (path = '', isResponsive: boolean = true, hideCor
         })
         .addSettingsInputRow({
             id: nanoid(),
-            parentId: 'borderStylePnl',
             inline: true,
-            readOnly: false,
             hidden: { _code: generateCode('radiusType', false, isResponsive, path), _mode: 'code', _value: false } as any,
             inputs: [
                 {
                     id: `borderRadiusStyleRow-all`,
-                    parentId: "borderStylePnl",
                     label: "Corner Radius",
                     hideLabel: true,
                     width: 80,
@@ -289,15 +278,12 @@ export const getCornerInputs = (path = '', isResponsive: boolean = true, hideCor
         .addSettingsInputRow({
             hidden: { _code: generateCode('radiusType', true, isResponsive, path), _mode: 'code', _value: false } as any,
             id: nanoid(),
-            parentId: 'borderStylePnl',
             inline: true,
-            readOnly: false,
             inputs: radiusCorners.map(cornerValue => {
                 const corner = cornerValue.value as string;
 
                 return {
                     id: `borderRadiusStyleRow-${corner}`,
-                    parentId: "borderStylePnl",
                     label: "Corner Radius",
                     hideLabel: true,
                     width: 80,

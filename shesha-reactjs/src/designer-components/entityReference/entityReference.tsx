@@ -1,28 +1,29 @@
-import React from 'react';
 import { EntityReference, IEntityReferenceProps } from '@/components/entityReference';
 import ConfigurableFormItem from '@/components/formDesigner/components/formItem';
-import { LinkExternalOutlined } from '@/icons/linkExternalOutlined';
-import { IToolboxComponent } from '@/interfaces';
-import { IConfigurableFormComponent } from '@/providers/form/models';
+import { ShaIconTypes } from '@/components/iconPicker';
 import {
-  migratePropertyName,
   migrateCustomFunctions,
+  migratePropertyName,
   migrateReadOnly,
 } from '@/designer-components/_common-migrations/migrateSettings';
-import { isEntityReferencePropertyMetadata } from '@/interfaces/metadata';
 import { migrateVisibility } from '@/designer-components/_common-migrations/migrateVisibility';
+import { validateConfigurableComponentSettings } from '@/formDesignerUtils';
+import { LinkExternalOutlined } from '@/icons/linkExternalOutlined';
+import { IToolboxComponent } from '@/interfaces';
+import { isEntityReferencePropertyMetadata } from '@/interfaces/metadata';
+import { IConfigurableFormComponent } from '@/providers/form/models';
+import React from 'react';
 import { migrateNavigateAction } from '../_common-migrations/migrate-navigate-action';
 import { migrateFormApi } from '../_common-migrations/migrateFormApi1';
-import { getSettings } from './settingsForm';
-import { validateConfigurableComponentSettings } from '@/formDesignerUtils';
 import { migratePrevStyles } from '../_common-migrations/migrateStyles';
-import { removeUndefinedProps } from '@/utils/object';
-import { getStyle, pickStyleFromModel } from '@/index';
-import { ShaIconTypes } from '@/components/iconPicker';
+import { getSettings } from './settingsForm';
+import { defaultStyles } from './utils';
 
 export type IActionParameters = [{ key: string; value: string }];
 
-export interface IEntityReferenceControlProps extends IEntityReferenceProps, IConfigurableFormComponent {
+export interface IEntityReferenceControlProps
+  extends Omit<IEntityReferenceProps, 'style'>,
+    Omit<IConfigurableFormComponent, 'style'> {
   /** @deprecated Use iconName instead */
   icon?: string;
 }
@@ -34,27 +35,14 @@ const EntityReferenceComponent: IToolboxComponent<IEntityReferenceControlProps> 
   isOutput: true,
   icon: <LinkExternalOutlined />,
   Factory: ({ model: passedModel }) => {
-    const { style, hidden, readOnly, ...model } = passedModel;
+    const { allStyles, hidden, readOnly, ...model } = passedModel;
 
     if (hidden) return null;
-
-    const jsStyle = getStyle(passedModel.style, passedModel);
-
-    const styling = JSON.parse(model.stylingBox || '{}');
-    const stylingBoxAsCSS = pickStyleFromModel(styling);
-    const additionalStyles = JSON.stringify(
-      removeUndefinedProps({
-        ...jsStyle,
-        ...stylingBoxAsCSS,
-      })
-    );
-    const additionalStylesWithoutQuotes = additionalStyles.replace(/"([^"]+)":/g, '$1:').replace(/'([^']+)':/g, '$1:');
-    const finalStyle = `return ${additionalStylesWithoutQuotes}`;
 
     return (
       <ConfigurableFormItem model={model}>
         {(value) => {
-          return <EntityReference {...model} value={value} style={finalStyle} />;
+          return <EntityReference {...model} value={value} style={{ ...allStyles.fullStyle }} />;
         }}
       </ConfigurableFormItem>
     );
@@ -89,10 +77,10 @@ const EntityReferenceComponent: IToolboxComponent<IEntityReferenceControlProps> 
         footerButtons: context.isNew ? 'default' : (prev.footerButtons ?? prev.showModalFooter) ? 'default' : 'none',
       }))
       .add<IEntityReferenceControlProps>(6, (prev) => ({ ...migrateFormApi.eventsAndProperties(prev) }))
-      .add<IEntityReferenceControlProps>(7, (prev) => ({ ...migratePrevStyles(prev) }))
+      .add<IEntityReferenceControlProps>(7, (prev) => ({ ...migratePrevStyles(prev, defaultStyles()) }))
       .add<IEntityReferenceControlProps>(8, (prev) => ({
         ...prev,
-        iconName: (prev?.iconName as ShaIconTypes) ?? (prev?.icon as ShaIconTypes) ?? 'DoubleLeftOutlined',
+        iconName: (prev?.iconName as ShaIconTypes) ?? (prev?.icon as ShaIconTypes),
       })),
   linkToModelMetadata: (model, propMetadata): IEntityReferenceControlProps => {
     return {
