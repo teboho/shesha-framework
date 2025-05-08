@@ -5,11 +5,14 @@ import ShaIcon, { IconType } from '@/components/shaIcon';
 import { ISidebarMenuItem, isSidebarButton, isSidebarGroup, SidebarItemType } from '@/interfaces/sidebar';
 import { IConfigurableActionConfiguration } from '@/providers/index';
 import Link from 'next/link';
+import MenuTooltip from './tooltip';
+import ConditionalWrap from '../conditionalWrapper';
 
 type MenuItem = Required<MenuProps>['items'][number];
 
 interface IGetItemArgs {
   label: React.ReactNode;
+  tooltip?: string;
   key: React.Key;
   icon?: React.ReactNode;
   children?: MenuItem[];
@@ -20,7 +23,7 @@ interface IGetItemArgs {
   onClick?: () => void;
 }
 
-function getItem({ label, key, icon, children, isParent, itemType, onClick, navigationType, url }: IGetItemArgs): MenuItem {
+function getItem({ label, key, icon, children, isParent, itemType, onClick, navigationType, url, tooltip }: IGetItemArgs): MenuItem {
   const clickHandler = (event) => {
     event.preventDefault();
     onClick();
@@ -32,9 +35,11 @@ function getItem({ label, key, icon, children, isParent, itemType, onClick, navi
     key,
     icon,
     children,
-    label: Boolean(onClick)
+    label: (<ConditionalWrap condition={tooltip?.length > 0} wrap={children => <MenuTooltip tooltip={tooltip}>{children}</MenuTooltip>}>
+      {Boolean(onClick)
       ? navigationType === 'url' || navigationType === 'form' ? <Link className={className} href={url} onClick={clickHandler}>{label}</Link> : <Link href={''} className={className} onClick={clickHandler}>{label}</Link>
-      : <span className={className}>{label}</span>,
+      : <span className={className}>{label}</span>}
+    </ConditionalWrap>),
     type: itemType === 'divider' ? 'divider' : undefined,
   } as MenuItem;
 }
@@ -56,7 +61,7 @@ export interface IProps {
 }
 
 export const sidebarMenuItemToMenuItem = ({ item, onButtonClick, onItemEvaluation, getFormUrl, getUrl }: IProps): MenuItem => {
-  const { id, title, icon, itemType } = item;
+  const { id, title, icon, itemType, tooltip } = item;
 
   const navigationType = item?.actionConfiguration?.actionArguments?.navigationType;
 
@@ -78,6 +83,7 @@ export const sidebarMenuItemToMenuItem = ({ item, onButtonClick, onItemEvaluatio
 
   const itemEvaluationArguments: IGetItemArgs = {
     label: title,
+    tooltip: tooltip,
     key: id,
     icon: getIcon(icon, hasChildren),
     children: children,

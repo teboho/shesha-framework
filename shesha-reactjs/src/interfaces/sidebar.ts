@@ -24,7 +24,7 @@ export interface ISidebarMenuItem {
   actionConfiguration?: IConfigurableActionConfiguration;
   id: string;
   title: string;
-  tooltip?: ReactNode | string;
+  tooltip?: string;
   itemType: SidebarItemType;
 
   icon?: ReactNode | string;
