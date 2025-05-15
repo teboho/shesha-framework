@@ -1,3 +1,5 @@
+import React from "react";
+
 const evaluateString = (expression: string, data: any): any => {
     try {
         // Create a new function with 'data' as a parameter and the expression as the function body
@@ -81,7 +83,10 @@ export const filterDynamicComponents = (components, query, data) => {
     };
 
     // Helper function to check if text matches query
-    const matchesQuery = (text) => text?.toLowerCase().includes(lowerCaseQuery);
+    const matchesQuery = (text) => typeof text === 'string' || typeof text === 'undefined' ? text?.toLowerCase().includes(lowerCaseQuery) : (
+        // check for react node and get inner text content otherwise false
+        React.isValidElement(text) ? (text as React.ReactElement).props.children.toLowerCase().includes(lowerCaseQuery) : false
+    );
 
     const filterResult = components.map(component => {
         // Deep clone the component to avoid mutations

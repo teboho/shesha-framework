@@ -1,4 +1,3 @@
-import propertySettingsJson from './propertySettings.json';
 import React, {
   FC,
 } from 'react';
@@ -8,13 +7,14 @@ import { FormMarkup } from '@/providers/form/models';
 import { useDebouncedCallback } from 'use-debounce';
 import { IModelItem } from '@/interfaces/modelConfigurator';
 import { sheshaStyles } from '@/styles';
+import { getSettings } from './propertySettings';
 
 export interface IModelItemProperties {
   item?: IModelItem;
   onChange?: (item: IModelItem) => void;
 }
 
-const formMarkup = propertySettingsJson as FormMarkup;
+const formMarkup = getSettings() as FormMarkup;
 
 export const ModelItemProperties: FC<IModelItemProperties> = ({ item, onChange }) => {
   const debouncedSave = useDebouncedCallback(
@@ -29,7 +29,7 @@ export const ModelItemProperties: FC<IModelItemProperties> = ({ item, onChange }
     ? (
       <ConfigurableForm
         size="small"
-        layout="horizontal"
+        layout="vertical"
         labelCol={{ span: 24 }}
         wrapperCol={{ span: 24 }}
         mode="edit"

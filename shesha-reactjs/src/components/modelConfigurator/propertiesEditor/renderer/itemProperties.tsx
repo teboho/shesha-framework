@@ -1,4 +1,4 @@
-import propertySettingsJson from './propertySettings.json';
+import { getSettings } from './propertySettings';
 import React, {
   FC,
   ReactNode,
@@ -40,7 +40,7 @@ export const ToolbarItemProperties: FC<IProps> = () => {
 
     const componentModel = getItem(selectedItemId);
 
-    const markup = propertySettingsJson as FormMarkup;
+    const markup = getSettings() as FormMarkup;
 
     return (
       <div>
@@ -48,8 +48,8 @@ export const ToolbarItemProperties: FC<IProps> = () => {
           key={nanoid()}
           size="small"
           layout="horizontal"
-          labelCol={{ span: 24 }}
-          wrapperCol={{ span: 24 }}
+          labelCol={{ span: 8 }}
+          wrapperCol={{ span: 16 }}
           mode="edit"
           markup={markup}
           shaFormRef={formRef}
