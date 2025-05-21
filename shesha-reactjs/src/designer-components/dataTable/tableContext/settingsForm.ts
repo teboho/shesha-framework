@@ -101,7 +101,7 @@ export const getSettings = (data: any) => {
                         label: 'Data Source Type',
                         inputType: 'dropdown',
                         dropdownOptions: [
-                          { label: 'Url', value: 'Url' },
+                          { label: 'URL', value: 'Url' },
                           { label: 'Entity', value: 'Entity' },
                           { label: 'Form', value: 'Form' },
                         ],
@@ -178,11 +178,6 @@ export const getSettings = (data: any) => {
                         id: nanoid(),
                         parentId: dataTabId,
                         inline: false,
-                        hidden: {
-                          _value: false,
-                          _code: "return getSettingValue(data.dataFetchingMode) !== 'paging';",
-                          _mode: 'code',
-                        } as any,
                         readOnly: {
                           _code: 'return getSettingValue(data?.readOnly);',
                           _mode: 'code',
@@ -221,6 +216,11 @@ export const getSettings = (data: any) => {
                             label: 'Default Page Size',
                             type: 'dropdown',
                             allowClear: true,
+                            hidden: {
+                              _value: false,
+                              _code: "return getSettingValue(data.dataFetchingMode) !== 'paging';",
+                              _mode: 'code',
+                            } as any,
                             dropdownOptions: [
                               {
                                 label: '5',
@@ -280,10 +280,14 @@ export const getSettings = (data: any) => {
                             isDynamic: false,
                             validate: {},
                             settingsValidationErrors: [],
-                            modelType: '{{data.entityType}}',
+                            modelType: {
+                              _code: 'return getSettingValue(data?.entityType);',
+                              _mode: 'code',
+                              _value: false
+                            } as any,
                             fieldsUnavailableHint: 'Please select `Entity Type` to be able to configure this filter.',
                             width: '100%',
-                            jsSetting: true,
+                            jsSetting: false,
                           },
                         ],
                       })
@@ -352,7 +356,11 @@ export const getSettings = (data: any) => {
                             description:
                               'The properties you want to order the data by. Use the propeties that you have selected for axis, value (and legend).',
                             validate: { required: false },
-                            modelType: '{{data.entityType}}',
+                            modelType: {
+                              _code: 'return getSettingValue(data?.entityType);',
+                              _mode: 'code',
+                              _value: false
+                            } as any,
                             autoFillProps: false,
                             settingsValidationErrors: [],
                             width: '100%',
@@ -428,7 +436,11 @@ export const getSettings = (data: any) => {
                             customVisibility: null,
                             isDynamic: false,
                             version: 0,
-                            modelType: '{{data.entityType}}',
+                            modelType: {
+                              _code: 'return getSettingValue(data?.entityType);',
+                              _mode: 'code',
+                              _value: false
+                            } as any,
                             validate: {},
                             settingsValidationErrors: [],
                             jsSetting: true,
@@ -464,7 +476,11 @@ export const getSettings = (data: any) => {
                             validate: {},
                             settingsValidationErrors: [],
                             jsSetting: true,
-                            modelType: '{{data.entityType}}',
+                            modelType: {
+                              _code: 'return getSettingValue(data?.entityType);',
+                              _mode: 'code',
+                              _value: false
+                            } as any,
                           },
                         ],
                       })

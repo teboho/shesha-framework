@@ -212,7 +212,11 @@ export const getSettings = (data: IEntityReferenceControlProps) => {
                       allowClear: true,
                       jsSetting: true,
                       width: '100%',
-                      modelType: '{{data.entityType}}',
+                      modelType: {
+                        _code: 'return getSettingValue(data?.entityType);',
+                        _mode: 'code',
+                        _value: false
+                      } as any,
                       autoFillProps: false,
                     },
                   ],
@@ -505,6 +509,7 @@ export const getSettings = (data: IEntityReferenceControlProps) => {
                         labelAlign: 'left',
                         parentId: dataTabId,
                         collapsible: 'header',
+                        ghost: true,
                         hidden: {
                           _code: 'return getSettingValue(data?.handleSuccess) !== true;',
                           _mode: 'code',
@@ -547,6 +552,7 @@ export const getSettings = (data: IEntityReferenceControlProps) => {
                         labelAlign: 'left',
                         parentId: dataTabId,
                         collapsible: 'header',
+                        ghost: true,
                         hidden: {
                           _code: 'return getSettingValue(data?.handleFail) !== true;',
                           _mode: 'code',
@@ -611,36 +617,6 @@ export const getSettings = (data: IEntityReferenceControlProps) => {
             id: appearanceTabId,
             components: [
               ...new DesignerToolbarSettings()
-                .addCollapsiblePanel({
-                  id: nanoid(),
-                  propertyName: 'customStyle',
-                  label: 'Custom Styles',
-                  labelAlign: 'right',
-                  ghost: true,
-                  parentId: styleRouterId,
-                  collapsible: 'header',
-                  content: {
-                    id: nanoid(),
-                    components: [
-                      ...new DesignerToolbarSettings()
-                        .addSettingsInput({
-                          readOnly: {
-                            _code: 'return  getSettingValue(data?.readOnly);',
-                            _mode: 'code',
-                            _value: false,
-                          } as any,
-                          id: nanoid(),
-                          inputType: 'codeEditor',
-                          propertyName: 'style',
-                          parentId: styleRouterId,
-                          label: 'Style',
-                          description:
-                            'A script that returns the style of the element as an object. This should conform to CSSProperties',
-                        })
-                        .toJson(),
-                    ],
-                  },
-                })
                 .addPropertyRouter({
                   id: styleRouterId,
                   propertyName: 'propertyRouter1',
@@ -1147,6 +1123,36 @@ export const getSettings = (data: IEntityReferenceControlProps) => {
                                     defaultValue: 16,
                                   },
                                 ],
+                              })
+                              .toJson(),
+                          ],
+                        },
+                      })
+                      .addCollapsiblePanel({
+                        id: nanoid(),
+                        propertyName: 'customStyle',
+                        label: 'Custom Styles',
+                        labelAlign: 'right',
+                        ghost: true,
+                        parentId: styleRouterId,
+                        collapsible: 'header',
+                        content: {
+                          id: nanoid(),
+                          components: [
+                            ...new DesignerToolbarSettings()
+                              .addSettingsInput({
+                                readOnly: {
+                                  _code: 'return  getSettingValue(data?.readOnly);',
+                                  _mode: 'code',
+                                  _value: false,
+                                } as any,
+                                id: nanoid(),
+                                inputType: 'codeEditor',
+                                propertyName: 'style',
+                                parentId: styleRouterId,
+                                label: 'Style',
+                                description:
+                                  'A script that returns the style of the element as an object. This should conform to CSSProperties',
                               })
                               .toJson(),
                           ],
