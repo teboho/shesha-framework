@@ -1,12 +1,10 @@
 name: Deploy Branch to GitHub Pages
+description: Deploy a alive test environment ova for the particular changes brough on by the PR
 
 on:
   pull_request:
     branches: [ main ]  # Change 'main' to your target branch B
     types: [opened, synchronize, reopened]
-  pull_request:
-    branches: [ main ]
-    types: [closed]
 
 jobs:
   build-and-deploy:
