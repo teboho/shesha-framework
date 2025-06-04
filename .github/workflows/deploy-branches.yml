@@ -33,7 +33,7 @@ jobs:
 
       - name: Build
         id: build
-        run: npm run build --fix
+        run: npm run build
 
       - name: Deploy
         uses: actions/deploy-pages@v3
