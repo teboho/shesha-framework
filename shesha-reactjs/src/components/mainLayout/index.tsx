@@ -120,7 +120,7 @@ const DefaultLayout: FC<PropsWithChildren<IMainLayoutProps>> = (props) => {
     if (!headerControls && !reference) return null;
 
     return (
-      <span style={{ minWidth: 'fit-content', margin: '0', marginRight: '1%' }}>
+      <span className={styles.pageControlsClass}>
         <NodeOrFuncRenderer>{headerControls || reference}</NodeOrFuncRenderer>
       </span>
     );
