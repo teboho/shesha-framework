@@ -6,29 +6,41 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  pull-requests: write
+  contents: read
+
 jobs:
-  deploy:
+  build-attempt-to-deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./shesha-reactjs
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
-        run: |
-          cd shesha-reactjs
-          npm ci
+        run: npm ci
 
       - name: Build
-        run: |
-          cd shesha-reactjs
-          npm run build --fix
+        id: build
+        run: npm run build
 
       - name: Deploy
         uses: actions/deploy-pages@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
-          folder: shesha-reactjs/dist
+          folder: dist
           message: "Deploying to GitHub Pages"
           skip-build: trueS
 
