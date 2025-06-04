@@ -9,6 +9,8 @@ on:
 permissions:
   pull-requests: write
   contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build-attempt-to-deploy:
