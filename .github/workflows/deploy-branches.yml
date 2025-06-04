@@ -43,7 +43,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
           folder: dist
-          message: "Deploying to GitHub Pages"
+          message: "Deploying this PR to GitHub Pages"
           skip-build: trueS
 
 
