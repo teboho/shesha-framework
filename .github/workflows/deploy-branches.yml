@@ -21,7 +21,7 @@ jobs:
       - name: Build
         run: |
           cd shesha-reactjs
-          npm run build
+          npm run build --fix
 
       - name: Deploy
         uses: actions/deploy-pages@v3
