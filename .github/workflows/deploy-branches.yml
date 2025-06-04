@@ -21,14 +21,14 @@ jobs:
       - name: Build
         run: |
           cd shesha-reactjs
-          npm run build
+          npm run build --fix
 
       - name: Deploy
         uses: actions/deploy-pages@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
-          folder: dist
+          folder: shesha-reactjs/dist
           message: "Deploying to GitHub Pages"
           skip-build: trueS
 
