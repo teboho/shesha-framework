@@ -19,7 +19,9 @@ jobs:
           npm ci
 
       - name: Build
-        run: npm run build
+        run: |
+          cd shesha-reactjs
+          npm run build
 
       - name: Deploy
         uses: actions/deploy-pages@v3
