@@ -244,6 +244,12 @@ export const useStyles = createStyles(({ css, cx, responsive, token, prefixCls }
     }
   `;
 
+  const pageControlsClass = css`
+    min-width: fit-content;
+    margin: 0;
+    margin-right: 1%;
+  `;
+
   return {
     layout,
     antLayoutHeader,
@@ -258,5 +264,6 @@ export const useStyles = createStyles(({ css, cx, responsive, token, prefixCls }
     shaSiteLayoutBackgroundNoPadding,
     customComponents,
     headerWrapper,
+    pageControlsClass,
   };
 });
