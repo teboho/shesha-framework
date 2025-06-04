@@ -1,258 +1,33 @@
 name: Deploy Branch to GitHub Pages
 
+# when the current branch makes a PR, this workflow will deploy the changes to github pages so that the changes can be tested in a live environment
+
 on:
   pull_request:
     branches: [ main ]
-    types: [opened, synchronize, reopened]
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
-    
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-      pull-requests: write
-    
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    
     steps:
-    - name: Checkout PR branch
-      uses: actions/checkout@v4
-      with:
-        ref: ${{ github.head_ref }}
-    
-    - name: Check repository structure
-      run: |
-        echo "Repository root contents:"
-        ls -la
-        echo "Looking for React project directories:"
-        find . -name "package.json" -type f | head -10
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-    
-    - name: Clean up
-      run: |
-        rm -rf shesha-reactjs/node_modules
-        rm -rf shesha-reactjs/dist
-        rm -rf shesha-reactjs/build
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Install dependencies
-      run: |
-        if [ -d "shera-reactjs" ]; then
-          cd shera-reactjs
-          npm ci
-        elif [ -f "package.json" ]; then
-          npm ci
-        else
-          echo "Error: Cannot find package.json in root or shera-reactjs directory"
-          exit 1
-        fi
-    
-    - name: Build project
-      run: | 
-        if [ -d "shera-reactjs" ]; then
-          cd shera-reactjs
-          npm run build
-        elif [ -f "package.json" ]; then
-          echo "Building project from root"
-          npm run build
-        else
-          echo "Error: Cannot find package.json in root or shera-reactjs directory"
-          exit 1
-        fi
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Create branch-specific deployment
-      run: |
-        BRANCH_NAME="${{ github.head_ref }}"
-        SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9]/-/g' | tr '[:upper:]' '[:lower:]')
-        
-        # Create deployment directory structure
-        mkdir -p "_site/branches/$SAFE_BRANCH_NAME"
-        
-        # Copy built files to branch directory
-        if [ -d "./shera-reactjs/dist" ]; then
-          cp -r ./shera-reactjs/dist/* "_site/branches/$SAFE_BRANCH_NAME/"
-        elif [ -d "./shera-reactjs/build" ]; then
-          cp -r ./shera-reactjs/build/* "_site/branches/$SAFE_BRANCH_NAME/"
-        elif [ -d "./dist" ]; then
-          cp -r ./dist/* "_site/branches/$SAFE_BRANCH_NAME/"
-        elif [ -d "./build" ]; then
-          cp -r ./build/* "_site/branches/$SAFE_BRANCH_NAME/"
-        else
-          echo "Error: Cannot find build directory (dist or build)"
-          echo "Available directories:"
-          find . -type d -name "dist" -o -name "build" 2>/dev/null || echo "No dist or build directories found"
-          exit 1
-        fi
-        
-        # Create index.html for branch listing
-        cat > _site/index.html << EOF
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Branch Deployments - Shesha Framework</title>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body { 
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    min-height: 100vh;
-                    padding: 20px;
-                }
-                .container { 
-                    max-width: 900px; 
-                    margin: 0 auto; 
-                    background: white;
-                    border-radius: 20px;
-                    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-                    overflow: hidden;
-                }
-                .header {
-                    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-                    color: white;
-                    padding: 40px;
-                    text-align: center;
-                }
-                .header h1 { 
-                    font-size: 2.5rem; 
-                    margin-bottom: 10px;
-                    font-weight: 700;
-                }
-                .header p { 
-                    opacity: 0.9; 
-                    font-size: 1.1rem;
-                }
-                .content { padding: 40px; }
-                .branch { 
-                    margin: 20px 0; 
-                    padding: 25px; 
-                    border: 1px solid #e1e5e9;
-                    border-radius: 12px;
-                    transition: all 0.3s ease;
-                    background: #fafbfc;
-                }
-                .branch:hover { 
-                    transform: translateY(-2px);
-                    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-                    border-color: #667eea;
-                }
-                .branch h3 { 
-                    color: #2d3748; 
-                    margin-bottom: 12px;
-                    font-size: 1.3rem;
-                    display: flex;
-                    align-items: center;
-                }
-                .branch-icon {
-                    width: 20px;
-                    height: 20px;
-                    margin-right: 12px;
-                    color: #667eea;
-                }
-                .branch a { 
-                    color: #667eea; 
-                    text-decoration: none;
-                    font-weight: 600;
-                    display: inline-flex;
-                    align-items: center;
-                    padding: 8px 16px;
-                    background: #667eea;
-                    color: white;
-                    border-radius: 6px;
-                    transition: background 0.3s ease;
-                }
-                .branch a:hover { 
-                    background: #5a67d8;
-                }
-                .meta { 
-                    color: #718096; 
-                    font-size: 0.9rem;
-                    margin-top: 12px;
-                    display: flex;
-                    align-items: center;
-                }
-                .current { 
-                    border-color: #48bb78;
-                    background: #f0fff4;
-                }
-                .current .branch-icon { color: #48bb78; }
-                .current a { background: #48bb78; }
-                .current a:hover { background: #38a169; }
-                .empty-state {
-                    text-align: center;
-                    padding: 60px 20px;
-                    color: #718096;
-                }
-                .empty-state svg {
-                    width: 64px;
-                    height: 64px;
-                    margin-bottom: 20px;
-                    color: #e2e8f0;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>🚀 Shesha Framework</h1>
-                    <p>Branch Preview Deployments</p>
-                </div>
-                <div class="content">
-                    <div class="branch current">
-                        <h3>
-                            <svg class="branch-icon" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
-                            </svg>
-                            $BRANCH_NAME
-                        </h3>
-                        <a href="./branches/$SAFE_BRANCH_NAME/">View Deployment →</a>
-                        <div class="meta">
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 6px;">
-                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
-                            </svg>
-                            Updated: $(date '+%B %d, %Y at %H:%M UTC')
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </body>
-        </html>
-        EOF
-    
-    - name: Setup Pages
-      uses: actions/configure-pages@v4
-    
-    - name: Upload artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: './_site'
-    
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
-    
-    - name: Comment on PR
-      uses: actions/github-script@v7
-      with:
-        script: |
-          const branchName = context.payload.pull_request.head.ref;
-          const safeBranchName = branchName.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-          const baseUrl = '${{ steps.deployment.outputs.page_url }}';
-          const deployUrl = `${baseUrl}branches/${safeBranchName}/`;
-          
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: `🚀 **Branch Preview Deployed!**\n\n**Your branch:** [${branchName}](${deployUrl})\n**All deployments:** [View Index](${baseUrl})\n\nThis preview updates automatically with new commits to this PR.`
-          });
+      - name: Build
+        run: npm run build
+
+      - name: Deploy
+        uses: actions/deploy-pages@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: dist
+          message: "Deploying to GitHub Pages"
+          skip-build: trueS
+
+
+
+
