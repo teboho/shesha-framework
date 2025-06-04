@@ -37,6 +37,12 @@ jobs:
       with:
         node-version: '18'
     
+    - name: Clean up
+      run: |
+        rm -rf shesha-reactjs/node_modules
+        rm -rf shesha-reactjs/dist
+        rm -rf shesha-reactjs/build
+
     - name: Install dependencies
       run: |
         if [ -d "shera-reactjs" ]; then
