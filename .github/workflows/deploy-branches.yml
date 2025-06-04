@@ -4,9 +4,6 @@ on:
   pull_request:
     branches: [ main ]  # Change 'main' to your target branch B
     types: [opened, synchronize, reopened]
-  pull_request:
-    branches: [ main ]
-    types: [closed]
 
 jobs:
   build-and-deploy:
