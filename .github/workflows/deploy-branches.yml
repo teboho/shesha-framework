@@ -56,16 +56,7 @@ jobs:
         fi
     
     - name: Build project
-      run: |
-        if [ -d "shera-reactjs" ]; then
-          cd shera-reactjs
-          npm run build
-        elif [ -f "package.json" ]; then
-          npm run build
-        else
-          echo "Error: Cannot find package.json"
-          exit 1
-        fi
+      run: npm run build
     
     - name: Create branch-specific deployment
       run: |
