@@ -28,7 +28,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
-          folder: dist
+          folder: shesha-reactjs/dist
           message: "Deploying to GitHub Pages"
           skip-build: trueS
 
