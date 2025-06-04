@@ -61,7 +61,7 @@ jobs:
           cd shera-reactjs
           npm run build
         elif [ -f "package.json" ]; then
-          echo "Building project from root"
+          echo "Building project from root" 
           npm run build
         else
           echo "Error: Cannot find package.json in root or shera-reactjs directory"
