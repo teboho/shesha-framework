@@ -30,12 +30,12 @@ jobs:
     
     - name: Install dependencies
       run: |
-        cd shera-reactjs
+        cd shesha-reactjs
         npm ci
     
     - name: Build project
       run: |
-        cd shera-reactjs
+        cd shesha-reactjs
         npm run build
     
     - name: Checkout gh-pages branch
@@ -65,7 +65,7 @@ jobs:
         mkdir -p "branches/$SAFE_BRANCH_NAME"
         
         # Copy built files to branch directory
-        cp -r ./shera-reactjs/dist/* "branches/$SAFE_BRANCH_NAME/" || cp -r ./shera-reactjs/build/* "branches/$SAFE_BRANCH_NAME/" || echo "Adjust source directory"
+        cp -r ./shesha-reactjs/dist/* "branches/$SAFE_BRANCH_NAME/" || cp -r ./shesha-reactjs/build/* "branches/$SAFE_BRANCH_NAME/" || echo "Adjust source directory"
         
         # Create or update index.html with branch links
         cat > index.html << 'EOF'
