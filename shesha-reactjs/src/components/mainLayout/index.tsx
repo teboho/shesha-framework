@@ -6,7 +6,6 @@ import NodeOrFuncRenderer, { ReactNodeOrFunc } from '@/components/nodeOrFuncRend
 import React, {
   CSSProperties,
   FC,
-  Fragment,
   PropsWithChildren,
   ReactElement,
   ReactNode,
@@ -142,7 +141,7 @@ const DefaultLayout: FC<PropsWithChildren<IMainLayoutProps>> = (props) => {
       return <LayoutHeading title={title} />;
     }
 
-    return <Fragment />;
+    return <></>;
   };
 
   return (
