@@ -142,7 +142,7 @@ const DefaultLayout: FC<PropsWithChildren<IMainLayoutProps>> = (props) => {
       return <LayoutHeading title={title} />;
     }
 
-    return <Fragment />;
+    return <></>;
   };
 
   return (
