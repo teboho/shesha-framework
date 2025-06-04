@@ -56,8 +56,18 @@ jobs:
         fi
     
     - name: Build project
-      run: npm run build
-    
+      run: | 
+        if [ -d "shera-reactjs" ]; then
+          cd shera-reactjs
+          npm run build
+        elif [ -f "package.json" ]; then
+          echo "Building project from root" 
+          npm run build
+        else
+          echo "Error: Cannot find package.json in root or shera-reactjs directory"
+          exit 1
+        fi
+
     - name: Create branch-specific deployment
       run: |
         BRANCH_NAME="${{ github.head_ref }}"
