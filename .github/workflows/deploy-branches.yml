@@ -5,6 +5,12 @@ name: Deploy Branch to GitHub Pages
 on:
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to deploy"
+        required: true
+        default: 
 
 permissions:
   pull-requests: write
@@ -37,13 +43,19 @@ jobs:
         id: build
         run: npm run build
 
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+
       - name: Deploy
         uses: actions/deploy-pages@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
           folder: dist
-          message: "Deploying to GitHub Pages"
+          message: "Deploying this PR to GitHub Pages"
           skip-build: trueS
 
 
