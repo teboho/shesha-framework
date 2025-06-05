@@ -10,15 +10,9 @@ const nextConfig = (phase) => {
     NEXT_APP_ENV: process.env.NEXT_APP_ENV ?? 'dev',
     //NEXT_APP_API_HOST: process.env.NEXT_APP_API_HOST,
   };
-
-  // Check if we're building for GitHub Pages
-  const isGitHubPages = process.env.GITHUB_ACTIONS === 'true' || process.env.NODE_ENV === 'pages';
-
   /** @type {import('next').NextConfig} */
   const config = {
-    // Use 'export' for GitHub Pages, 'standalone' for regular builds
-    output: isGitHubPages ? 'export' : 'standalone',
-    
+    output: 'standalone',
     reactStrictMode: false,
     transpilePackages: [
       'antd',
@@ -59,24 +53,9 @@ const nextConfig = (phase) => {
       'rc-trigger',
       'rc-upload',
       'rc-util',
-      'rc-virtual-list'
-    ],
-    
+      'rc-virtual-list'],
     poweredByHeader: false,
     productionBrowserSourceMaps: true,
-    
-    // Add trailing slash to URLs for GitHub Pages
-    trailingSlash: isGitHubPages,
-    
-    // Configure paths for GitHub Pages
-    basePath: isGitHubPages ? '/shesha-framework' : '',
-    assetPrefix: isGitHubPages ? '/shesha-framework' : '',
-    
-    // Disable image optimization for static export
-    images: {
-      unoptimized: isGitHubPages
-    },
-    
     env,
     publicRuntimeConfig: env,
     typescript: {
@@ -89,27 +68,31 @@ const nextConfig = (phase) => {
           exclude: ['error'],
         }
         : false,
+      // Uncomment this to suppress all logs.
+      // removeConsole: true,
     },
-    webpack: (config) => {
+    webpack: (
+      config
+    ) => {
+      
       const extendResourceQuery = (rule, index) => {
         const { resourceQuery: initialQuery } = rule;
         const notRawQuery = { not: [/\?raw/] };
-       
+        
         const newQuery = initialQuery
           ? { and: [(Array.isArray(initialQuery) ? { or: initialQuery } : initialQuery), notRawQuery] }
-          : notRawQuery;
-       
+          : notRawQuery
+        
         return { ...rule, resourceQuery: newQuery };
       };
-      
+
       const modifyConditions = (rules) => {
         return rules.map((rule, index) => extendResourceQuery(rule, index));
       };
-      
       const existingRules = config.module.rules
         ? modifyConditions(config.module.rules)
         : [];
-        
+
       const newRules = [
         {
           resourceQuery: /\?raw/,
@@ -117,18 +100,23 @@ const nextConfig = (phase) => {
         },
         ...existingRules,
       ];
-      
+
       return {
         ...config,
         module: {
           ...config.module,
           rules: newRules,
         }
-      };
+      }
     },
   };
-
-  return withBundleAnalyzer(config);
+  return withBundleAnalyzer(
+    config, {
+    debug: !isProd,
+    environment: process.env.NODE_ENV,
+    release: `${process.env.NODE_ENV}@${moment().format('YYYY-MM-DD HH:mm')}`,
+  }
+  );
 };
 
 module.exports = nextConfig;
