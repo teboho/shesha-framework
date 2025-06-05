@@ -55,7 +55,7 @@ jobs:
       - name: Upload artifact from the build directory
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./shesha-reactjs/.next
+          path: ./shesha-reactjs/.next 
 
   deploy:
     environment:
