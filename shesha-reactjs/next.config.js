@@ -110,8 +110,30 @@ const nextConfig = (phase) => {
       }
     },
   };
+
+  /** @type {import('next').NextConfig} */
+
+  // Check if we're building for GitHub Pages
+  const isGitHubPages = process.env.GITHUB_ACTIONS === 'true' || process.env.NODE_ENV === 'pages'
+
+
   return withBundleAnalyzer(
     config, {
+      // Enable static export for GitHub Pages builds
+    output: isGitHubPages ? 'export' : undefined,
+    
+    // Add trailing slash to URLs for GitHub Pages
+    trailingSlash: isGitHubPages,
+    
+    // Disable image optimization for static export
+    images: {
+      unoptimized: isGitHubPages
+    },
+    
+    // Configure base path for GitHub Pages
+    basePath: isGitHubPages ? '/shesha-framework' : '',
+    assetPrefix: isGitHubPages ? '/shesha-framework' : '',
+
     debug: !isProd,
     environment: process.env.NODE_ENV,
     release: `${process.env.NODE_ENV}@${moment().format('YYYY-MM-DD HH:mm')}`,

@@ -32,7 +32,11 @@
     "build-next": "next build",
     "start-next": "NODE_ENV=production node --max-old-space-size=8192 server.js",
     "prepare": "husky",
-    "type-check": "tsc --build tsconfig.strictNulls.json"
+    "type-check": "tsc --build tsconfig.strictNulls.json",
+    "pages:build": "next build",
+    "pages:export": "next export",
+    "pages:build:static": "next build && next export",
+    "pages:deploy": "npm run pages:build:static"
   },
   "overrides": {
     "eslint": "^9.14.0",
