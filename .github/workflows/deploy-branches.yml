@@ -53,9 +53,8 @@ jobs:
           export NODE_ENV=production
           export NEXT_PUBLIC_BASE_PATH="/shesha-framework/branches/${{ github.head_ref || github.event.inputs.branch }}"
           npm run pages:build:static
-
-      - name: copy the .next directory to out
-        run: |
+          
+          # Handle .next to out directory copying if needed
           if [ -d ".next" ]; then
             if [ -d "out" ]; then
               echo "Removing existing out directory"
@@ -65,6 +64,7 @@ jobs:
             cp -r .next out
           else
             echo ".next directory not found, skipping copy"
+          fi
 
       - name: Verify build output
         run: |
