@@ -54,6 +54,15 @@ jobs:
           export NEXT_PUBLIC_BASE_PATH="/shesha-framework/branches/${{ github.head_ref || github.event.inputs.branch }}"
           npm run pages:build:static
 
+      - name: rename the .next directory
+        run: |
+          if [ -d ".next" ]; then
+            mv .next out
+            echo "Renamed .next to out"
+          else
+            echo ".next directory not found, skipping rename"
+          fi
+
       - name: Verify build output
         run: |
           echo "Build directory contents:"
