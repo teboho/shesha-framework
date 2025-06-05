@@ -1,313 +1,80 @@
-name: Deploy Branch to GitHub Pages
-description: "Deploy a branch making a PR to main to GitHub Pages to test the changes in a live github pages environment"
+name: Deploy Next.js site to Pages
 
 on:
-  pull_request:
-    branches: [ main ]
-    types: [opened, synchronize, reopened]
-  workflow_dispatch:
-    inputs:
-      branch:
-        description: "Branch to deploy"
-        required: true
-        default: ""
+  # Runs on pushes targeting the main branch
+  push:
+    branches:
+      - main
 
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
 permissions:
-  pull-requests: write
   contents: read
   pages: write
   id-token: write
 
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
-    
-    # Remove environment restriction for now
-    # environment:
-    #   name: github-pages
-    #   url: ${{ steps.deployment.outputs.page_url }}
-    
-    defaults:
-      run:
-        working-directory: ./shesha-reactjs
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
-      - name: Setup Node.js
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: npm/action-setup@v4
+        name: Install npm
+        with:
+          version: 10
+          run_install: false
+
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 22
           cache: 'npm'
-          cache-dependency-path: 'shesha-reactjs/package-lock.json'
 
       - name: Install dependencies
-        run: npm ci
-
-      - name: Build project
-        run: |
-          # Set environment variables for Next.js
-          export NODE_ENV=production
-          export NEXT_PUBLIC_BASE_PATH="/shesha-framework/branches/${{ github.head_ref || github.event.inputs.branch }}"
-          npm run pages:build:static
-          
-          # Handle .next to out directory copying if needed
-          if [ -d ".next" ]; then
-            if [ -d "out" ]; then
-              echo "Removing existing out directory"
-              rm -rf out
-            fi
-            echo "Copying .next to out"
-            cp -r .next out
-          else
-            echo ".next directory not found, skipping copy"
-          fi
-
-      - name: Verify build output
-        run: |
-          echo "Build directory contents:"
-          ls -la out/ 2>/dev/null || echo "out directory not found"
-          ls -la dist/ 2>/dev/null || echo "dist directory not found"
-          ls -la .next/ 2>/dev/null || echo ".next directory not found"
-          echo "Looking for static export directories:"
-          find . -maxdepth 2 -type d -name "out" -o -name "dist" -o -name "build" -o -name ".next"
-          if [ -d "out" ]; then
-            echo "Files in out directory:"
-            find out -type f | head -10
-          fi
-
-      - name: Create deployment structure
-        run: |
-          cd ..  # Go back to repo root
-          
-          # Get branch name (works for both PR and manual dispatch)
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            BRANCH_NAME="${{ github.head_ref }}"
-          else
-            BRANCH_NAME="${{ github.event.inputs.branch }}"
-          fi
-          
-          SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9]/-/g' | tr '[:upper:]' '[:lower:]')
-          
-          echo "Deploying branch: $BRANCH_NAME as $SAFE_BRANCH_NAME"
-          
-          # Create site structure
-          mkdir -p _site/branches/$SAFE_BRANCH_NAME
-          
-          # Copy build files (Next.js export creates 'out' directory)
-          BUILD_COPIED=false
-          
-          if [ -d "shesha-reactjs/out" ] && [ "$(ls -A shesha-reactjs/out)" ]; then
-            cp -r shesha-reactjs/out/* _site/branches/$SAFE_BRANCH_NAME/
-            echo "✅ Copied files from shesha-reactjs/out/ (Next.js export)"
-            echo "Files copied:"
-            ls -la _site/branches/$SAFE_BRANCH_NAME/ | head -10
-            BUILD_COPIED=true
-          elif [ -d "shesha-reactjs/dist" ] && [ "$(ls -A shesha-reactjs/dist)" ]; then
-            cp -r shesha-reactjs/dist/* _site/branches/$SAFE_BRANCH_NAME/
-            echo "✅ Copied files from shesha-reactjs/dist/"
-            echo "Files copied:"
-            ls -la _site/branches/$SAFE_BRANCH_NAME/ | head -10
-            BUILD_COPIED=true
-          fi
-          
-          if [ "$BUILD_COPIED" = false ]; then
-            echo "❌ No build output found in shesha-reactjs/"
-            echo "Checking available directories:"
-            ls -la shesha-reactjs/ | grep "^d"
-            echo "Creating fallback page..."
-            echo "<h1>Build Error</h1><p>No build output found for branch: $BRANCH_NAME</p><p>Next.js export should create an 'out' directory</p>" > _site/branches/$SAFE_BRANCH_NAME/index.html
-          fi
-          
-          # Create main index page
-          cat > _site/index.html << EOF
-          <!DOCTYPE html>
-          <html>
-          <head>
-              <title>Branch Deployments - Shesha Framework</title>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <style>
-                  * { margin: 0; padding: 0; box-sizing: border-box; }
-                  body { 
-                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                      min-height: 100vh;
-                      padding: 20px;
-                  }
-                  .container { 
-                      max-width: 900px; 
-                      margin: 0 auto; 
-                      background: white;
-                      border-radius: 20px;
-                      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-                      overflow: hidden;
-                  }
-                  .header {
-                      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-                      color: white;
-                      padding: 40px;
-                      text-align: center;
-                  }
-                  .header h1 { 
-                      font-size: 2.5rem; 
-                      margin-bottom: 10px;
-                      font-weight: 700;
-                  }
-                  .header p { 
-                      opacity: 0.9; 
-                      font-size: 1.1rem;
-                  }
-                  .content { padding: 40px; }
-                  .branch { 
-                      margin: 20px 0; 
-                      padding: 25px; 
-                      border: 1px solid #e1e5e9;
-                      border-radius: 12px;
-                      transition: all 0.3s ease;
-                      background: #fafbfc;
-                  }
-                  .branch:hover { 
-                      transform: translateY(-2px);
-                      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-                      border-color: #667eea;
-                  }
-                  .branch h3 { 
-                      color: #2d3748; 
-                      margin-bottom: 12px;
-                      font-size: 1.3rem;
-                      display: flex;
-                      align-items: center;
-                  }
-                  .branch-icon {
-                      width: 20px;
-                      height: 20px;
-                      margin-right: 12px;
-                      color: #667eea;
-                  }
-                  .branch a { 
-                      color: white; 
-                      text-decoration: none;
-                      font-weight: 600;
-                      display: inline-flex;
-                      align-items: center;
-                      padding: 12px 20px;
-                      background: #667eea;
-                      border-radius: 8px;
-                      transition: background 0.3s ease;
-                  }
-                  .branch a:hover { 
-                      background: #5a67d8;
-                  }
-                  .meta { 
-                      color: #718096; 
-                      font-size: 0.9rem;
-                      margin-top: 12px;
-                  }
-              </style>
-          </head>
-          <body>
-              <div class="container">
-                  <div class="header">
-                      <h1>🚀 Shesha Framework</h1>
-                      <p>Branch Preview Deployments</p>
-                  </div>
-                  <div class="content">
-                      <div class="branch">
-                          <h3>
-                              <svg class="branch-icon" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
-                              </svg>
-                              $BRANCH_NAME
-                          </h3>
-                          <a href="./branches/$SAFE_BRANCH_NAME/" target="_blank">View Deployment →</a>
-                          <div class="meta">Updated: $(date '+%B %d, %Y at %H:%M UTC')</div>
-                      </div>
-                  </div>
-              </div>
-          </body>
-          </html>
-          EOF
-          
-          echo "Final _site structure:"
-          find _site -type f | head -20
-          echo "Checking if index.html exists in branch directory:"
-          ls -la _site/branches/$SAFE_BRANCH_NAME/index.html 2>/dev/null || echo "No index.html found in branch directory"
-          
-          # Create .nojekyll file to ensure GitHub Pages serves all files
-          touch _site/.nojekyll
-          echo "Created .nojekyll file"
+        run: npm install
 
       - name: Setup Pages
-        if: false  # Disable this step for alternative deployment
-        uses: actions/configure-pages@v4
+        id: setup_pages
+        uses: actions/configure-pages@v5
 
-      - name: Upload Pages artifact  
-        if: false  # Disable this step for alternative deployment
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .next/cache
+          # Generate a new cache whenever packages or source files change.
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/npm-lock.yaml') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          # If source files changed but packages didn't, rebuild from a prior cache.
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/npm-lock.yaml') }}-
+
+      - name: Build with Next.js
+        run: npx next build
+        env:
+          PAGES_BASE_PATH: ${{ steps.setup_pages.outputs.base_path }}
+
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./_site
+          path: ./next
 
-      - name: Deploy to GitHub Pages (Alternative)
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
         id: deployment
-        run: |
-          # Configure git
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-          
-          # Get branch name
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            BRANCH_NAME="${{ github.head_ref }}"
-          else
-            BRANCH_NAME="${{ github.event.inputs.branch }}"
-          fi
-          
-          SAFE_BRANCH_NAME=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9]/-/g' | tr '[:upper:]' '[:lower:]')
-          
-          # Clone the repository to a temporary directory
-          git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git temp-repo
-          cd temp-repo
-          
-          # Create or switch to gh-pages branch
-          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
-            git checkout gh-pages
-          else
-            git checkout --orphan gh-pages
-            git rm -rf . 2>/dev/null || true
-          fi
-          
-          # Copy the built site
-          cp -r ../_site/* . 2>/dev/null || true
-          
-          # Add and commit
-          git add .
-          if git commit -m "Deploy branch: $BRANCH_NAME ($(date))"; then
-            git push origin gh-pages
-            echo "page_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" >> $GITHUB_OUTPUT
-          else
-            echo "No changes to deploy"
-            echo "page_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/" >> $GITHUB_OUTPUT
-          fi
-          
-          cd ..
-          rm -rf temp-repo
-
-      - name: Comment on PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const branchName = context.payload.pull_request.head.ref;
-            const safeBranchName = branchName.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-            const baseUrl = '${{ steps.deployment.outputs.page_url }}';
-            const deployUrl = `${baseUrl}branches/${safeBranchName}/`;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `🚀 **Branch Preview Deployed!**\n\n**Your branch:** [${branchName}](${deployUrl})\n**All deployments:** [View Index](${baseUrl})\n\n*This preview updates automatically with new commits to this PR.*`
-            });
+        uses: actions/deploy-pages@v4
