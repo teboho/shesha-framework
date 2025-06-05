@@ -212,7 +212,7 @@ export const GenericQuickView: FC<IQuickViewProps> = (props) => {
           setFormConfig(f);
         })
         .catch(() => {
-          setFormConfig(null);
+          setFormConfig(null); //
         });
   }, [props.className, props.formType, formConfig]);
 
