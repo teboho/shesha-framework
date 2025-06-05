@@ -12,7 +12,7 @@ const nextConfig = (phase) => {
   };
   /** @type {import('next').NextConfig} */
   const config = {
-    output: 'standalone',
+    output: 'export',
     reactStrictMode: false,
     transpilePackages: [
       'antd',
