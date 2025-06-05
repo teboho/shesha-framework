@@ -34,8 +34,7 @@
     "prepare": "husky",
     "type-check": "tsc --build tsconfig.strictNulls.json",
     "pages:build": "next build",
-    "pages:export": "next export",
-    "pages:build:static": "next build && next export",
+    "pages:build:static": "next build",
     "pages:deploy": "npm run pages:build:static"
   },
   "overrides": {
