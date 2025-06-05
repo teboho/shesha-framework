@@ -52,7 +52,7 @@ jobs:
         env:
           NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
 
-      - name: Upload artifact
+      - name: Upload artifact from the build directory
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./.next
