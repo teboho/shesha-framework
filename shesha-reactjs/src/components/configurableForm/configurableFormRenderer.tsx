@@ -4,6 +4,8 @@ import ComponentsContainer from '../formDesigner/containers/componentsContainer'
 import React, {
   FC,
   PropsWithChildren,
+  useMemo,
+  useCallback,
 } from 'react';
 import { ComponentsContainerForm } from '../formDesigner/containers/componentsContainerForm';
 import { ComponentsContainerProvider } from '@/providers/form/nesting/containerContext';
@@ -19,7 +21,7 @@ import { useDelayedUpdate } from '@/providers/delayedUpdateProvider';
 import { useShaFormInstance } from '@/providers/form/providers/shaFormProvider';
 import { ShaSpin } from '..';
 
-export const ConfigurableFormRenderer: FC<PropsWithChildren<IConfigurableFormRendererProps>> = ({
+const ConfigurableFormRendererComponent: FC<PropsWithChildren<IConfigurableFormRendererProps>> = ({
   children,
   form,
   parentFormValues,
@@ -41,11 +43,25 @@ export const ConfigurableFormRenderer: FC<PropsWithChildren<IConfigurableFormRen
   const { anyOfPermissionsGranted } = useSheshaApplication();
   const isDragging = useFormDesignerStateSelector(x => x.isDragging) ?? false;
 
-  const onValuesChangeInternal = (_changedValues: any, values: any) => {
-    shaForm.setFormData({ values: values, mergeValues: true });
-  };
+  // Memoize expensive computations
+  const mergedProps = useMemo(() => ({
+    layout: props.layout ?? formSettings.layout,
+    labelCol: props.labelCol ?? formSettings.labelCol,
+    wrapperCol: props.wrapperCol ?? formSettings.wrapperCol,
+    colon: formSettings.colon,
+  }), [props.layout, props.labelCol, props.wrapperCol, formSettings.layout, formSettings.labelCol, formSettings.wrapperCol, formSettings.colon]);
 
-  const onFinishInternal = async (): Promise<void> => {
+  // Memoize permission check
+  const hasPermission = useMemo(() => {
+    return formSettings?.access !== 4 || anyOfPermissionsGranted(formSettings?.permissions || []);
+  }, [formSettings?.access, formSettings?.permissions, anyOfPermissionsGranted]);
+
+  // Optimize event handlers with useCallback
+  const onValuesChangeInternal = useCallback((_changedValues: any, values: any) => {
+    shaForm.setFormData({ values: values, mergeValues: true });
+  }, [shaForm]);
+
+  const onFinishInternal = useCallback(async (): Promise<void> => {
     setValidationErrors(null);
 
     if (!shaForm)
@@ -58,21 +74,14 @@ export const ConfigurableFormRenderer: FC<PropsWithChildren<IConfigurableFormRen
       setValidationErrors(error?.data?.error || error);
       console.error('Submit failed: ', error);
     }
-  };
+  }, [shaForm, setValidationErrors, onSubmittedFailed]);
 
-  const onFinishFailedInternal = (errorInfo: ValidateErrorEntity) => {
+  const onFinishFailedInternal = useCallback((errorInfo: ValidateErrorEntity) => {
     setValidationErrors(null);
     onFinishFailed?.(errorInfo);
-  };
+  }, [setValidationErrors, onFinishFailed]);
 
-  const mergedProps = {
-    layout: props.layout ?? formSettings.layout,
-    labelCol: props.labelCol ?? formSettings.labelCol,
-    wrapperCol: props.wrapperCol ?? formSettings.wrapperCol,
-    colon: formSettings.colon,
-  };
-
-  if (formSettings?.access === 4 && !anyOfPermissionsGranted(formSettings?.permissions || [])) {
+  if (!hasPermission) {
     return (
       <Result
         status="403"
@@ -115,3 +124,24 @@ export const ConfigurableFormRenderer: FC<PropsWithChildren<IConfigurableFormRen
     </ComponentsContainerProvider>
   );
 };
+
+// Memoized ConfigurableFormRenderer for performance optimization
+export const ConfigurableFormRenderer = React.memo<PropsWithChildren<IConfigurableFormRendererProps>>(
+  ConfigurableFormRendererComponent,
+  (prevProps, nextProps) => {
+    // Custom comparison for optimal re-rendering
+    return (
+      prevProps.showDataSubmitIndicator === nextProps.showDataSubmitIndicator &&
+      prevProps.layout === nextProps.layout &&
+      prevProps.labelCol === nextProps.labelCol &&
+      prevProps.wrapperCol === nextProps.wrapperCol &&
+      prevProps.size === nextProps.size &&
+      prevProps.className === nextProps.className &&
+      JSON.stringify(prevProps.initialValues) === JSON.stringify(nextProps.initialValues) &&
+      prevProps.onFinish === nextProps.onFinish &&
+      prevProps.onFinishFailed === nextProps.onFinishFailed &&
+      prevProps.onSubmittedFailed === nextProps.onSubmittedFailed &&
+      prevProps.beforeSubmit === nextProps.beforeSubmit
+    );
+  }
+);

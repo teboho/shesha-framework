@@ -23,7 +23,7 @@ export type ConfigurableFormProps<Values = any> = Omit<IConfigurableFormProps<Va
   isSettingsForm?: boolean;
 } & SheshaFormProps;
 
-export const ConfigurableForm: FC<ConfigurableFormProps> = (props) => {
+const ConfigurableFormComponent: FC<ConfigurableFormProps> = (props) => {
   const {
     formId,
     markup,
@@ -168,3 +168,26 @@ export const ConfigurableForm: FC<ConfigurableFormProps> = (props) => {
     </ShaSpin>
   );
 };
+
+// Memoized ConfigurableForm for performance optimization
+export const ConfigurableForm = React.memo<ConfigurableFormProps>(
+  ConfigurableFormComponent,
+  (prevProps, nextProps) => {
+    // Custom comparison for optimal re-rendering
+    return (
+      prevProps.formId === nextProps.formId &&
+      prevProps.mode === nextProps.mode &&
+      prevProps.cacheKey === nextProps.cacheKey &&
+      prevProps.isSettingsForm === nextProps.isSettingsForm &&
+      prevProps.showFormInfoOverlay === nextProps.showFormInfoOverlay &&
+      prevProps.showDataLoadingIndicator === nextProps.showDataLoadingIndicator &&
+      prevProps.showMarkupLoadingIndicator === nextProps.showMarkupLoadingIndicator &&
+      JSON.stringify(prevProps.initialValues) === JSON.stringify(nextProps.initialValues) &&
+      JSON.stringify(prevProps.formArguments) === JSON.stringify(nextProps.formArguments) &&
+      prevProps.onFinish === nextProps.onFinish &&
+      prevProps.onSubmitted === nextProps.onSubmitted &&
+      prevProps.onValuesChange === nextProps.onValuesChange &&
+      prevProps.onMarkupLoaded === nextProps.onMarkupLoaded
+    );
+  }
+);
