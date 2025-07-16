@@ -55,7 +55,7 @@ const nextConfig = (phase) => {
       'rc-util',
       'rc-virtual-list'],
     poweredByHeader: false,
-    productionBrowserSourceMaps: true,
+    productionBrowserSourceMaps: false, // Disable source maps in production for smaller bundle
     env,
     publicRuntimeConfig: env,
     typescript: {
@@ -68,11 +68,18 @@ const nextConfig = (phase) => {
           exclude: ['error'],
         }
         : false,
-      // Uncomment this to suppress all logs.
-      // removeConsole: true,
+      styledComponents: true, // Enable styled-components optimization
     },
+    // Enable experimental features for better performance
+    experimental: {
+      optimizeCss: isProd, // Optimize CSS in production
+      swcMinify: true, // Use SWC for minification (faster than Terser)
+    },
+    // Configure compression
+    compress: true,
     webpack: (
-      config
+      config,
+      { buildId, dev, isServer, defaultLoaders, webpack }
     ) => {
       
       const extendResourceQuery = (rule, index) => {
@@ -100,6 +107,49 @@ const nextConfig = (phase) => {
         },
         ...existingRules,
       ];
+
+      // Optimize chunks for better caching and loading
+      if (!dev && !isServer) {
+        config.optimization = {
+          ...config.optimization,
+          splitChunks: {
+            ...config.optimization.splitChunks,
+            chunks: 'all',
+            cacheGroups: {
+              ...config.optimization.splitChunks.cacheGroups,
+              // Separate vendor chunks for better caching
+              vendor: {
+                test: /[\\/]node_modules[\\/]/,
+                name: 'vendors',
+                chunks: 'all',
+                priority: 10,
+              },
+              // Separate antd components
+              antd: {
+                test: /[\\/]node_modules[\\/](antd|@ant-design)[\\/]/,
+                name: 'antd',
+                chunks: 'all',
+                priority: 20,
+              },
+              // Separate react libraries
+              react: {
+                test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
+                name: 'react',
+                chunks: 'all',
+                priority: 20,
+              },
+              // Common components
+              common: {
+                name: 'common',
+                minChunks: 2,
+                chunks: 'all',
+                enforce: true,
+                priority: 5,
+              },
+            },
+          },
+        };
+      }
 
       return {
         ...config,

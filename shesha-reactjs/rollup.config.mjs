@@ -68,23 +68,47 @@ export default {
     peerDepsExternal({
       includeDependencies: true,
     }),
-    terser(),
+    terser({
+      compress: {
+        drop_console: ['log', 'info'], // Remove console.log/info in production
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info'], // Remove specific function calls
+      },
+      mangle: {
+        keep_fnames: false, // Allows better minification
+      },
+      format: {
+        comments: false, // Remove comments
+      },
+    }),
     postCss({
-      plugins: [],
-      extensions: ['.css'],
+      plugins: [
+        require('autoprefixer'),
+        require('cssnano')({
+          preset: 'default',
+        }),
+      ],
+      extensions: ['.css', '.scss', '.sass'],
       use: [
         'sass',
       ],
+      extract: true, // Extract CSS to separate file
+      minimize: true, // Minimize CSS
     }),
     svgr(),
     nodeResolve({
       // If you are using the next-example, this value must be false
       // browser: false,
       modulesOnly: true,
+      preferBuiltins: false,
+      exportConditions: ['import', 'module', 'default'],
     }),
     typescript({
       noEmitOnError: true,
-      tsconfig: './tsconfig.rollup.json'
+      tsconfig: './tsconfig.rollup.json',
+      exclude: ['**/*.test.ts', '**/*.test.tsx', '**/*.stories.ts', '**/*.stories.tsx'],
+      declaration: true,
+      declarationDir: './dist',
     }),
     commonjs({
       include: 'node_modules/**',
