@@ -35,6 +35,69 @@ import {
   IUpdateChildComponentsPayload,
 } from './contexts';
 
+const idArraysEqual = (array1: string[], array2: string[]): boolean => {
+  if (array1.length !== array2.length) return false;
+  
+  for (let i = 0; i < array1.length; i++) {
+    if (array1[i] !== array2[i]) return false;
+  }
+  return true;
+};
+
+// Optimized helper function for processing relations
+const createOptimizedRelations = (
+  currentRelations: IComponentRelations,
+  containerId: string,
+  componentIds: string[],
+  oldChildIds: string[]
+): IComponentRelations => {
+  // Early return if no changes needed
+  if (idArraysEqual(oldChildIds, componentIds)) {
+    return currentRelations;
+  }
+
+  const updatedRelations: IComponentRelations = { ...currentRelations };
+  
+  // Update the container's children
+  updatedRelations[containerId] = componentIds;
+
+  // Only process components that have actually moved
+  const movedComponents = componentIds.filter(id => !oldChildIds.includes(id));
+  const removedComponents = oldChildIds.filter(id => !componentIds.includes(id));
+
+  // Remove from old parents (only for moved components)
+  removedComponents.forEach(id => {
+    Object.keys(currentRelations).forEach(parentId => {
+      if (parentId !== containerId && currentRelations[parentId]?.includes(id)) {
+        updatedRelations[parentId] = currentRelations[parentId].filter(childId => childId !== id);
+      }
+    });
+  });
+
+  return updatedRelations;
+};
+
+// Optimized component update helper
+const createOptimizedComponents = (
+  allComponents: IFlatComponentsStructure['allComponents'],
+  containerId: string,
+  componentIds: string[]
+): IFlatComponentsStructure['allComponents'] => {
+  const updatedComponents: IFlatComponentsStructure['allComponents'] = {};
+  let hasChanges = false;
+
+  componentIds.forEach((id) => {
+    const component = allComponents[id];
+    if (component && component.parentId !== containerId) {
+      const newComponent: IConfigurableFormComponent = { ...component, parentId: containerId };
+      updatedComponents[id] = newComponent;
+      hasChanges = true;
+    }
+  });
+
+  return hasChanges ? { ...allComponents, ...updatedComponents } : allComponents;
+};
+
 const addComponentToFlatStructure = (
   formFlatMarkup: IFlatComponentsStructure,
   toolboxComponentGroups: IToolboxComponentGroup[],
@@ -77,10 +140,6 @@ const addComponentToFlatStructure = (
     allComponents,
     componentRelations,
   };
-};
-
-const idArraysEqual = (array1: string[], array2: string[]): boolean => {
-  return array1.length === array2.length && array1.every((value, index) => value === array2[index]);
 };
 
 const reducer = handleActions<IFormDesignerStateContext, any>(
@@ -441,33 +500,32 @@ const reducer = handleActions<IFormDesignerStateContext, any>(
       action: ReduxActions.Action<IUpdateChildComponentsPayload>
     ) => {
       const { payload } = action;
-
       const { formFlatMarkup } = state;
 
       const oldChilds = formFlatMarkup.componentRelations[payload.containerId] ?? [];
-      // if not changed - return state as is
+      
+      // Early return if not changed - return state as is
       if (idArraysEqual(oldChilds, payload.componentIds)) return state;
 
-      // 2. update parentId in new components list
-      const updatedComponents = {};
-      const updatedRelations: { [index: string]: string[] } = {
-        [payload.containerId]: payload.componentIds,
-      };
+      // Optimized component and relation updates
+      const allComponents = createOptimizedComponents(
+        formFlatMarkup.allComponents,
+        payload.containerId,
+        payload.componentIds
+      );
 
-      payload.componentIds.forEach((id) => {
-        const component = formFlatMarkup.allComponents[id];
-        if (component.parentId !== payload.containerId) {
-          // update old parent
-          const oldParentKey = component.parentId || ROOT_COMPONENT_KEY;
-          updatedRelations[oldParentKey] = formFlatMarkup.componentRelations[oldParentKey].filter((i) => i !== id);
+      const componentRelations = createOptimizedRelations(
+        formFlatMarkup.componentRelations,
+        payload.containerId,
+        payload.componentIds,
+        oldChilds
+      );
 
-          // update parent in the current component
-          const newComponent: IConfigurableFormComponent = { ...component, parentId: payload.containerId };
-          updatedComponents[id] = newComponent;
-        }
-      });
-      const allComponents = { ...formFlatMarkup.allComponents, ...updatedComponents };
-      const componentRelations = { ...formFlatMarkup.componentRelations, ...updatedRelations };
+      // Only create new state if there are actual changes
+      if (allComponents === formFlatMarkup.allComponents && 
+          componentRelations === formFlatMarkup.componentRelations) {
+        return state;
+      }
 
       return {
         ...state,

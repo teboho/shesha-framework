@@ -1,7 +1,7 @@
 import classNames from 'classnames';
 import ConditionalWrap from '@/components/conditionalWrapper';
 import { ConfigurableFormComponent } from '../configurableFormComponent';
-import React, { FC, PropsWithChildren, useMemo } from 'react';
+import React, { FC, PropsWithChildren, useMemo, useCallback, useRef } from 'react';
 import { getAlignmentStyle } from './util';
 import { IComponentsContainerProps } from './componentsContainer';
 import { ItemInterface, ReactSortable } from 'react-sortablejs';
@@ -10,9 +10,10 @@ import { ShaForm } from '@/providers/form';
 import { useFormDesignerActions, useFormDesignerStateSelector } from '@/providers/formDesigner';
 import { useStyles } from '../styles/styles';
 import { useParent } from '@/providers/parentProvider';
+import { useDebouncedCallback } from 'use-debounce';
 import _ from 'lodash';
 
-export const ComponentsContainerDesigner: FC<PropsWithChildren<IComponentsContainerProps>> = (props) => {
+export const ComponentsContainerDesigner: FC<PropsWithChildren<IComponentsContainerProps>> = React.memo((props) => {
     const {
         containerId,
         children,
@@ -30,6 +31,7 @@ export const ComponentsContainerDesigner: FC<PropsWithChildren<IComponentsContai
 
     const readOnly = useFormDesignerStateSelector(x => x.readOnly);
     const hasDragged = useFormDesignerStateSelector(x => x.hasDragged);
+    const isDragging = useFormDesignerStateSelector(x => x.isDragging);
     const { updateChildComponents, addComponent, addDataProperty, startDragging, endDragging } = useFormDesignerActions();
 
     const childIds = ShaForm.useChildComponentIds(containerId.replace(`${parent?.subFormIdPrefix}.`, ''));
@@ -40,8 +42,17 @@ export const ComponentsContainerDesigner: FC<PropsWithChildren<IComponentsContai
         }));
     }, [childIds]);
 
-    const onSetList = (newState: ItemInterface[], _sortable, _store) => {
-        if (!hasDragged) return;
+    // Use ref to track the latest state without causing re-renders
+    const latestStateRef = useRef({ hasDragged, isDragging, childIds });
+    latestStateRef.current = { hasDragged, isDragging, childIds };
+
+    // Debounced update function to reduce frequent state updates
+    const debouncedUpdateChildComponents = useDebouncedCallback((payload) => {
+        updateChildComponents(payload);
+    }, 50);
+
+    const onSetList = useCallback((newState: ItemInterface[], _sortable, _store) => {
+        if (!latestStateRef.current.hasDragged) return;
 
         if (!isNaN(itemsLimit) && itemsLimit && newState?.length === Math.round(itemsLimit) + 1) {
             return;
@@ -73,11 +84,12 @@ export const ComponentsContainerDesigner: FC<PropsWithChildren<IComponentsContai
                 });
             } else {
                 // reorder existing components
-                let isModified = componentsMapped.length !== newState.length;
+                const currentChildIds = latestStateRef.current.childIds;
+                let isModified = currentChildIds.length !== newState.length;
 
                 if (!isModified) {
-                    for (let i = 0; i < componentsMapped.length; i++) {
-                        if (componentsMapped[i].id !== newState[i].id) {
+                    for (let i = 0; i < currentChildIds.length; i++) {
+                        if (currentChildIds[i] !== newState[i].id) {
                             isModified = true;
                             break;
                         }
@@ -86,30 +98,65 @@ export const ComponentsContainerDesigner: FC<PropsWithChildren<IComponentsContai
 
                 if (isModified) {
                     const newIds = newState.map<string>((item) => item.id.toString());
-                    updateChildComponents({ containerId, componentIds: newIds });
+                    // Use debounced update to reduce rapid state changes
+                    debouncedUpdateChildComponents({ containerId, componentIds: newIds });
                 }
             }
         }
+    }, [containerId, itemsLimit, addDataProperty, addComponent, debouncedUpdateChildComponents]);
 
-    };
-
-    const onDragStart = () => {
+    const onDragStart = useCallback(() => {
         startDragging();
-    };
+    }, [startDragging]);
 
-    const onDragEnd = (_evt) => {
+    const onDragEnd = useCallback((_evt) => {
         endDragging();
-    };
+    }, [endDragging]);
 
-    const renderComponents = () => {
+    const renderComponents = useCallback(() => {
         const renderedComponents = childIds.map((id) => (
             <ConfigurableFormComponent id={id} key={id} />
         ));
 
         return typeof render === 'function' ? render(renderedComponents) : renderedComponents;
-    };
+    }, [childIds, render]);
 
-    const style = getAlignmentStyle(props);
+    const style = useMemo(() => getAlignmentStyle(props), [props]);
+
+    // Optimize sortable configuration for better performance
+    const sortableConfig = useMemo(() => ({
+        disabled: readOnly,
+        onStart: onDragStart,
+        onEnd: onDragEnd,
+        list: componentsMapped,
+        setList: onSetList,
+        fallbackOnBody: true,
+        swapThreshold: 0.65, // Increased for better stability
+        group: {
+            name: 'shared',
+        },
+        sort: true,
+        draggable: `.${styles.shaComponent}`,
+        animation: 120, // Slightly slower for better visual feedback and performance
+        ghostClass: styles.shaComponentGhost,
+        emptyInsertThreshold: 20,
+        handle: `.${styles.componentDragHandle}`,
+        scroll: true,
+        bubbleScroll: true,
+        direction: direction,
+        className: noDefaultStyling ? '' : styles.shaComponentsContainerInner,
+        style: { ...style, ...incomingStyle },
+        // Performance optimizations
+        delayOnTouchStart: true,
+        delay: 0,
+        touchStartThreshold: 5,
+        forceFallback: false,
+        preventOnFilter: true,
+    }), [
+        readOnly, onDragStart, onDragEnd, componentsMapped, onSetList, styles.shaComponent, 
+        styles.shaComponentGhost, styles.componentDragHandle, direction, noDefaultStyling, 
+        styles.shaComponentsContainerInner, style, incomingStyle
+    ]);
 
     return (
         <ConditionalWrap
@@ -122,29 +169,7 @@ export const ComponentsContainerDesigner: FC<PropsWithChildren<IComponentsContai
         >
             <>
                 {childIds.length === 0 && <div className={styles.shaDropHint}>Drag and Drop form component</div>}
-                <ReactSortable
-                    disabled={readOnly}
-                    onStart={onDragStart}
-                    onEnd={onDragEnd}
-                    list={componentsMapped}
-                    setList={onSetList}
-                    fallbackOnBody={true}
-                    swapThreshold={0.5}
-                    group={{
-                        name: 'shared',
-                    }}
-                    sort={true}
-                    draggable={`.${styles.shaComponent}`}
-                    animation={75}
-                    ghostClass={styles.shaComponentGhost}
-                    emptyInsertThreshold={20}
-                    handle={`.${styles.componentDragHandle}`}
-                    scroll={true}
-                    bubbleScroll={true}
-                    direction={direction}
-                    className={noDefaultStyling ? '' : styles.shaComponentsContainerInner}
-                    style={{ ...style, ...incomingStyle }}
-                >
+                <ReactSortable {...sortableConfig}>
                     {renderComponents()}
                 </ReactSortable>
             </>
@@ -152,4 +177,6 @@ export const ComponentsContainerDesigner: FC<PropsWithChildren<IComponentsContai
             {children}
         </ConditionalWrap>
     );
-};
+});
+
+ComponentsContainerDesigner.displayName = 'ComponentsContainerDesigner';

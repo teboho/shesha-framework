@@ -1,4 +1,4 @@
-import React, { FC, MutableRefObject, PropsWithChildren, useMemo, useState } from 'react';
+import React, { FC, MutableRefObject, PropsWithChildren, useMemo, useState, useCallback, memo } from 'react';
 import { ShaForm } from '@/providers/form';
 import { Button, Tooltip } from 'antd';
 import { useFormDesignerState, useFormDesignerActions } from '@/providers/formDesigner';
@@ -11,7 +11,7 @@ interface IDragWrapperProps {
   readOnly?: boolean;
 }
 
-export const DragWrapper: FC<PropsWithChildren<IDragWrapperProps>> = (props) => {
+export const DragWrapper: FC<PropsWithChildren<IDragWrapperProps>> = memo((props) => {
   const { styles } = useStyles();
   
   const { selectedComponentId, isDebug } = useFormDesignerState();
@@ -19,6 +19,11 @@ export const DragWrapper: FC<PropsWithChildren<IDragWrapperProps>> = (props) => 
   const [isOpen, setIsOpen] = useState(false);
 
   const componentModel = ShaForm.useComponentModel(props.componentId);
+
+  const isSelected = useMemo(() => 
+    selectedComponentId === props.componentId,
+    [selectedComponentId, props.componentId]
+  );
 
   const tooltip = useMemo(() => (
     <div>
@@ -41,44 +46,63 @@ export const DragWrapper: FC<PropsWithChildren<IDragWrapperProps>> = (props) => 
         <div><strong>Component name: </strong>{componentModel.componentName}</div>
       )}
     </div>
-  ), [componentModel]);
+  ), [componentModel, isDebug]);
 
-  const onClick = (event: React.MouseEvent<HTMLElement>) => {
+  const onClick = useCallback((event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
 
     if (selectedComponentId !== props.componentId)
-      setSelectedComponent(
-        props.componentId,
-        props.componentRef
-      );
-  };
+      setSelectedComponent({ id: props.componentId, name: componentModel.componentName });
+  }, [selectedComponentId, props.componentId, setSelectedComponent, componentModel.componentName]);
 
-  const onMouseOver = (event: React.MouseEvent<HTMLElement>) => {
+  const onDelete = useCallback((event: React.MouseEvent<HTMLElement>) => {
     event.stopPropagation();
-    setIsOpen(true);
-  };
+    deleteComponent({ componentId: props.componentId });
+  }, [deleteComponent, props.componentId]);
 
-  const onMouseOut = (event: React.MouseEvent<HTMLElement>) => {
-    event.stopPropagation();
+  const onMouseEnter = useCallback(() => {
+    if (!props.readOnly) {
+      setIsOpen(true);
+    }
+  }, [props.readOnly]);
+
+  const onMouseLeave = useCallback(() => {
     setIsOpen(false);
-  };
-  const onDeleteClick = () => {
-    deleteComponent({ componentId: componentModel.id });
-  };
+  }, []);
+
+  const controlsStyle = useMemo(() => ({
+    display: isSelected && isOpen && !props.readOnly ? 'block' : 'none'
+  }), [isSelected, isOpen, props.readOnly]);
 
   return (
-    <div className={styles.componentDragHandle} onClick={onClick} onMouseOver={onMouseOver} onMouseOut={onMouseOut}>
-      {!props?.readOnly && isOpen && (
-        <div className={styles.shaComponentControls}>
-          <Button icon={<DeleteFilled color="red" />} onClick={onDeleteClick} size="small" danger />
+    <Tooltip title={tooltip} mouseEnterDelay={1}>
+      <div
+        className={styles.componentDragHandle}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        onClick={onClick}
+      >
+        <div className={styles.shaComponentControls} style={controlsStyle}>
+          <Button
+            icon={<DeleteFilled color="red" />}
+            onClick={onDelete}
+            size="small"
+            danger
+          />
         </div>
-      )}
-
-      <Tooltip title={tooltip} placement="right" open={isOpen}>
         {props.children}
-      </Tooltip>
-    </div>
+      </div>
+    </Tooltip>
   );
-};
+}, (prevProps, nextProps) => {
+  // Only re-render if componentId, readOnly, or children reference changes
+  return (
+    prevProps.componentId === nextProps.componentId &&
+    prevProps.readOnly === nextProps.readOnly &&
+    prevProps.children === nextProps.children
+  );
+});
+
+DragWrapper.displayName = 'DragWrapper';
 
 export default DragWrapper;

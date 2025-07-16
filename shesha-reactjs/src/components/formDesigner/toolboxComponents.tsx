@@ -1,4 +1,4 @@
-import React, { FC, useMemo } from 'react';
+import React, { FC, useMemo, useCallback, memo } from 'react';
 import ToolboxComponent from './toolboxComponent';
 import { Collapse, CollapseProps, Empty } from 'antd';
 import { useLocalStorage } from '@/hooks';
@@ -13,12 +13,13 @@ type PanelType = CollapseProps['items'][number];
 
 export interface IToolboxComponentsProps { }
 
-export const ToolboxComponents: FC<IToolboxComponentsProps> = () => {
+export const ToolboxComponents: FC<IToolboxComponentsProps> = memo(() => {
   const [openedKeys, setOpenedKeys] = useLocalStorage('shaDesigner.toolbox.components.openedKeys', ['']);
   const [searchText, setSearchText] = useLocalStorage('shaDesigner.toolbox.components.search', '');
   const { styles } = useStyles();
 
   const toolboxComponentGroups = useFormDesignerStateSelector(state => state.toolboxComponentGroups);
+  const isDragging = useFormDesignerStateSelector(state => state.isDragging);
   const { startDraggingNewItem, endDraggingNewItem } = useFormDesignerActions();
 
   const filteredGroups = useMemo<IToolboxComponentGroup[]>(() => {
@@ -35,87 +36,93 @@ export const ToolboxComponents: FC<IToolboxComponentsProps> = () => {
     return result;
   }, [toolboxComponentGroups, searchText]);
 
-  const onCollapseChange = (key: string | string[]) => {
+  const onCollapseChange = useCallback((key: string | string[]) => {
     setOpenedKeys(Array.isArray(key) ? key : [key]);
-  };
+  }, [setOpenedKeys]);
 
-  const onDragStart = () => {
+  const onDragStart = useCallback(() => {
     startDraggingNewItem();
-  };
+  }, [startDraggingNewItem]);
 
-  const onDragEnd = (_evt) => {
+  const onDragEnd = useCallback((_evt) => {
     endDraggingNewItem();
-  };
+  }, [endDraggingNewItem]);
 
-  let idx = 0;
-  const componentGroups = filteredGroups
-    .filter(({ visible }) => visible)
-    .map<PanelType>((group, groupIndex) => {
-      const visibleComponents = group.components.filter((c) => c.isHidden !== true);
+  const sortableItems = useMemo(() => {
+    const visibleComponents = filteredGroups.flatMap(group => group.components);
+    return visibleComponents.map<ItemInterface>((component) => {
+      return {
+        id: component.type,
+        type: TOOLBOX_COMPONENT_DROPPABLE_KEY,
+      };
+    });
+  }, [filteredGroups]);
 
-      const sortableItems = visibleComponents.map<ItemInterface>((component) => {
-        return {
-          id: component.type,
-          parent_id: null,
-          type: TOOLBOX_COMPONENT_DROPPABLE_KEY,
-        };
-      });
+  const sortableConfig = useMemo(() => ({
+    onStart: onDragStart,
+    onEnd: onDragEnd,
+    list: sortableItems,
+    setList: () => { /* no-op for toolbox */ },
+    group: {
+      name: 'shared',
+      pull: 'clone',
+      put: false,
+    },
+    clone: true,
+    sort: false,
+    animation: 0, // No animation for toolbox items for better performance
+    ghostClass: styles.shaComponentGhost,
+  }), [onDragStart, onDragEnd, sortableItems, styles.shaComponentGhost]);
 
-      return visibleComponents.length === 0
-        ? null
-        : {
-          key: groupIndex.toString(),
-          label: group.name,
-          children: (
-            <ReactSortable
-              list={sortableItems}
-              setList={() => {
-                /* nop */
-              }}
-              group={{
-                name: 'shared',
-                pull: 'clone',
-                put: false,
-              }}
-              sort={false}
-              draggable={`.${styles.shaToolboxComponent}`}
-              ghostClass={styles.shaComponentGhost}
-              onStart={onDragStart}
-              onEnd={onDragEnd}
-              className={styles.shaToolboxPanelComponents}
-            >
+  const renderGroupContent = useCallback((group: IToolboxComponentGroup) => (
+    <div key={group.name}>
+      {group.components.map((component, compIndex) => (
+        <ToolboxComponent 
+          key={`${component.type}_${compIndex}`}
+          component={component} 
+        />
+      ))}
+    </div>
+  ), []);
 
-              {visibleComponents.map((component, componentIndex) => {
-                idx++;
-                return (
-                  <ToolboxComponent
-                    key={`Group${groupIndex}:Component${componentIndex}`}
-                    component={component}
-                    index={idx}
-                  />
-                );
-              })}
-            </ReactSortable>
-          )
-        };
-    })
-    .filter(item => Boolean(item));
+  const collapseItems = useMemo<PanelType[]>(() => {
+    return filteredGroups.map<PanelType>((group, index) => ({
+      key: group.name,
+      label: group.name,
+      children: renderGroupContent(group),
+      showArrow: group.components.length > 0,
+    }));
+  }, [filteredGroups, renderGroupContent]);
+
+  const hasComponents = useMemo(() => 
+    filteredGroups.some(group => group.components.length > 0),
+    [filteredGroups]
+  );
 
   return (
     <div className={styles.shaToolboxComponents}>
-      <SearchBox value={searchText} onChange={setSearchText} placeholder="Search components" />
-      {filteredGroups.length > 0 && (
-        <Collapse
-          activeKey={openedKeys}
-          onChange={onCollapseChange}
-          accordion
-          items={componentGroups}
-        >
-        </Collapse>
+      <SearchBox value={searchText} onChange={setSearchText} placeholder="Search components..." />
+      
+      {hasComponents ? (
+        <ReactSortable {...sortableConfig}>
+          <Collapse
+            className={styles.shaToolboxPanelComponents}
+            defaultActiveKey={openedKeys}
+            onChange={onCollapseChange}
+            items={collapseItems}
+            size="small"
+            ghost
+          />
+        </ReactSortable>
+      ) : (
+        <Empty 
+          image={Empty.PRESENTED_IMAGE_SIMPLE} 
+          description="No components found"
+          style={{ marginTop: '20px' }}
+        />
       )}
-      {filteredGroups.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Components not found" />}
     </div>
   );
-};
+});
 
-export default ToolboxComponents;
+ToolboxComponents.displayName = 'ToolboxComponents';
