@@ -1,6 +1,8 @@
 import React, { FC } from 'react';
 import { LockOutlined } from '@ant-design/icons';
-import { Popover, Input, Form } from 'antd';
+import Popover from 'antd/es/popover';
+import Input from 'antd/es/input';
+import Form from 'antd/es/form';
 import { passwordValidations, confirmPasswordValidations } from './utils';
 import PasswordChecklist from '../passwordChecklist';
 import ConfirmPasswordChecklist from '../confirmPasswordChecklist';

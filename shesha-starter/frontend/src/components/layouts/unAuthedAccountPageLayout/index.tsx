@@ -1,5 +1,6 @@
 import React, { FC, ReactNode } from "react";
-import { Row, Col } from "antd";
+import Row from "antd/es/row";
+import Col from "antd/es/col";
 import { useUi } from "@shesha-io/reactjs";
 import { UnAuthedLayoutContainer } from "./styles";
 
