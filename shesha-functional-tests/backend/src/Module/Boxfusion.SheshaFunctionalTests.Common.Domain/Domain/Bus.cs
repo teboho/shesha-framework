@@ -18,5 +18,11 @@ namespace Boxfusion.SheshaFunctionalTests.Common.Domain.Domain
         [ManyToMany(true)]
         public virtual IList<Person> Workers { get; set; } = new List<Person>();
 
+        /// <summary>
+        /// Array of strings associated with this bus
+        /// </summary>
+        [Audited]
+        public virtual string StringArray { get; set; }
+
     }
 }
