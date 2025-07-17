@@ -23,7 +23,7 @@ export interface IAutocompleteProps {
   value?: AutocompleteValueType;
 }
 
-const buildFilterById = (value: AutocompleteValueType): string => {
+const buildFilterById = (value: AutocompleteValueType): string | null => {
   if (!value) return null;
    
   const ids = (Array.isArray(value) ? value : [value]).map(val => {

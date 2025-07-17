@@ -43,17 +43,17 @@ const CheckboxComponent: IToolboxComponent<ICheckboxComponentProps, ICheckboxCom
       <ConfigurableFormItem model={model} valuePropName="checked" initialValue={model?.defaultValue}>
         {(value, onChange) => {
           const events: ExtendedCheckboxProps = {
-            onBlur: calculatedModel.eventHandlers.onBlur,
-            onFocus: calculatedModel.eventHandlers.onFocus,
+            onBlur: calculatedModel?.eventHandlers?.onBlur,
+            onFocus: calculatedModel?.eventHandlers?.onFocus,
             onChange: (e: CheckboxChangeEvent) => {
-              calculatedModel.eventHandlers.onChange({ value: e.target.checked }, e);
+              calculatedModel?.eventHandlers?.onChange({ value: e.target.checked }, e);
               if (typeof onChange === 'function') onChange(e);
             }
           };
 
           return model.readOnly 
             ? <ReadOnlyDisplayFormItem checked={value} type="checkbox" disabled={model.readOnly} />
-            : <Checkbox className="sha-checkbox" disabled={model.readOnly} style={model.allStyles.jsStyle} checked={value} {...events} />
+            : <Checkbox className="sha-checkbox" disabled={model.readOnly} style={model.allStyles?.jsStyle} checked={value} {...events} />
           ;
         }}
       </ConfigurableFormItem>

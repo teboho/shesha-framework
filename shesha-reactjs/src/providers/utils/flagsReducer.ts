@@ -22,10 +22,10 @@ export const FLAGS_INITIAL_STATE: IFlagsState<any, any, any, any> = {
 
 const isThisFlagInAction = (type: string, flag: string) => new RegExp(flag, 'i').test(type);
 
-const flagsReducer = <T extends IFlagsState<any, any, any, any> = unknown>(
+const flagsReducer = <T extends IFlagsState<any, any, any, any>>(
   state: T = FLAGS_INITIAL_STATE as T,
   { type, payload }: ReduxActions.Action<IFlagsState<any, any, any, any>>
-) => {
+): T => {
   const flaggable = /(.*)_(REQUEST|SUCCESS|ERROR|ACTION)/.test(type);
 
   if (flaggable) {

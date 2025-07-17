@@ -70,14 +70,9 @@ const ValidateProvider: FC<PropsWithChildren<IValidateProviderProps>> = ({childr
       });
   };
 
-  const validate = () => {
-    const promises = validators.current.map((validator) => {
-      return validator.validate();
-    });
-    childValidateProvider.current.forEach((child) => {
-      promises.push(child.validate());
-    });
-    return Promise.all(promises).then(_x => null);
+  const validate = (): Promise<void> => {
+    const promises = Object.values(validators.current).map(validator => validator());
+    return Promise.all(promises).then(_x => undefined);
   };
 
   const value = useMemo((): IValidateProviderStateContext => {

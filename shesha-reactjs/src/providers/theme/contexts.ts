@@ -57,4 +57,10 @@ export const THEME_CONTEXT_INITIAL_STATE: IThemeStateContext = {
 
 export const UiStateContext = createNamedContext<IThemeStateContext>(THEME_CONTEXT_INITIAL_STATE, "UiStateContext");
 
-export const UiActionsContext = createNamedContext<IThemeActionsContext>(undefined, "UiActionsContext");
+// Default empty theme actions context implementation
+const DEFAULT_THEME_ACTIONS: IThemeActionsContext = {
+  changeTheme: () => {},
+  resetToApplicationTheme: () => {},
+};
+
+export const UiActionsContext = createNamedContext<IThemeActionsContext>(DEFAULT_THEME_ACTIONS, "UiActionsContext");

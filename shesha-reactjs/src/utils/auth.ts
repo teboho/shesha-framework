@@ -17,12 +17,14 @@ export const saveUserToken = ({ accessToken, expireInSeconds, expireOn }: IAcces
 
   const encodedToken = jseu.encoder.encodeBase64(JSON.stringify(token));
 
-  getLocalStorage()?.setItem(tokenName, encodedToken);
+  if (tokenName) {
+    getLocalStorage()?.setItem(tokenName, encodedToken);
+  }
 
   return token;
 };
 
-const parseToken = (token: string): IAccessToken => {
+const parseToken = (token: string): IAccessToken | null => {
   try {
     return JSON.parse(jseu.encoder.decodeBase64(token) as string) as IAccessToken;
   } catch (error) {

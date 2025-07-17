@@ -52,12 +52,15 @@ const CollapsiblePanelComponent: IToolboxComponent<ICollapsiblePanelComponentPro
 
     const headerComponents = model?.header?.components ?? [];
 
-    const headerStyles = useFormComponentStyles({ ...{ ...model.headerStyles, border: ghost ? null : model.headerStyles?.border } }).fullStyle;
+    const headerStyles = useFormComponentStyles({ 
+      ...model.headerStyles, 
+      border: ghost ? undefined : model.headerStyles?.border 
+    }).fullStyle;
 
     const isIconHidden = expandIconPosition === 'hide';
     const extra = ((headerComponents?.length > 0 || formMode === 'designer') && !hasCustomHeader) ? (
       <ComponentsContainer
-        containerId={model.header?.id}
+        containerId={model.header?.id || ''}
         direction="horizontal"
         dynamicComponents={isDynamic ? headerComponents : []}
       />
@@ -68,7 +71,7 @@ const CollapsiblePanelComponent: IToolboxComponent<ICollapsiblePanelComponentPro
         <CollapsiblePanel
           header={hasCustomHeader ? (
             <ComponentsContainer
-              containerId={customHeader.id}
+              containerId={customHeader?.id || ''}
               dynamicComponents={isDynamic ? customHeader?.components : []}
             />
           ) : evaluatedLabel}
@@ -78,7 +81,7 @@ const CollapsiblePanelComponent: IToolboxComponent<ICollapsiblePanelComponentPro
           extra={extra}
           collapsible={collapsible === 'header' ? 'header' : 'icon'}
           ghost={ghost}
-          bodyStyle={model.allStyles.fullStyle}
+          bodyStyle={model.allStyles?.fullStyle}
           headerStyle={headerStyles}
           className={className}
           bodyColor={bodyColor}
@@ -86,11 +89,11 @@ const CollapsiblePanelComponent: IToolboxComponent<ICollapsiblePanelComponentPro
           hideCollapseContent={hideCollapseContent}
           hideWhenEmpty={hideWhenEmpty}
           accentStyle={model?.accentStyle}
-          overflowStyle={model.allStyles.overflowStyles}
+          overflowStyle={model.allStyles?.overflowStyles}
         >
           <ComponentsContainer
-            containerId={content.id}
-            dynamicComponents={isDynamic ? content.components : []}
+            containerId={content?.id || ''}
+            dynamicComponents={isDynamic ? content?.components : []}
           />
         </CollapsiblePanel>
       </ParentProvider>

@@ -43,7 +43,9 @@ const ThemeProvider: FC<PropsWithChildren<ThemeProviderProps>> = ({
 
   const resetToApplicationTheme =  useCallback(() => {
     // save theme to the state
-    dispatch(setThemeAction(applicationTheme.current));
+    if (applicationTheme.current) {
+      dispatch(setThemeAction(applicationTheme.current));
+    }
   }, [dispatch]);
 
   const themeConfig = useMemo<ThemeConfig>(() => {

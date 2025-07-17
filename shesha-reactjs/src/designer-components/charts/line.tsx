@@ -19,6 +19,7 @@ const LineChartComponent: IToolboxComponent<IChartProps> = {
   isOutput: true,
   icon: <LineChartOutlined />,
   Factory: ({ model }) => {
+    const styles = model.allStyles;
     const {
       dimensionsStyles,
       borderStyles,
@@ -26,7 +27,7 @@ const LineChartComponent: IToolboxComponent<IChartProps> = {
       shadowStyles,
       stylingBoxAsCSS,
       jsStyle
-    } = model.allStyles;
+    } = styles || {};
 
     const wrapperStyles = removeUndefinedProps({
       ...dimensionsStyles,

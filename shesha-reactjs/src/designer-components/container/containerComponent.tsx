@@ -31,7 +31,8 @@ const ContainerComponent: IToolboxComponent<IContainerComponentProps> = {
       backgroundStyles,
       shadowStyles,
       stylingBoxAsCSS,
-    } = model.allStyles;
+      jsStyle
+    } = model.allStyles || {};
 
     const wrapperStyles = removeUndefinedProps({
       ...dimensionsStyles,

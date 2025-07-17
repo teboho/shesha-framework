@@ -39,11 +39,14 @@ export const subFormReducer = handleActions<ISubFormStateContext, any>(
       };
     },
 
-    [SubFormActionEnums.FetchDataRequest]: (state: ISubFormStateContext) => {
+    [SubFormActionEnums.FetchDataRequest]: (
+      state: ISubFormStateContext,
+      action: ReduxActions.Action<IFetchDataRequestPayload>
+    ) => {
       const { errors, loading } = state;
       return {
         ...state,
-        errors: { ...errors, getData: null },
+        errors: { ...errors, getData: undefined },
         loading: { ...loading, getData: true },
       };
     },
@@ -56,7 +59,7 @@ export const subFormReducer = handleActions<ISubFormStateContext, any>(
       return {
         ...state,
         fetchedEntityId: action.payload?.entityId,
-        errors: { ...errors, getData: null },
+        errors: { ...errors, getData: undefined },
         loading: { ...loading, getData: false },
       };
     },

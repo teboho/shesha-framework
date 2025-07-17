@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useId, useMemo, useRef, useState } from 'react';
+import React, { FC, useEffect, useId, useMemo, useRef, useState, useCallback } from 'react';
 import { DataTableProvider, evaluateString, getUrlKeyParam, useActualContextData, useDataTableStore, useDeepCompareMemo, useNestedPropertyMetadatAccessor, useShaFormInstance } from '@/index';
 import { Select, Spin, Typography } from 'antd';
 import { useDebouncedCallback } from 'use-debounce';
@@ -37,7 +37,7 @@ const AutocompleteInner: FC<IAutocompleteBaseProps> = (props: IAutocompleteBaseP
     ((value: any) => ({ in: [{ var: `${keyPropName}` }, Array.isArray(value) ? value.map(x => keyValueFunc(x, allData)) : [keyValueFunc(value, allData)]] }));
   const filterNotKeysFunc: FilterSelectedFunc = ((value: any) => {
     const filter = filterKeysFunc(value);
-    return filter ? { "!": filter } : null;
+    return filter ? { "!": filter } : {};
   });
   const displayValueFunc: DisplayValueFunc = props.displayValueFunc ??
     ((value: any) => (Boolean(value) ? getValueByPropertyName(value, displayPropName) ?? value?.toString() : ''));
@@ -118,15 +118,13 @@ const AutocompleteInner: FC<IAutocompleteBaseProps> = (props: IAutocompleteBaseP
   };
 
   const handleSelect = () => {
-    selectRef.current.blur();
+    selectRef.current?.blur();
   };
 
   const handleChange = (_value, option: any) => {
-    selected.current = Boolean(option)
-      ? Array.isArray(option)
-        ? (option as ISelectOption[]).map((o) => o.data)
-        : [(option as ISelectOption).data]
-      : [];
+    selected.current = Boolean(option);
+    if (props.allowFreeText)
+      setAutocompleteText('');
 
     const selectedValue = Boolean(option)
       ? Array.isArray(option)
@@ -136,7 +134,7 @@ const AutocompleteInner: FC<IAutocompleteBaseProps> = (props: IAutocompleteBaseP
 
     const selectedFilter = selectedValue && (!Array.isArray(selectedValue) || selectedValue.length)
       ? filterNotKeysFunc(selectedValue)
-      : null;
+      : undefined;
     source?.setPredefinedFilters([{ id: 'selectedFilter', name: 'selectedFilter', expression: selectedFilter }]);
     debouncedSearch('');
 

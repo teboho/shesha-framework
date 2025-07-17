@@ -70,7 +70,9 @@ export const processItems = (items: any[], refListMap: Map<string, Map<any, stri
           // Apply reference list mapping if available
           if (refListMap.has(key)) {
             const refMap = refListMap.get(key);
-            value = refMap.get(value) || value;
+            if (refMap) {
+              value = refMap.get(value) || value;
+            }
           }
 
           processedItem[key] = value;
@@ -112,7 +114,7 @@ export const sortItems = (items: any[], isTimeSeries: boolean, property: string)
  */
 export const splitTitleIntoLines = (title: string, lineWordLength: number = MAX_TITLE_LINE_LENGTH, lineCount: number = 5): string | string[] => {
   const words = title?.split(' ') ?? [];
-  const lines = [];
+  const lines: string[] = [];
   let currentLine = '';
 
   if (words?.length < lineWordLength) {
@@ -128,7 +130,7 @@ export const splitTitleIntoLines = (title: string, lineWordLength: number = MAX_
         return lines;
       }
       lines.push(currentLine);
-      currentLine = '';
+      currentLine = word;
     }
   }
 
