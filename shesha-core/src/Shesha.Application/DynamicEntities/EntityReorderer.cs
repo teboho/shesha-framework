@@ -68,42 +68,36 @@ namespace Shesha.DynamicEntities
 
             var result = new ReorderResponse<TId, TOrderIndex>();
 
-            // Note: SoftDelete should be disabled to speed-up the query and to prevent wrong calculations. We load entitier by Id, so it's safe
+            // Note: SoftDelete should be disabled to speed-up the query and to prevent wrong calculations. We load entities by Id, so it's safe
             using (_unitOfWorkManager.Current.DisableFilter(AbpDataFilters.SoftDelete)) 
             {
                 var selectExpression = CreateSelectExpression(orderIndexProperty);
-                var dbItems = await _repository.GetAll().Where(ent => ids.Contains(ent.Id))
+                
+                // Step 1: Load ALL entities in the dataset to assess the complete ordering state
+                var allEntities = await _repository.GetAll()
                     .Select(selectExpression)
                     .ToListAsync();
-
+                
+                // Step 2: Analyze the current ordering state
+                var entitiesWithOrder = allEntities.Where(item => !IsNullOrDefault(item.OrderIndex)).ToList();
+                var entitiesWithoutOrder = allEntities.Where(item => IsNullOrDefault(item.OrderIndex)).ToList();
+                
                 var partialType = CreatePartialType(orderIndexProperty.Name, orderIndexProperty.PropertyType);
                 
-                // Handle null orderIndex values for entities being reordered by initializing them to 0
-                var nullOrderIndexItems = dbItems.Where(item => IsNullOrDefault(item.OrderIndex)).ToList();
+                // Step 3: Handle the global ordering state
+                if (!entitiesWithOrder.Any())
+                {
+                    // Case 1: All entities have null orderIndex - initialize from 1
+                    await InitializeCompleteOrdering(allEntities, partialType, orderIndexProperty, result);
+                }
+                else
+                {
+                    // Case 2: Some entities already have order - integrate null entities properly
+                    await IntegrateNullEntitiesIntoExistingOrder(entitiesWithOrder, entitiesWithoutOrder, partialType, orderIndexProperty, result);
+                }
                 
-                if (nullOrderIndexItems.Any())
-                {
-                    var zeroValue = TOrderIndex.Zero;
-                    foreach (var nullItem in nullOrderIndexItems)
-                    {
-                        var query = _repository.GetAll().Where(GetFindByIdExpression(nullItem.Id));
-                        query.Update(GetUpdateExpression(partialType, orderIndexProperty.Name, zeroValue));
-                        
-                        result.ReorderedItems[nullItem.Id] = zeroValue;
-                    }
-                }
-
-                var numbers = new Stack<TOrderIndex>(passedItems.Select(i => i.OrderIndex).OrderByDescending(o => o));
-
-                foreach (var passedItem in passedItems)
-                {
-                    var orderIndex = numbers.Pop();
-                    var query = _repository.GetAll().Where(GetFindByIdExpression(passedItem.Id));
-                    query.Update(GetUpdateExpression(partialType, orderIndexProperty.Name, orderIndex));
-
-                    //result.Items.Add(new ReorderingItem<TId, TOrderIndex> { Id = passedItem.Id, OrderIndex = orderIndex });
-                    result.ReorderedItems[passedItem.Id] = orderIndex;
-                }
+                // Step 4: Apply the specific reordering request
+                await ApplyReorderingRequest(passedItems, partialType, orderIndexProperty, result);
             }
 
             _unitOfWorkManager.Current.Completed += (sender, args) => EventBus.Trigger<EntityReorderedEventData<T, TId>>(this, new EntityReorderedEventData<T, TId>(ids));
@@ -232,6 +226,117 @@ namespace Shesha.DynamicEntities
 
         public interface IHasOrderIndex 
         { 
+        }
+
+        /// <summary>
+        /// Initializes ordering for all entities when none have order indices (starting from 1)
+        /// </summary>
+        private async Task InitializeCompleteOrdering(List<ReorderingItem<TId, TOrderIndex>> allEntities, Type partialType, PropertyInfo orderIndexProperty, ReorderResponse<TId, TOrderIndex> result)
+        {
+            var currentOrder = TOrderIndex.One;
+            
+            foreach (var entity in allEntities.OrderBy(e => e.Id)) // Consistent ordering by ID
+            {
+                var query = _repository.GetAll().Where(GetFindByIdExpression(entity.Id));
+                query.Update(GetUpdateExpression(partialType, orderIndexProperty.Name, currentOrder));
+                
+                result.ReorderedItems[entity.Id] = currentOrder;
+                currentOrder += TOrderIndex.One;
+            }
+        }
+
+        /// <summary>
+        /// Integrates entities with null orderIndex into existing ordered structure
+        /// </summary>
+        private async Task IntegrateNullEntitiesIntoExistingOrder(
+            List<ReorderingItem<TId, TOrderIndex>> entitiesWithOrder,
+            List<ReorderingItem<TId, TOrderIndex>> entitiesWithoutOrder,
+            Type partialType,
+            PropertyInfo orderIndexProperty,
+            ReorderResponse<TId, TOrderIndex> result)
+        {
+            if (!entitiesWithoutOrder.Any()) return;
+
+            // Find the maximum existing order index
+            var maxExistingOrder = entitiesWithOrder.Max(e => e.OrderIndex);
+            var nextAvailableOrder = maxExistingOrder + TOrderIndex.One;
+
+            // Handle gaps in existing ordering (industry best practice: maintain gaps for flexibility)
+            var existingOrders = entitiesWithOrder.Select(e => e.OrderIndex).OrderBy(o => o).ToList();
+            var gaps = FindOrderingGaps(existingOrders);
+            
+            var nullEntitiesList = entitiesWithoutOrder.OrderBy(e => e.Id).ToList(); // Consistent ordering
+            var gapIndex = 0;
+            
+            foreach (var entity in nullEntitiesList)
+            {
+                TOrderIndex assignedOrder;
+                
+                // Try to fill gaps first, then append at the end
+                if (gapIndex < gaps.Count)
+                {
+                    assignedOrder = gaps[gapIndex];
+                    gapIndex++;
+                }
+                else
+                {
+                    assignedOrder = nextAvailableOrder;
+                    nextAvailableOrder += TOrderIndex.One;
+                }
+                
+                var query = _repository.GetAll().Where(GetFindByIdExpression(entity.Id));
+                query.Update(GetUpdateExpression(partialType, orderIndexProperty.Name, assignedOrder));
+                
+                result.ReorderedItems[entity.Id] = assignedOrder;
+            }
+        }
+
+        /// <summary>
+        /// Applies the specific reordering request from the user
+        /// </summary>
+        private async Task ApplyReorderingRequest(
+            List<ReorderingItem<TId, TOrderIndex>> passedItems,
+            Type partialType,
+            PropertyInfo orderIndexProperty,
+            ReorderResponse<TId, TOrderIndex> result)
+        {
+            var numbers = new Stack<TOrderIndex>(passedItems.Select(i => i.OrderIndex).OrderByDescending(o => o));
+
+            foreach (var passedItem in passedItems)
+            {
+                var orderIndex = numbers.Pop();
+                var query = _repository.GetAll().Where(GetFindByIdExpression(passedItem.Id));
+                query.Update(GetUpdateExpression(partialType, orderIndexProperty.Name, orderIndex));
+
+                result.ReorderedItems[passedItem.Id] = orderIndex;
+            }
+        }
+
+        /// <summary>
+        /// Finds gaps in the ordering sequence for optimal space utilization
+        /// </summary>
+        private List<TOrderIndex> FindOrderingGaps(List<TOrderIndex> existingOrders)
+        {
+            var gaps = new List<TOrderIndex>();
+            
+            for (int i = 0; i < existingOrders.Count - 1; i++)
+            {
+                var current = existingOrders[i];
+                var next = existingOrders[i + 1];
+                
+                // Check if there's a gap larger than 1 between consecutive orders
+                var difference = next - current;
+                var two = TOrderIndex.One + TOrderIndex.One;
+                
+                if (difference > two) // Gap > 2
+                {
+                    // Fill the gap with a simple increment from current
+                    var gapValue = current + TOrderIndex.One;
+                    gaps.Add(gapValue);
+                }
+            }
+            
+            return gaps;
         }
     }
 }
