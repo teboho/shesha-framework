@@ -78,19 +78,18 @@ namespace Shesha.DynamicEntities
 
                 var partialType = CreatePartialType(orderIndexProperty.Name, orderIndexProperty.PropertyType);
                 
-                // Handle null orderIndex values for entities being reordered by initializing them to consecutive values starting from 0
+                // Handle null orderIndex values for entities being reordered by initializing them to 0
                 var nullOrderIndexItems = dbItems.Where(item => IsNullOrDefault(item.OrderIndex)).ToList();
                 
                 if (nullOrderIndexItems.Any())
                 {
-                    var currentIndex = TOrderIndex.Zero;
+                    var zeroValue = TOrderIndex.Zero;
                     foreach (var nullItem in nullOrderIndexItems)
                     {
                         var query = _repository.GetAll().Where(GetFindByIdExpression(nullItem.Id));
-                        query.Update(GetUpdateExpression(partialType, orderIndexProperty.Name, currentIndex));
+                        query.Update(GetUpdateExpression(partialType, orderIndexProperty.Name, zeroValue));
                         
-                        result.ReorderedItems[nullItem.Id] = currentIndex;
-                        currentIndex += TOrderIndex.One;
+                        result.ReorderedItems[nullItem.Id] = zeroValue;
                     }
                 }
 
