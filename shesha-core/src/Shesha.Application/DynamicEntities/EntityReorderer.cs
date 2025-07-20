@@ -85,13 +85,13 @@ namespace Shesha.DynamicEntities
                 
                 var partialType = CreatePartialType(orderIndexProperty.Name, orderIndexProperty.PropertyType);
                 
-                // Step 3: FIRST - Handle null initialization for entities NOT in the reorder request
-                // This ensures user's reordering intent is never overridden
-                await HandleNullEntitiesNotInRequest(allEntities, entitiesWithOrder, entitiesWithoutOrder, requestedEntityIds, partialType, orderIndexProperty, result);
+                // Step 3: CRITICAL - Detect and resolve duplicate conflicts
+                var conflictResolution = await DetectAndResolveDuplicateConflicts(
+                    allEntities, entitiesWithOrder, entitiesWithoutOrder, 
+                    passedItems, requestedEntityIds, partialType, orderIndexProperty);
                 
-                // Step 4: SECOND - Apply the user's specific reordering request with absolute priority
-                // This preserves the exact order the user intended
-                await ApplyUserReorderingRequest(passedItems, partialType, orderIndexProperty, result);
+                // Step 4: Apply resolved ordering (guaranteed duplicate-free)
+                await ApplyResolvedOrdering(conflictResolution, partialType, orderIndexProperty, result);
             }
 
             _unitOfWorkManager.Current.Completed += (sender, args) => EventBus.Trigger<EntityReorderedEventData<T, TId>>(this, new EntityReorderedEventData<T, TId>(ids));
@@ -223,152 +223,216 @@ namespace Shesha.DynamicEntities
         }
 
         /// <summary>
-        /// Initializes ordering for all entities when none have order indices (starting from 1)
+        /// Comprehensive duplicate detection and conflict resolution
         /// </summary>
-        private async Task InitializeCompleteOrdering(List<ReorderingItem<TId, TOrderIndex>> allEntities, Type partialType, PropertyInfo orderIndexProperty, ReorderResponse<TId, TOrderIndex> result)
-        {
-            var currentOrder = TOrderIndex.One;
-            
-            foreach (var entity in allEntities.OrderBy(e => e.Id)) // Consistent ordering by ID
-            {
-                var query = _repository.GetAll().Where(GetFindByIdExpression(entity.Id));
-                query.Update(GetUpdateExpression(partialType, orderIndexProperty.Name, currentOrder));
-                
-                result.ReorderedItems[entity.Id] = currentOrder;
-                currentOrder += TOrderIndex.One;
-            }
-        }
-
-        /// <summary>
-        /// Integrates entities with null orderIndex into existing ordered structure
-        /// </summary>
-        private async Task IntegrateNullEntitiesIntoExistingOrder(
-            List<ReorderingItem<TId, TOrderIndex>> entitiesWithOrder,
-            List<ReorderingItem<TId, TOrderIndex>> entitiesWithoutOrder,
-            Type partialType,
-            PropertyInfo orderIndexProperty,
-            ReorderResponse<TId, TOrderIndex> result)
-        {
-            if (!entitiesWithoutOrder.Any()) return;
-
-            // Find the maximum existing order index
-            var maxExistingOrder = entitiesWithOrder.Max(e => e.OrderIndex);
-            var nextAvailableOrder = maxExistingOrder + TOrderIndex.One;
-
-            // Handle gaps in existing ordering (industry best practice: maintain gaps for flexibility)
-            var existingOrders = entitiesWithOrder.Select(e => e.OrderIndex).OrderBy(o => o).ToList();
-            var gaps = FindOrderingGaps(existingOrders);
-            
-            var nullEntitiesList = entitiesWithoutOrder.OrderBy(e => e.Id).ToList(); // Consistent ordering
-            var gapIndex = 0;
-            
-            foreach (var entity in nullEntitiesList)
-            {
-                TOrderIndex assignedOrder;
-                
-                // Try to fill gaps first, then append at the end
-                if (gapIndex < gaps.Count)
-                {
-                    assignedOrder = gaps[gapIndex];
-                    gapIndex++;
-                }
-                else
-                {
-                    assignedOrder = nextAvailableOrder;
-                    nextAvailableOrder += TOrderIndex.One;
-                }
-                
-                var query = _repository.GetAll().Where(GetFindByIdExpression(entity.Id));
-                query.Update(GetUpdateExpression(partialType, orderIndexProperty.Name, assignedOrder));
-                
-                result.ReorderedItems[entity.Id] = assignedOrder;
-            }
-        }
-
-        /// <summary>
-        /// Applies the user's reordering request with absolute priority
-        /// The user's intended order sequence is preserved exactly as specified
-        /// </summary>
-        private async Task ApplyUserReorderingRequest(
-            List<ReorderingItem<TId, TOrderIndex>> passedItems,
-            Type partialType,
-            PropertyInfo orderIndexProperty,
-            ReorderResponse<TId, TOrderIndex> result)
-        {
-            // CRITICAL: Maintain the exact order the user specified in their request
-            // The order of items in the input.Items array represents the user's intended final sequence
-            
-            for (int i = 0; i < passedItems.Count; i++)
-            {
-                var passedItem = passedItems[i];
-                var userIntendedOrder = passedItem.OrderIndex;
-                
-                var query = _repository.GetAll().Where(GetFindByIdExpression(passedItem.Id));
-                query.Update(GetUpdateExpression(partialType, orderIndexProperty.Name, userIntendedOrder));
-
-                // Track the change - this will override any previous null initialization
-                result.ReorderedItems[passedItem.Id] = userIntendedOrder;
-            }
-        }
-
-        /// <summary>
-        /// Handles null orderIndex values for entities NOT in the user's reorder request
-        /// This ensures we don't interfere with the user's intended ordering
-        /// </summary>
-        private async Task HandleNullEntitiesNotInRequest(
+        private async Task<OrderingResolution> DetectAndResolveDuplicateConflicts(
             List<ReorderingItem<TId, TOrderIndex>> allEntities,
             List<ReorderingItem<TId, TOrderIndex>> entitiesWithOrder,
             List<ReorderingItem<TId, TOrderIndex>> entitiesWithoutOrder,
+            List<ReorderingItem<TId, TOrderIndex>> passedItems,
             HashSet<TId> requestedEntityIds,
+            Type partialType,
+            PropertyInfo orderIndexProperty)
+        {
+            var resolution = new OrderingResolution();
+            
+            // Step 1: Detect duplicates within user's request
+            var userOrderGroups = passedItems.GroupBy(p => p.OrderIndex).ToList();
+            var userDuplicates = userOrderGroups.Where(g => g.Count() > 1).ToList();
+            
+            // Step 2: Resolve user request duplicates by sequential assignment
+            var resolvedUserItems = new List<ReorderingItem<TId, TOrderIndex>>();
+            var usedOrderIndices = new HashSet<TOrderIndex>();
+            
+            foreach (var group in userOrderGroups)
+            {
+                if (group.Count() == 1)
+                {
+                    // No duplicate - keep original
+                    var item = group.First();
+                    resolvedUserItems.Add(item);
+                    usedOrderIndices.Add(item.OrderIndex);
+                }
+                else
+                {
+                    // Duplicate found - resolve by creating sequence starting from intended value
+                    var baseOrder = group.Key;
+                    var duplicateItems = group.OrderBy(i => i.Id).ToList(); // Consistent ordering
+                    
+                    for (int i = 0; i < duplicateItems.Count; i++)
+                    {
+                        var resolvedOrder = FindNextAvailableOrder(baseOrder, i, usedOrderIndices, entitiesWithOrder);
+                        resolvedUserItems.Add(new ReorderingItem<TId, TOrderIndex>
+                        {
+                            Id = duplicateItems[i].Id,
+                            OrderIndex = resolvedOrder
+                        });
+                        usedOrderIndices.Add(resolvedOrder);
+                    }
+                }
+            }
+            
+            // Step 3: Check for conflicts between resolved user items and existing entities
+            var existingOrders = entitiesWithOrder
+                .Where(e => !requestedEntityIds.Contains(e.Id))
+                .Select(e => e.OrderIndex)
+                .ToHashSet();
+            
+            var finalUserItems = new List<ReorderingItem<TId, TOrderIndex>>();
+            foreach (var userItem in resolvedUserItems)
+            {
+                if (existingOrders.Contains(userItem.OrderIndex))
+                {
+                    // Conflict with existing entity - find alternative
+                    var alternativeOrder = FindNextAvailableOrder(userItem.OrderIndex, 0, usedOrderIndices, entitiesWithOrder);
+                    finalUserItems.Add(new ReorderingItem<TId, TOrderIndex>
+                    {
+                        Id = userItem.Id,
+                        OrderIndex = alternativeOrder
+                    });
+                    usedOrderIndices.Add(alternativeOrder);
+                }
+                else
+                {
+                    finalUserItems.Add(userItem);
+                }
+            }
+            
+            resolution.ResolvedUserItems = finalUserItems;
+            resolution.UsedOrderIndices = usedOrderIndices;
+            
+            // Step 4: Handle null entities (those not in user request)
+            var nullEntitiesNotInRequest = entitiesWithoutOrder
+                .Where(entity => !requestedEntityIds.Contains(entity.Id))
+                .OrderBy(e => e.Id)
+                .ToList();
+            
+            resolution.NullEntitiesAssignments = AssignOrderToNullEntities(
+                nullEntitiesNotInRequest, usedOrderIndices, entitiesWithOrder);
+            
+            return resolution;
+        }
+
+        /// <summary>
+        /// Finds the next available orderIndex value to avoid duplicates
+        /// </summary>
+        private TOrderIndex FindNextAvailableOrder(
+            TOrderIndex baseOrder, 
+            int offset,
+            HashSet<TOrderIndex> usedIndices,
+            List<ReorderingItem<TId, TOrderIndex>> existingEntities)
+        {
+            var allUsedIndices = new HashSet<TOrderIndex>(usedIndices);
+            foreach (var entity in existingEntities)
+            {
+                allUsedIndices.Add(entity.OrderIndex);
+            }
+            
+            var candidate = baseOrder;
+            for (int i = 0; i <= offset; i++)
+            {
+                candidate += TOrderIndex.One;
+            }
+            
+            // Find next available slot
+            while (allUsedIndices.Contains(candidate))
+            {
+                candidate += TOrderIndex.One;
+            }
+            
+            return candidate;
+        }
+
+        /// <summary>
+        /// Assigns orderIndex values to null entities ensuring no duplicates
+        /// </summary>
+        private List<ReorderingItem<TId, TOrderIndex>> AssignOrderToNullEntities(
+            List<ReorderingItem<TId, TOrderIndex>> nullEntities,
+            HashSet<TOrderIndex> usedIndices,
+            List<ReorderingItem<TId, TOrderIndex>> entitiesWithOrder)
+        {
+            var assignments = new List<ReorderingItem<TId, TOrderIndex>>();
+            
+            if (!nullEntities.Any()) return assignments;
+            
+            // Find the starting point for null entity assignments
+            TOrderIndex startingOrder;
+            if (!entitiesWithOrder.Any() && !usedIndices.Any())
+            {
+                // All entities are null and no user request
+                startingOrder = TOrderIndex.One;
+            }
+            else
+            {
+                // Find max order and start after it
+                var maxUsed = TOrderIndex.Zero;
+                if (usedIndices.Any())
+                    maxUsed = usedIndices.Max();
+                if (entitiesWithOrder.Any())
+                {
+                    var maxExisting = entitiesWithOrder.Max(e => e.OrderIndex);
+                    if (maxExisting > maxUsed)
+                        maxUsed = maxExisting;
+                }
+                startingOrder = maxUsed + TOrderIndex.One;
+            }
+            
+            var currentOrder = startingOrder;
+            foreach (var nullEntity in nullEntities)
+            {
+                // Ensure we don't create duplicates
+                while (usedIndices.Contains(currentOrder))
+                {
+                    currentOrder += TOrderIndex.One;
+                }
+                
+                assignments.Add(new ReorderingItem<TId, TOrderIndex>
+                {
+                    Id = nullEntity.Id,
+                    OrderIndex = currentOrder
+                });
+                
+                usedIndices.Add(currentOrder);
+                currentOrder += TOrderIndex.One;
+            }
+            
+            return assignments;
+        }
+
+        /// <summary>
+        /// Applies the resolved ordering to the database
+        /// </summary>
+        private async Task ApplyResolvedOrdering(
+            OrderingResolution resolution,
             Type partialType,
             PropertyInfo orderIndexProperty,
             ReorderResponse<TId, TOrderIndex> result)
         {
-            // Only handle null entities that are NOT part of the user's reorder request
-            var nullEntitiesNotInRequest = entitiesWithoutOrder
-                .Where(entity => !requestedEntityIds.Contains(entity.Id))
-                .OrderBy(e => e.Id) // Consistent ordering
-                .ToList();
-
-            if (!nullEntitiesNotInRequest.Any()) return;
-
-            if (!entitiesWithOrder.Any() && requestedEntityIds.Count == 0)
+            // Apply user's resolved reordering
+            foreach (var item in resolution.ResolvedUserItems)
             {
-                // Case 1: All entities have null orderIndex and no specific reorder request
-                await InitializeCompleteOrdering(nullEntitiesNotInRequest, partialType, orderIndexProperty, result);
+                var query = _repository.GetAll().Where(GetFindByIdExpression(item.Id));
+                query.Update(GetUpdateExpression(partialType, orderIndexProperty.Name, item.OrderIndex));
+                result.ReorderedItems[item.Id] = item.OrderIndex;
             }
-            else
+            
+            // Apply null entity assignments
+            foreach (var item in resolution.NullEntitiesAssignments)
             {
-                // Case 2: Some entities have order, integrate null entities appropriately
-                await IntegrateNullEntitiesIntoExistingOrder(entitiesWithOrder, nullEntitiesNotInRequest, partialType, orderIndexProperty, result);
+                var query = _repository.GetAll().Where(GetFindByIdExpression(item.Id));
+                query.Update(GetUpdateExpression(partialType, orderIndexProperty.Name, item.OrderIndex));
+                result.ReorderedItems[item.Id] = item.OrderIndex;
             }
         }
 
         /// <summary>
-        /// Finds gaps in the ordering sequence for optimal space utilization
+        /// Contains the resolution of all ordering conflicts
         /// </summary>
-        private List<TOrderIndex> FindOrderingGaps(List<TOrderIndex> existingOrders)
+        private class OrderingResolution
         {
-            var gaps = new List<TOrderIndex>();
-            
-            for (int i = 0; i < existingOrders.Count - 1; i++)
-            {
-                var current = existingOrders[i];
-                var next = existingOrders[i + 1];
-                
-                // Check if there's a gap larger than 1 between consecutive orders
-                var difference = next - current;
-                var two = TOrderIndex.One + TOrderIndex.One;
-                
-                if (difference > two) // Gap > 2
-                {
-                    // Fill the gap with a simple increment from current
-                    var gapValue = current + TOrderIndex.One;
-                    gaps.Add(gapValue);
-                }
-            }
-            
-            return gaps;
+            public List<ReorderingItem<TId, TOrderIndex>> ResolvedUserItems { get; set; } = new();
+            public List<ReorderingItem<TId, TOrderIndex>> NullEntitiesAssignments { get; set; } = new();
+            public HashSet<TOrderIndex> UsedOrderIndices { get; set; } = new();
         }
     }
 }
