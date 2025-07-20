@@ -86,12 +86,12 @@ namespace Shesha.DynamicEntities
                 var partialType = CreatePartialType(orderIndexProperty.Name, orderIndexProperty.PropertyType);
                 
                 // Step 3: CRITICAL - Detect and resolve duplicate conflicts
-                var conflictResolution = await DetectAndResolveDuplicateConflicts(
+                var conflictResolution = DetectAndResolveDuplicateConflicts(
                     allEntities, entitiesWithOrder, entitiesWithoutOrder, 
                     passedItems, requestedEntityIds, partialType, orderIndexProperty);
                 
                 // Step 4: Apply resolved ordering (guaranteed duplicate-free)
-                await ApplyResolvedOrdering(conflictResolution, partialType, orderIndexProperty, result);
+                ApplyResolvedOrdering(conflictResolution, partialType, orderIndexProperty, result);
             }
 
             _unitOfWorkManager.Current.Completed += (sender, args) => EventBus.Trigger<EntityReorderedEventData<T, TId>>(this, new EntityReorderedEventData<T, TId>(ids));
@@ -225,7 +225,7 @@ namespace Shesha.DynamicEntities
         /// <summary>
         /// Comprehensive duplicate detection and conflict resolution
         /// </summary>
-        private async Task<OrderingResolution> DetectAndResolveDuplicateConflicts(
+        private OrderingResolution DetectAndResolveDuplicateConflicts(
             List<ReorderingItem<TId, TOrderIndex>> allEntities,
             List<ReorderingItem<TId, TOrderIndex>> entitiesWithOrder,
             List<ReorderingItem<TId, TOrderIndex>> entitiesWithoutOrder,
@@ -368,9 +368,13 @@ namespace Shesha.DynamicEntities
                 var maxUsed = TOrderIndex.Zero;
                 if (usedIndices.Any())
                     maxUsed = usedIndices.Max();
+                if (maxUsed == null)
+                    maxUsed = TOrderIndex.Zero; // Handle case where no user items have order index
                 if (entitiesWithOrder.Any())
                 {
                     var maxExisting = entitiesWithOrder.Max(e => e.OrderIndex);
+                    if (maxExisting == null)
+                        maxExisting = TOrderIndex.Zero; // Handle case where no existing entities have order index
                     if (maxExisting > maxUsed)
                         maxUsed = maxExisting;
                 }
@@ -402,7 +406,7 @@ namespace Shesha.DynamicEntities
         /// <summary>
         /// Applies the resolved ordering to the database
         /// </summary>
-        private async Task ApplyResolvedOrdering(
+        private void ApplyResolvedOrdering(
             OrderingResolution resolution,
             Type partialType,
             PropertyInfo orderIndexProperty,
