@@ -1,4 +1,4 @@
-﻿using Abp.Dependency;
+using Abp.Dependency;
 using Abp.Domain.Entities;
 using Abp.Domain.Repositories;
 using Abp.Domain.Uow;
@@ -76,9 +76,26 @@ namespace Shesha.DynamicEntities
                     .Select(selectExpression)
                     .ToListAsync();
 
+                var partialType = CreatePartialType(orderIndexProperty.Name, orderIndexProperty.PropertyType);
+                
+                // Handle null orderIndex values for entities being reordered by initializing them to consecutive values starting from 0
+                var nullOrderIndexItems = dbItems.Where(item => IsNullOrDefault(item.OrderIndex)).ToList();
+                
+                if (nullOrderIndexItems.Any())
+                {
+                    var currentIndex = TOrderIndex.Zero;
+                    foreach (var nullItem in nullOrderIndexItems)
+                    {
+                        var query = _repository.GetAll().Where(GetFindByIdExpression(nullItem.Id));
+                        query.Update(GetUpdateExpression(partialType, orderIndexProperty.Name, currentIndex));
+                        
+                        result.ReorderedItems[nullItem.Id] = currentIndex;
+                        currentIndex += TOrderIndex.One;
+                    }
+                }
+
                 var numbers = new Stack<TOrderIndex>(passedItems.Select(i => i.OrderIndex).OrderByDescending(o => o));
 
-                var partialType = CreatePartialType(orderIndexProperty.Name, orderIndexProperty.PropertyType);
                 foreach (var passedItem in passedItems)
                 {
                     var orderIndex = numbers.Pop();
@@ -204,6 +221,14 @@ namespace Shesha.DynamicEntities
                 type = typeBuilder.CreateType();
             }
             return type;
+        }
+
+        /// <summary>
+        /// Checks if the orderIndex value is null or default
+        /// </summary>
+        private bool IsNullOrDefault(TOrderIndex orderIndex)
+        {
+            return EqualityComparer<TOrderIndex>.Default.Equals(orderIndex, default(TOrderIndex));
         }
 
         public interface IHasOrderIndex 
