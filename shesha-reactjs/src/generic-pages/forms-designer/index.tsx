@@ -1,5 +1,4 @@
 import React from 'react';
-import { resetServerContext } from 'react-beautiful-dnd';
 import { FormDesigner } from '@/components';
 import { PageWithLayout } from '@/interfaces';
 import { FormIdentifier } from '@/providers/form/models';
@@ -18,8 +17,4 @@ export const FormsDesignerPage: PageWithLayout<IFormsDesignerPagePageProps> = (p
   );
 };
 
-FormsDesignerPage['getInitialProps'] = async () => {
-  resetServerContext(); // required for Drag&Drop
-
-  return {};
-};
+FormsDesignerPage.getLayout = (page) => page;
