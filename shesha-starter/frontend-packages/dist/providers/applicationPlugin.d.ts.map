@@ -1,0 +1,1 @@
+{"version":3,"file":"applicationPlugin.d.ts","sourceRoot":"","sources":["../../src/providers/applicationPlugin.tsx"],"names":[],"mappings":"AAAA,OAAc,EAAE,EAAE,EAAE,iBAAiB,EAAa,MAAM,OAAO,CAAC;AAIhE,MAAM,WAAW,wBAAwB;CAAG;AAE5C,eAAO,MAAM,oBAAoB,oBAAoB,CAAC;AAEtD,eAAO,MAAM,iBAAiB,EAAE,EAAE,CAChC,iBAAiB,CAAC,wBAAwB,CAAC,CAY5C,CAAC"}
