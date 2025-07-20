@@ -46,7 +46,7 @@ export const AutoLogoutHandler: FC<PropsWithChildren<IAutoLogoutHandlerProps>> =
   const logoutWhenBrowserClosed = securitySettings?.logoutWhenBrowserClosed ?? false;
   const logoutTimeoutSecondsBrowserClose = securitySettings?.logoutTimeoutSecondsBrowserClose ?? 30;
   const logoutWhenUserInactive = securitySettings?.logoutWhenUserInactive ?? false;
-  const logoutTimeoutMinutesUserInactive = securitySettings?.logoutTimeoutMinutesUserInactive ?? 15;
+  const logoutTimeoutMinutesUserInactive = securitySettings?.logoutTimeoutMinutesUserInactive ?? 5;
 
   // Use user inactivity settings if enabled, otherwise fall back to legacy auto logoff timeout
   const inactivityTimeoutSeconds = logoutWhenUserInactive ? logoutTimeoutMinutesUserInactive * 60 : autoLogoffTimeout;
@@ -106,8 +106,10 @@ export const AutoLogoutHandler: FC<PropsWithChildren<IAutoLogoutHandlerProps>> =
     };
   }, [logoutWhenBrowserClosed, logoutTimeoutSecondsBrowserClose, loginInfo, logoutUser]);
 
-  // Calculate inactivity countdown display time  
-  const inactivityCountdownMinutes = Math.ceil((inactivityTimeoutSeconds - rt) / 60);
+  // Calculate remaining time for display
+  const remainingTimeSeconds = inactivityTimeoutSeconds - rt;
+  const inactivityCountdownMinutes = Math.ceil(remainingTimeSeconds / 60);
+  const inactivityCountdownSecondsDisplay = remainingTimeSeconds % 60;
 
   const onAction = (_event: Event) => {
     /*nop*/
@@ -153,24 +155,28 @@ export const AutoLogoutHandler: FC<PropsWithChildren<IAutoLogoutHandlerProps>> =
     return (
       <>
         {children}
-        {showCountdownDisplay && (
+        {showCountdownDisplay && remainingTimeSeconds > 0 && (
           <div style={{ 
             position: 'fixed', 
             top: 20, 
             right: 20, 
             zIndex: 1000, 
-            background: 'rgba(255, 255, 255, 0.9)', 
-            padding: '8px 12px', 
-            borderRadius: '4px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-            fontSize: '12px'
+            background: remainingTimeSeconds <= 60 ? 'rgba(255, 77, 79, 0.95)' : 'rgba(255, 255, 255, 0.95)', 
+            padding: '12px 16px', 
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            fontSize: '12px',
+            border: remainingTimeSeconds <= 60 ? '2px solid #ff4d4f' : '1px solid #d9d9d9',
+            color: remainingTimeSeconds <= 60 ? '#fff' : '#000'
           }}>
-            <Statistic 
-              title="Session expires in" 
-              value={inactivityCountdownMinutes} 
-              suffix="min" 
-              valueStyle={{ fontSize: '14px' }}
-            />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '11px', marginBottom: '4px', opacity: 0.8 }}>
+                Session expires in
+              </div>
+              <div style={{ fontSize: '16px', fontWeight: 'bold' }}>
+                {inactivityCountdownMinutes > 0 ? `${inactivityCountdownMinutes}m` : ''} {inactivityCountdownSecondsDisplay}s
+              </div>
+            </div>
           </div>
         )}
       </>
@@ -181,43 +187,72 @@ export const AutoLogoutHandler: FC<PropsWithChildren<IAutoLogoutHandlerProps>> =
     <div className={styles.shaIdleTimerRenderer}>
       <IdleTimerComponent onAction={onAction} onActive={onActive} onIdle={onIdle} timeout={timeout}>
         {children}
-        {showCountdownDisplay && (
+        {showCountdownDisplay && remainingTimeSeconds > 0 && (
           <div style={{ 
             position: 'fixed', 
             top: 20, 
             right: 20, 
             zIndex: 1000, 
-            background: 'rgba(255, 255, 255, 0.9)', 
-            padding: '8px 12px', 
-            borderRadius: '4px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-            fontSize: '12px'
+            background: remainingTimeSeconds <= 60 ? 'rgba(255, 77, 79, 0.95)' : 'rgba(255, 255, 255, 0.95)', 
+            padding: '12px 16px', 
+            borderRadius: '8px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            fontSize: '12px',
+            border: remainingTimeSeconds <= 60 ? '2px solid #ff4d4f' : '1px solid #d9d9d9',
+            color: remainingTimeSeconds <= 60 ? '#fff' : '#000'
           }}>
-            <Statistic 
-              title="Session expires in" 
-              value={inactivityCountdownMinutes} 
-              suffix="min" 
-              valueStyle={{ fontSize: '14px' }}
-            />
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '11px', marginBottom: '4px', opacity: 0.8 }}>
+                Session expires in
+              </div>
+              <div style={{ fontSize: '16px', fontWeight: 'bold' }}>
+                {inactivityCountdownMinutes > 0 ? `${inactivityCountdownMinutes}m` : ''} {inactivityCountdownSecondsDisplay}s
+              </div>
+            </div>
           </div>
         )}
         <Modal
-          title="You have been idle"
+          title="Session Timeout Warning"
           open={visible}
           cancelText="Keep me signed in"
-          okText="Logoff"
+          okText="Logout Now"
           onOk={onOk}
           onCancel={onCancel}
+          closable={true}
+          onClose={onCancel}
+          maskClosable={false}
+          width={480}
         >
           <div className={styles.idleTimerContent}>
             <span className={styles.idleTimerContentTopHint}>
-              You have not been using the application for sometime. Please click on the
-              <strong> Keep me signed in</strong> button, else you'll be automatically signed out in
+              Your session will expire due to inactivity. You will be automatically logged out in{' '}
+              <strong>{rt} seconds</strong> unless you choose to stay logged in.
             </span>
-            <Progress type="circle" percent={getPercentage(rt)} status={getStatus(rt)} format={() => <>{rt}</>} />
-            <span className={styles.idleTimerContentBottomHint}>
-              <strong>seconds</strong>
-            </span>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              margin: '20px 0',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '10px'
+            }}>
+              <Progress 
+                type="circle" 
+                percent={getPercentage(rt)} 
+                status={getStatus(rt)} 
+                format={() => <><strong>{rt}</strong><br/><small>seconds</small></>}
+                size={120}
+                strokeWidth={8}
+              />
+              <div style={{ textAlign: 'center', marginTop: '10px' }}>
+                <div style={{ fontSize: '16px', fontWeight: 'bold', color: '#ff4d4f' }}>
+                  Auto logout in {rt} seconds
+                </div>
+                <div style={{ fontSize: '14px', color: '#666', marginTop: '5px' }}>
+                  Click "Keep me signed in" to extend your session
+                </div>
+              </div>
+            </div>
           </div>
         </Modal>
       </IdleTimerComponent>

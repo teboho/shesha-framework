@@ -26,7 +26,7 @@ namespace Shesha.Migrations
                     ""logoutWhenBrowserClosed"": false,
                     ""logoutTimeoutSecondsBrowserClose"": 30,
                     ""logoutWhenUserInactive"": false,
-                    ""logoutTimeoutMinutesUserInactive"": 15
+                    ""logoutTimeoutMinutesUserInactive"": 5
                 }");
         }
     }

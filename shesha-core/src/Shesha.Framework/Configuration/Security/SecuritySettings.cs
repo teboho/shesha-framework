@@ -2,6 +2,7 @@ using Shesha.Domain.Enums;
 using Shesha.Settings;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
@@ -67,7 +68,8 @@ namespace Shesha.Configuration.Security
         /// Logout timeout in seconds for browser close
         /// </summary>
         [Display(Name = "Logout timeout (seconds)")]
-        public int LogoutTimeoutSecondsBrowserClose { get; set; }
+        [DefaultValue(30)]
+        public int LogoutTimeoutSecondsBrowserClose { get; set; } = 30;
 
         /// <summary>
         /// Logout when the user is inactive
@@ -79,7 +81,8 @@ namespace Shesha.Configuration.Security
         /// Logout timeout in minutes for user inactivity
         /// </summary>
         [Display(Name = "Logout timeout (minutes)")]
-        public int LogoutTimeoutMinutesUserInactive { get; set; }
+        [DefaultValue(5)]
+        public int LogoutTimeoutMinutesUserInactive { get; set; } = 5;
 
     }
 }

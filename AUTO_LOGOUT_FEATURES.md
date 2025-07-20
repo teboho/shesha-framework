@@ -16,7 +16,7 @@ Added new properties to `SecuritySettings.cs`:
 - `LogoutWhenBrowserClosed` (boolean) - Default: false
 - `LogoutTimeoutSecondsBrowserClose` (int) - Default: 30 seconds
 - `LogoutWhenUserInactive` (boolean) - Default: false  
-- `LogoutTimeoutMinutesUserInactive` (int) - Default: 15 minutes
+- `LogoutTimeoutMinutesUserInactive` (int) - Default: 5 minutes
 
 ### 2. AuthorizationSettingsDto Updates
 Extended the DTO to include the new auto logout properties for API communication.
@@ -60,7 +60,7 @@ The auto logout settings are configured through the Security Settings in the adm
 - Browser close logout: **Disabled**
 - Browser close timeout: **30 seconds**
 - User inactivity logout: **Disabled**
-- User inactivity timeout: **15 minutes**
+- User inactivity timeout: **5 minutes**
 
 ## Features
 
@@ -75,10 +75,15 @@ When enabled:
 ### User Inactivity Logout  
 When enabled:
 - Monitors user activity (mouse, keyboard, touch)
-- Shows persistent countdown display in top-right corner
-- Displays modal warning before logout with options:
-  - **Keep me signed in** - Resets the timer
-  - **Logoff** - Immediate logout
+- Shows persistent countdown display in top-right corner with minutes and seconds
+- Countdown display changes to red with border when less than 60 seconds remain
+- Displays enhanced modal warning before logout with:
+  - Clear message about session expiration
+  - Circular progress indicator with countdown
+  - Large countdown timer showing remaining seconds
+  - **Keep me signed in** button to extend session
+  - **Logout Now** button for immediate logout
+  - Close button (X) to extend session
 - Automatic logout if no user response
 
 ### Backward Compatibility
@@ -96,11 +101,11 @@ When enabled:
 }
 ```
 
-### Enable User Inactivity Logout (15 minute timeout)
+### Enable User Inactivity Logout (5 minute timeout)
 ```json
 {
   "logoutWhenUserInactive": true,
-  "logoutTimeoutMinutesUserInactive": 15
+  "logoutTimeoutMinutesUserInactive": 5
 }
 ```
 
@@ -110,7 +115,7 @@ When enabled:
   "logoutWhenBrowserClosed": true,
   "logoutTimeoutSecondsBrowserClose": 60,
   "logoutWhenUserInactive": true,
-  "logoutTimeoutMinutesUserInactive": 10
+  "logoutTimeoutMinutesUserInactive": 5
 }
 ```
 
@@ -152,9 +157,11 @@ To test the auto logout features:
 
 2. **User Inactivity Logout**:
    - Enable the setting with short timeout (e.g., 2 minutes)
-   - Verify countdown appears in UI
+   - Verify countdown appears in UI (shows minutes and seconds)
+   - Notice countdown changes to red when under 60 seconds
    - Stop interacting and wait for modal warning
-   - Test both "Keep signed in" and "Logoff" options
+   - Test the enhanced modal with circular progress and countdown
+   - Test "Keep me signed in", "Logout Now", and close (X) button options
 
 ## Future Enhancements
 
