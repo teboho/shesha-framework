@@ -1,4 +1,4 @@
-﻿namespace Shesha.Authorization.Settings.Dto
+namespace Shesha.Authorization.Settings.Dto
 {
     /// <summary>
     /// Authorization options
@@ -79,5 +79,25 @@
         /// TODO: Decide whether to use this property or not
         /// </summary>
         public int ResetPasswordWithSecurityQuestionsNumQuestionsAllowed { get; set; }
+
+        /// <summary>
+        /// Logout when the browser is closed
+        /// </summary>
+        public bool LogoutWhenBrowserClosed { get; set; }
+
+        /// <summary>
+        /// Logout timeout in seconds for browser close
+        /// </summary>
+        public int LogoutTimeoutSecondsBrowserClose { get; set; }
+
+        /// <summary>
+        /// Logout when the user is inactive
+        /// </summary>
+        public bool LogoutWhenUserInactive { get; set; }
+
+        /// <summary>
+        /// Logout timeout in minutes for user inactivity
+        /// </summary>
+        public int LogoutTimeoutMinutesUserInactive { get; set; }
     }
 }

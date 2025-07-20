@@ -1,4 +1,4 @@
-﻿using Abp.Application.Services;
+using Abp.Application.Services;
 using Shesha.Authorization.Settings.Dto;
 using Shesha.Configuration;
 using Shesha.Configuration.Security;
@@ -37,7 +37,13 @@ namespace Shesha.Authorization.Settings
                 ResetPasswordSmsOtpLifetime = dto.ResetPasswordWithSmsOtpExpiryDelay,
 
                 UseResetPasswordViaSecurityQuestions = dto.ResetPasswordWithSecurityQuestionsIsSupported,
-                ResetPasswordViaSecurityQuestionsNumQuestionsAllowed = dto.ResetPasswordWithSecurityQuestionsNumQuestionsAllowed
+                ResetPasswordViaSecurityQuestionsNumQuestionsAllowed = dto.ResetPasswordWithSecurityQuestionsNumQuestionsAllowed,
+
+                // Auto logout features
+                LogoutWhenBrowserClosed = dto.LogoutWhenBrowserClosed,
+                LogoutTimeoutSecondsBrowserClose = dto.LogoutTimeoutSecondsBrowserClose,
+                LogoutWhenUserInactive = dto.LogoutWhenUserInactive,
+                LogoutTimeoutMinutesUserInactive = dto.LogoutTimeoutMinutesUserInactive
             });
 
             //Password complexity
@@ -73,6 +79,12 @@ namespace Shesha.Authorization.Settings
             dto.ResetPasswordWithSmsOtpExpiryDelay = settings.ResetPasswordSmsOtpLifetime;
             dto.ResetPasswordWithSecurityQuestionsIsSupported = settings.UseResetPasswordViaSecurityQuestions;
             dto.ResetPasswordWithSecurityQuestionsNumQuestionsAllowed = settings.ResetPasswordViaSecurityQuestionsNumQuestionsAllowed;
+
+            // Auto logout features
+            dto.LogoutWhenBrowserClosed = settings.LogoutWhenBrowserClosed;
+            dto.LogoutTimeoutSecondsBrowserClose = settings.LogoutTimeoutSecondsBrowserClose;
+            dto.LogoutWhenUserInactive = settings.LogoutWhenUserInactive;
+            dto.LogoutTimeoutMinutesUserInactive = settings.LogoutTimeoutMinutesUserInactive;
 
             return dto;
         }

@@ -1,4 +1,4 @@
-﻿using Shesha.Domain.Enums;
+using Shesha.Domain.Enums;
 using Shesha.Settings;
 using System;
 using System.Collections.Generic;
@@ -56,6 +56,30 @@ namespace Shesha.Configuration.Security
         /// </summary>
         [Display(Name = "Default endpoint access", Description = "Used for 'Inherited' endpoint access")]
         public RefListPermissionedAccess DefaultEndpointAccess { get; set; }
+
+        /// <summary>
+        /// Logout when the browser is closed
+        /// </summary>
+        [Display(Name = "Logout when the browser is closed")]
+        public bool LogoutWhenBrowserClosed { get; set; }
+
+        /// <summary>
+        /// Logout timeout in seconds for browser close
+        /// </summary>
+        [Display(Name = "Logout timeout (seconds)")]
+        public int LogoutTimeoutSecondsBrowserClose { get; set; }
+
+        /// <summary>
+        /// Logout when the user is inactive
+        /// </summary>
+        [Display(Name = "Logout when the user is inactive")]
+        public bool LogoutWhenUserInactive { get; set; }
+
+        /// <summary>
+        /// Logout timeout in minutes for user inactivity
+        /// </summary>
+        [Display(Name = "Logout timeout (minutes)")]
+        public int LogoutTimeoutMinutesUserInactive { get; set; }
 
     }
 }
