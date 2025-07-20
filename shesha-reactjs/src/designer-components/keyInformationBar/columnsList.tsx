@@ -1,14 +1,23 @@
 import React, { FC, useEffect, useRef, useContext, useState, Fragment } from 'react';
 import {
-  DragDropContext,
-  DropResult,
-  Draggable,
-  DraggableProvided,
-  DraggableStateSnapshot,
-  Droppable,
-  DroppableProvided,
-  DroppableStateSnapshot,
-} from 'react-beautiful-dnd';
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 import { Table, Space, Popconfirm, Button, Form, Modal, Select, Input, Tooltip } from 'antd';
 import { DeleteFilled, MenuOutlined, PlusOutlined, QuestionCircleOutlined } from '@ant-design/icons';
@@ -109,38 +118,44 @@ const EditableCell = ({ title, editable, children, dataIndex, record, handleSave
   return <td {...restProps}>{childNode}</td>;
 };
 
-const getItemStyle = (draggableStyle: any, isDragging: boolean): {} => ({
-  padding: '2px',
-  userSelect: 'none',
-  background: isDragging ? 'white' : 'inherit',
-  border: isDragging ? '1px dashed #000' : 'none',
-  ...draggableStyle,
-});
-
 const DraggableBodyRowInner = ({ columns, className, style, ...restProps }) => {
   const [form] = Form.useForm();
 
   // function findIndex base on Table rowKey props and should always be a right array index
   const rowKey = restProps['data-row-key'];
-  const index = columns.findIndex(x => x.id === restProps['data-row-key']);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: rowKey });
+
+  const dragStyle = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    padding: '2px',
+    userSelect: 'none' as const,
+    background: isDragging ? 'white' : 'inherit',
+    border: isDragging ? '1px dashed #000' : 'none',
+    ...style,
+  };
+
   return (
-    <Draggable key={rowKey} draggableId={rowKey} index={index}>
-      {(providedDraggable: DraggableProvided, snapshotDraggable: DraggableStateSnapshot) => (
-        <Form form={form} component={false}>
-          <DragHandleContext.Provider value={{ ...providedDraggable.dragHandleProps }}>
-            <EditableContext.Provider value={form}>
-              <tr
-                className="editable-row"
-                ref={providedDraggable.innerRef}
-                {...providedDraggable.draggableProps}
-                style={getItemStyle(providedDraggable.draggableProps.style, snapshotDraggable.isDragging)}
-                {...restProps}
-              />
-            </EditableContext.Provider>
-          </DragHandleContext.Provider>
-        </Form>
-      )}
-    </Draggable>
+    <Form form={form} component={false}>
+      <DragHandleContext.Provider value={{ ...listeners }}>
+        <EditableContext.Provider value={form}>
+          <tr
+            className="editable-row"
+            ref={setNodeRef}
+            style={dragStyle}
+            {...attributes}
+            {...restProps}
+          />
+        </EditableContext.Provider>
+      </DragHandleContext.Provider>
+    </Form>
   );
 };
 
@@ -249,31 +264,25 @@ export const ColumnsList: FC<IProps> = ({ value, onChange, readOnly, size }) => 
     };
   });
 
-  const getListStyle = (_isDraggingOver: boolean) => ({
-    background: _isDraggingOver ? "lightgrey" : "inherit",
-    overflow: "scroll" as "scroll",
-  });
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 1,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
-  const onDragEnd = (result: DropResult) => {
-    const { source, destination } = result;
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
 
-    if (!destination) {
-      return;
-    }
+    if (active.id !== over?.id) {
+      const oldIndex = columns.findIndex((item) => item.id === active.id);
+      const newIndex = columns.findIndex((item) => item.id === over?.id);
 
-    if (destination.droppableId === source.droppableId && source.index === destination.index) return;
-
-    const reorder = (list: KeyInfomationBarItemProps[], startIndex: number, endIndex: number): KeyInfomationBarItemProps[] => {
-      const orderedList = [...list];
-      const [removed] = orderedList.splice(startIndex, 1);
-      orderedList.splice(endIndex, 0, removed);
-
-      return orderedList;
-    };
-
-    if (source.droppableId === destination.droppableId) {
-      const newColumns = reorder(columns, source.index, destination.index);
-
+      const newColumns = arrayMove(columns, oldIndex, newIndex);
       onChange(newColumns);
     }
   };
@@ -298,31 +307,35 @@ export const ColumnsList: FC<IProps> = ({ value, onChange, readOnly, size }) => 
         cancelText={readOnly ? 'Close' : undefined}
       >
         <Space direction="vertical" style={{ width: '100%' }}>
-          <DragDropContext onDragEnd={onDragEnd}>
-            <Droppable droppableId={'columns'}>
-              {(provided: DroppableProvided, snapshot: DroppableStateSnapshot) => (
-                <div ref={provided.innerRef} {...provided.droppableProps} style={{ ...getListStyle(snapshot.isDraggingOver), overflow: "hidden" }} >
-                  <Table
-                    style={{ overflow: "hidden" }}
-                    bordered
-                    pagination={false}
-                    dataSource={columns}
-                    columns={tableColumns}
-                    rowKey={r => r.id}
-                    components={{
-                      body: {
-                        row: ({ className, style, ...restProps }) => (
-                          <DraggableBodyRowInner columns={columns} className={className} style={style} {...restProps} />
-                        ),
-                        cell: EditableCell,
-                      },
-                    }}
-                  />
-                  {provided.placeholder}
-                </div>
-              )}
-            </Droppable>
-          </DragDropContext>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={columns.map(item => item.id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div style={{ overflow: "hidden" }}>
+                <Table
+                  style={{ overflow: "hidden" }}
+                  bordered
+                  pagination={false}
+                  dataSource={columns}
+                  columns={tableColumns}
+                  rowKey={r => r.id}
+                  components={{
+                    body: {
+                      row: ({ className, style, ...restProps }) => (
+                        <DraggableBodyRowInner columns={columns} className={className} style={style} {...restProps} />
+                      ),
+                      cell: EditableCell,
+                    },
+                  }}
+                />
+              </div>
+            </SortableContext>
+          </DndContext>
           {!readOnly && (
             <div>
               <Button type="default" onClick={handleAddColumn} icon={<PlusOutlined />}>
