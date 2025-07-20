@@ -78,26 +78,20 @@ namespace Shesha.DynamicEntities
                     .Select(selectExpression)
                     .ToListAsync();
                 
-                // Step 2: Analyze the current ordering state
+                // Step 2: Analyze the current ordering state  
                 var entitiesWithOrder = allEntities.Where(item => !IsNullOrDefault(item.OrderIndex)).ToList();
                 var entitiesWithoutOrder = allEntities.Where(item => IsNullOrDefault(item.OrderIndex)).ToList();
+                var requestedEntityIds = new HashSet<TId>(ids);
                 
                 var partialType = CreatePartialType(orderIndexProperty.Name, orderIndexProperty.PropertyType);
                 
-                // Step 3: Handle the global ordering state
-                if (!entitiesWithOrder.Any())
-                {
-                    // Case 1: All entities have null orderIndex - initialize from 1
-                    await InitializeCompleteOrdering(allEntities, partialType, orderIndexProperty, result);
-                }
-                else
-                {
-                    // Case 2: Some entities already have order - integrate null entities properly
-                    await IntegrateNullEntitiesIntoExistingOrder(entitiesWithOrder, entitiesWithoutOrder, partialType, orderIndexProperty, result);
-                }
+                // Step 3: FIRST - Handle null initialization for entities NOT in the reorder request
+                // This ensures user's reordering intent is never overridden
+                await HandleNullEntitiesNotInRequest(allEntities, entitiesWithOrder, entitiesWithoutOrder, requestedEntityIds, partialType, orderIndexProperty, result);
                 
-                // Step 4: Apply the specific reordering request
-                await ApplyReorderingRequest(passedItems, partialType, orderIndexProperty, result);
+                // Step 4: SECOND - Apply the user's specific reordering request with absolute priority
+                // This preserves the exact order the user intended
+                await ApplyUserReorderingRequest(passedItems, partialType, orderIndexProperty, result);
             }
 
             _unitOfWorkManager.Current.Completed += (sender, args) => EventBus.Trigger<EntityReorderedEventData<T, TId>>(this, new EntityReorderedEventData<T, TId>(ids));
@@ -292,23 +286,61 @@ namespace Shesha.DynamicEntities
         }
 
         /// <summary>
-        /// Applies the specific reordering request from the user
+        /// Applies the user's reordering request with absolute priority
+        /// The user's intended order sequence is preserved exactly as specified
         /// </summary>
-        private async Task ApplyReorderingRequest(
+        private async Task ApplyUserReorderingRequest(
             List<ReorderingItem<TId, TOrderIndex>> passedItems,
             Type partialType,
             PropertyInfo orderIndexProperty,
             ReorderResponse<TId, TOrderIndex> result)
         {
-            var numbers = new Stack<TOrderIndex>(passedItems.Select(i => i.OrderIndex).OrderByDescending(o => o));
-
-            foreach (var passedItem in passedItems)
+            // CRITICAL: Maintain the exact order the user specified in their request
+            // The order of items in the input.Items array represents the user's intended final sequence
+            
+            for (int i = 0; i < passedItems.Count; i++)
             {
-                var orderIndex = numbers.Pop();
+                var passedItem = passedItems[i];
+                var userIntendedOrder = passedItem.OrderIndex;
+                
                 var query = _repository.GetAll().Where(GetFindByIdExpression(passedItem.Id));
-                query.Update(GetUpdateExpression(partialType, orderIndexProperty.Name, orderIndex));
+                query.Update(GetUpdateExpression(partialType, orderIndexProperty.Name, userIntendedOrder));
 
-                result.ReorderedItems[passedItem.Id] = orderIndex;
+                // Track the change - this will override any previous null initialization
+                result.ReorderedItems[passedItem.Id] = userIntendedOrder;
+            }
+        }
+
+        /// <summary>
+        /// Handles null orderIndex values for entities NOT in the user's reorder request
+        /// This ensures we don't interfere with the user's intended ordering
+        /// </summary>
+        private async Task HandleNullEntitiesNotInRequest(
+            List<ReorderingItem<TId, TOrderIndex>> allEntities,
+            List<ReorderingItem<TId, TOrderIndex>> entitiesWithOrder,
+            List<ReorderingItem<TId, TOrderIndex>> entitiesWithoutOrder,
+            HashSet<TId> requestedEntityIds,
+            Type partialType,
+            PropertyInfo orderIndexProperty,
+            ReorderResponse<TId, TOrderIndex> result)
+        {
+            // Only handle null entities that are NOT part of the user's reorder request
+            var nullEntitiesNotInRequest = entitiesWithoutOrder
+                .Where(entity => !requestedEntityIds.Contains(entity.Id))
+                .OrderBy(e => e.Id) // Consistent ordering
+                .ToList();
+
+            if (!nullEntitiesNotInRequest.Any()) return;
+
+            if (!entitiesWithOrder.Any() && requestedEntityIds.Count == 0)
+            {
+                // Case 1: All entities have null orderIndex and no specific reorder request
+                await InitializeCompleteOrdering(nullEntitiesNotInRequest, partialType, orderIndexProperty, result);
+            }
+            else
+            {
+                // Case 2: Some entities have order, integrate null entities appropriately
+                await IntegrateNullEntitiesIntoExistingOrder(entitiesWithOrder, nullEntitiesNotInRequest, partialType, orderIndexProperty, result);
             }
         }
 
