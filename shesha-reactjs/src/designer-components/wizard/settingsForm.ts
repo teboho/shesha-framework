@@ -56,7 +56,6 @@ export const getSettings = () => {
                                 label: 'Component Name',
                                 parentId: 'root',
                                 size: 'small',
-                                hidden: { _code: 'return  getSettingValue(data?.hidden);', _mode: 'code', _value: false } as any,
                                 validate: {
                                     required: true,
                                 },
@@ -72,7 +71,6 @@ export const getSettings = () => {
                                         parentId: 'root',
                                         inputType: 'dropdown',
                                         jsSetting: true,
-                                        hidden: { _code: 'return  getSettingValue(data?.hidden);', _mode: 'code', _value: false } as any,
                                         dropdownOptions: [
                                             { value: 'default', label: 'Default' },
                                             { value: 'navigation', label: 'Navigation' }
@@ -119,7 +117,7 @@ export const getSettings = () => {
                                         type: 'dropdown',
                                         tooltip: 'This will be the default step that is active',
                                         jsSetting: true,
-                                        dropdownOptions: { _code: 'return  getSettingValue(data?.steps)?._data?.map((item) => ({ ...item, label: item?.title, value: item?.id }));', _mode: 'code', _value: 0 } as any
+                                        dropdownOptions: { _code: 'return  getSettingValue(data?.steps)?.map((item) => ({ ...item, label: item?.title, value: item?.id }));', _mode: 'code', _value: 0 } as any
                                     }
                                 ]
                             })
@@ -295,7 +293,7 @@ export const getSettings = () => {
                                                                 width: 85,
                                                                 propertyName: "dimensions.height",
                                                                 icon: "heightIcon",
-                                                                tooltip: "You can use any unit (%, px, em, etc). px by default if without unit"
+                                                                tooltip: "This is the height of the body of the wizard. You can use any unit (%, px, em, etc). px by default if without unit"
                                                             },
                                                             {
                                                                 type: 'textField',
@@ -599,6 +597,22 @@ export const getSettings = () => {
                                             content: {
                                                 id: additionalStylesContentId,
                                                 components: [...new DesignerToolbarSettings()
+                                                    .addSettingsInputRow({
+                                                        id: nanoid(),
+                                                        parentId: additionalStylesContentId,
+                                                        inputs: [
+                                                            {
+                                                                type: 'textField',
+                                                                id: nanoid(),
+                                                                label: "Step Width",
+                                                                width: 85,
+                                                                defaultValue: '200px',
+                                                                propertyName: "stepWidth",
+                                                                icon: "widthIcon",
+                                                                tooltip: "You can use any unit (%, px, em, etc). px by default if without unit"
+                                                            }
+                                                        ]
+                                                    })
                                                     .addSettingsInput({
                                                         id: nanoid(),
                                                         propertyName: 'buttonsLayout',
@@ -631,6 +645,7 @@ export const getSettings = () => {
                                                                 type: 'colorPicker',
                                                                 propertyName: 'primaryTextColor',
                                                                 hideLabel: false,
+                                                                defaultValue: '#fff',
                                                                 label: 'Primary Text Color'
                                                             }
                                                         ]

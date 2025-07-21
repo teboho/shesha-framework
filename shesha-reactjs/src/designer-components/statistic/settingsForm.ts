@@ -15,7 +15,6 @@ export const getSettings = (data: any) => {
   const pnlFontStyleId = nanoid();
   const dimensionsStylePnlId = nanoid();
   const backgroundStylePnlId = nanoid();
-  const fixesRowId = nanoid();
 
   const shadowStylePnlId = nanoid();
 
@@ -68,6 +67,16 @@ export const getSettings = (data: any) => {
                   }
                 ]
               })
+              .addSettingsInput(
+                {
+                  inputType: 'switch',
+                  id: nanoid(),
+                  propertyName: 'hidden',
+                  label: 'Hide',
+                  jsSetting: true,
+                  parentId: commonTabId,
+                }
+              )
               .addSettingsInputRow({
                 id: nanoid(),
                 parentId: commonTabId,
@@ -91,12 +100,12 @@ export const getSettings = (data: any) => {
                 ],
               })
               .addSettingsInputRow({
-                id: fixesRowId,
-                parentId: nanoid(),
+                id: nanoid(),
+                parentId: commonTabId,
                 inputs: [
                   {
                     type: 'textField',
-                    id: fixesRowId,
+                    id: nanoid(),
                     propertyName: 'prefix',
                     label: 'Prefix',
                     jsSetting: true,
@@ -111,12 +120,12 @@ export const getSettings = (data: any) => {
                 ],
               })
               .addSettingsInputRow({
-                id: fixesRowId,
-                parentId: nanoid(),
+                id: nanoid(),
+                parentId: commonTabId,
                 inputs: [
                   {
                     type: 'textField',
-                    id: fixesRowId,
+                    id: nanoid(),
                     propertyName: 'suffix',
                     label: 'Suffix',
                     jsSetting: true,
@@ -237,7 +246,7 @@ export const getSettings = (data: any) => {
                               inputType: 'codeEditor',
                               propertyName: 'titleStyle',
                               hideLabel: false,
-                              label: 'Custom Style',
+                              label: 'Custom Styles',
                               description: 'A script that returns the style of the element as an object. This should conform to CSSProperties',
                             })
                             .toJson()
@@ -311,7 +320,7 @@ export const getSettings = (data: any) => {
                               inputType: 'codeEditor',
                               propertyName: 'valueStyle',
                               hideLabel: false,
-                              label: 'Style',
+                              label: 'Custom Styles',
                               description: 'A script that returns the style of the element as an object. This should conform to CSSProperties',
                             })
                             .toJson()
@@ -396,19 +405,6 @@ export const getSettings = (data: any) => {
                                   propertyName: "dimensions.maxHeight",
                                   icon: "maxHeightIcon",
                                 }
-                              ]
-                            })
-                            .addSettingsInput({
-                              id: nanoid(),
-                              inputType: 'dropdown',
-                              propertyName: 'size',
-                              label: 'Size',
-                              width: '150px',
-                              hidden: { _code: 'return getSettingValue(data?.dimensions?.width) || getSettingValue(data?.dimensions?.height);', _mode: 'code', _value: false } as any,
-                              dropdownOptions: [
-                                { value: 'small', label: 'Small' },
-                                { value: 'medium', label: 'Medium' },
-                                { value: 'large', label: 'Large' },
                               ]
                             })
                             .toJson()
@@ -733,6 +729,7 @@ export const getSettings = (data: any) => {
                 propertyName: 'permissions',
                 label: 'Permissions',
                 size: 'small',
+                jsSetting: true,
                 parentId: securityId
               })
               .toJson()

@@ -1,50 +1,58 @@
-import { IChartData, IChartsProps, IFilter } from "@/designer-components/charts/model";
-import React, { FC, PropsWithChildren, useContext, useReducer } from "react";
-import { SetChartFiltersAction, SetControlPropsAction, SetDataAction, SetFilterdDataAction, SetIsFilterVisibleAction, SetIsLoadedAction, SetUrlTypeDataAction } from "./actions";
+import { IChartProps } from "@/designer-components/charts/model";
+import React, { FC, PropsWithChildren, useContext, useEffect, useReducer } from "react";
+import { CleanDataAction, SetAxisPropertyLabelAction, SetControlPropsAction, SetDataAction, SetIsLoadedAction, SetUrlTypeDataAction, SetValuePropertyLabelAction } from "./actions";
 import { ChartDataActionsContext, ChartDataStateContext, INITIAL_STATE } from "./context";
 import { chartDataReducer } from "./reducer";
 
-const ChartDataProvider: FC<PropsWithChildren<{}>> = ({ children }: PropsWithChildren<{}>) => {
-  const [state, dispatch] = useReducer(chartDataReducer, INITIAL_STATE);
+interface IChartDataProviderProps {
+  model: IChartProps;
+}
 
-  const setData = (data: IChartData[]) => {
+const ChartDataProvider: FC<PropsWithChildren<IChartDataProviderProps>> = ({ children, model }) => {
+  const [state, dispatch] = useReducer(chartDataReducer, { ...INITIAL_STATE, ...model });
+
+  const setControlProps = (controlProps: IChartProps) => {
+    dispatch(SetControlPropsAction(controlProps));
+  };
+
+  useEffect(() => {
+    dispatch(SetControlPropsAction(model));
+  }, [model]);
+
+  const setData = (data: object[]) => {
     dispatch(SetDataAction(data));
-  };
-
-  const setFilterdData = (filteredData: object[]) => {
-    dispatch(SetFilterdDataAction(filteredData));
-  };
-
-  const setChartFilters = (filters: IFilter[]) => {
-    dispatch(SetChartFiltersAction(filters));
   };
 
   const setIsLoaded = (isLoaded: boolean) => {
     dispatch(SetIsLoadedAction(isLoaded));
   };
 
-  const setIsFilterVisible = (isFilterVisible: boolean) => {
-    dispatch(SetIsFilterVisibleAction(isFilterVisible));
-  };
-
-  const setControlProps = (controlProps: IChartsProps) => {
-    dispatch(SetControlPropsAction(controlProps));
-  };
-
   const setUrlTypeData = (urlTypeData: object) => {
     dispatch(SetUrlTypeDataAction(urlTypeData));
+  };
+
+  const cleanData = () => {
+    dispatch(CleanDataAction());
+  };
+
+  const setAxisPropertyLabel = (axisPropertyLabel: string) => {
+    dispatch(SetAxisPropertyLabelAction(axisPropertyLabel));
+  };
+
+  const setValuePropertyLabel = (valuePropertyLabel: string) => {
+    dispatch(SetValuePropertyLabelAction(valuePropertyLabel));
   };
 
   return (
     <ChartDataStateContext.Provider value={state}>
       <ChartDataActionsContext.Provider value={{
         setData,
-        setFilterdData,
-        setChartFilters,
         setIsLoaded,
-        setIsFilterVisible,
         setControlProps,
-        setUrlTypeData
+        setUrlTypeData,
+        cleanData,
+        setAxisPropertyLabel,
+        setValuePropertyLabel
       }}>
         {children}
       </ChartDataActionsContext.Provider>
@@ -68,4 +76,4 @@ export const useChartDataActionsContext = () => {
   return context;
 };
 
-export default ChartDataProvider;
+export default React.memo(ChartDataProvider);

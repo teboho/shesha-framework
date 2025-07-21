@@ -1,7 +1,7 @@
 import { getDimensionsStyle } from '@/designer-components/_settings/utils/dimensions/utils';
 import { getFontStyle } from '@/designer-components/_settings/utils/font/utils';
 import { ConfigurableForm, ShaIcon, useAvailableConstantsData, useConfigurableActionDispatcher } from '@/index';
-import { useRefListItemGroupConfigurator } from '@/providers/refList/provider';
+import { useRefListItemGroupConfigurator } from '@/components/refListSelectorDisplay/provider';
 import { LeftOutlined, MoreOutlined, PlusOutlined, RightOutlined, SettingOutlined } from '@ant-design/icons';
 import { Button, Dropdown, Flex, MenuProps, Popconfirm } from 'antd';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -174,7 +174,7 @@ const RenderColumn: React.FC<KanbanColumnProps> = ({
             style={props.headerStyles || {}}
           >
             {props.showIcons && column.icon && <ShaIcon iconName={column.icon} readOnly style={iconStyles} />}
-            <h3
+            <span
               style={{
                 textWrap: 'nowrap',
                 textOverflow: 'ellipsis',
@@ -182,7 +182,7 @@ const RenderColumn: React.FC<KanbanColumnProps> = ({
               }}
             >
               {column.item} ({columnTasks.length})
-            </h3>
+            </span>
 
             {props.kanbanReadonly || props.readonly || !(props.allowNewRecord || props.collapsible) ? null : (
               <Dropdown trigger={['click']} menu={{ items: columnDropdownItems }} placement="bottomRight">

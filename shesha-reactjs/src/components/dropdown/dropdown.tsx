@@ -4,9 +4,10 @@ import { executeExpression } from '@/providers/form/utils';
 import { IDropdownProps, ILabelValue } from './model';
 import { Select } from 'antd';
 import GenericRefListDropDown from '@/components/refListDropDown/genericRefListDropDown';
-import { IncomeValueFunc, ISelectOption, OutcomeValueFunc } from '@/components/refListDropDown/models';
+import { CustomLabeledValue, IncomeValueFunc, ISelectOption, OutcomeValueFunc } from '@/components/refListDropDown/models';
 import { ReferenceListItemDto } from '@/apis/referenceList';
 import { useStyles } from './style';
+import ReflistTag from '../refListDropDown/reflistTag';
 
 
 export const Dropdown: FC<IDropdownProps> = ({
@@ -28,12 +29,17 @@ export const Dropdown: FC<IDropdownProps> = ({
     readOnly,
     style,
     size,
+    showIcon,
+    solidColor,
+    showItemName,
     allowClear = true,
+    displayStyle,
+    tagStyle
 }) => {
 
     const { styles } = useStyles({ style });
-  
-    const selectedMode = mode === 'single' ? undefined : mode;
+
+    const selectedMode = mode === 'multiple' || mode === 'tags' ? mode : undefined;
 
     const getOptions = (): ILabelValue[] => {
         return value && typeof value === 'number' ? values?.map((i) => ({ ...i, value: parseInt(i.value, 10) })) : values;
@@ -70,7 +76,10 @@ export const Dropdown: FC<IDropdownProps> = ({
             // fix for designer when switch mode
             value: typeof itemValue === 'object' ? null : itemValue,
             label: item?.label ?? 'unknown',
+            color: item?.color,
+            icon: item?.icon,
             data: item?.data,
+            description: item?.description,
         };
     }, [incomeValueFunc]);
 
@@ -94,8 +103,18 @@ export const Dropdown: FC<IDropdownProps> = ({
             value: typeof value === 'object' ? null : value,
             label,
             data: outcomeValueFunc(fetchedItem, args),
+            color: fetchedItem?.color,
+            icon: fetchedItem?.icon,
+            description: fetchedItem?.description,
         };
     }, [labelCustomJs, outcomeValueFunc, incomeValueFunc]);
+
+    const filterOption = (input, option) => {
+        if (typeof option?.children === 'string' && typeof input === 'string') {
+            return option?.children?.toLowerCase().indexOf(input?.toLowerCase()) >= 0;
+        }
+        return false;
+    };
 
     if (dataSourceType === 'referenceList') {
         return (
@@ -111,12 +130,17 @@ export const Dropdown: FC<IDropdownProps> = ({
                 placeholder={placeholder}
                 readOnly={readOnly}
                 size={size}
+                showIcon={showIcon}
+                solidColor={solidColor}
+                showItemName={showItemName}
                 className={styles.dropdown}
                 style={{ ...style }}
+                tagStyle={tagStyle}
                 allowClear={allowClear}
                 getLabeledValue={getLabeledValue}
                 getOptionFromFetchedItem={getOptionFromFetchedItem}
-
+                displayStyle={displayStyle}
+                filterOption={filterOption}
                 incomeValueFunc={incomeValueFunc}
                 outcomeValueFunc={outcomeValueFunc}
             />
@@ -125,37 +149,108 @@ export const Dropdown: FC<IDropdownProps> = ({
 
     const options = getOptions() || [];
 
-    const selectedValue = options.length > 0 ? value || defaultValue : null;
+    const selectedValue = options.length > 0 ? value ?? defaultValue : null;
 
     const getSelectValue = () => {
         const selectedValues = Array.isArray(selectedValue) ? selectedValue : [selectedValue];
-        return options?.filter(({ value: currentValue }) => selectedValues.indexOf(currentValue) > -1)?.map(x => x.label)?.join(', ');
+        return options?.filter(({ value: currentValue }) => selectedValues.indexOf(currentValue) > -1)?.map(({ label }) => ({ label }));
     };
 
+
+
     if (readOnly) {
-        return <ReadOnlyDisplayFormItem type="string" value={getSelectValue()} />;
+        return <ReadOnlyDisplayFormItem
+            showIcon={showIcon}
+            solidColor={solidColor}
+            showItemName={showItemName}
+            style={displayStyle === 'tags' ? tagStyle : style}
+            dropdownDisplayMode={displayStyle === 'tags' ? 'tags' : 'raw'}
+            type={mode === 'multiple' ? 'dropdownMultiple' : 'dropdown'}
+            value={mode === 'multiple' ?
+                displayStyle === 'tags' ?
+                    selectedValue?.map(x => options.find((o) => o.value === x)) :
+                    getSelectValue() :
+                options.find((o) => o.value === selectedValue)}
+        />;
+    }
+
+    const commonSelectProps = {
+        className: styles.dropdown,
+        allowClear,
+        onChange,
+        value: selectedValue,
+        disabledValues: disabledValues,
+        ignoredValues: ignoredValues,
+        defaultValue,
+        variant: 'borderless' as 'borderless' | 'filled' | 'outlined',
+        disabled: readOnly,
+        mode: selectedMode,
+        placeholder,
+        size,
+    };
+
+    if (mode !== 'multiple' && mode !== 'tags' && displayStyle === 'tags') {
+        return <Select<CustomLabeledValue | CustomLabeledValue>
+            {...commonSelectProps}
+            popupMatchSelectWidth={false}
+            style={{ width: 'max-content', height: 'max-content' }}
+            placeholder={placeholder}
+            showSearch
+            filterOption={filterOption}
+            labelRender={(props) => {
+                const option = options.find((o) => o.value === props.value);
+                return <ReflistTag
+                    key={option?.value}
+                    value={option?.value}
+                    description={option?.description}
+                    color={option?.color}
+                    icon={option?.icon}
+                    showIcon={showIcon}
+                    tagStyle={tagStyle}
+                    solidColor={solidColor}
+                    showItemName={showItemName}
+                    label={option?.label}
+                />;
+            }}
+        >
+            {options?.map(({ value: localValue, label }) => (
+                <Select.Option value={localValue} key={localValue} data={{}}>
+                    {label}
+                </Select.Option>
+            ))}
+        </Select>;
     }
 
     return (
         <Select
-            allowClear={allowClear}
-            onChange={onChange}
-            value={options.length > 0 ? value || defaultValue : undefined}
-            defaultValue={defaultValue}
-            variant={'borderless'}
-            className={styles.dropdown}
-            disabled={readOnly}
-            mode={selectedMode}
-            placeholder={placeholder}
-            showSearch
+            {...commonSelectProps}
             style={{ ...style }}
-            size={size}
+            showSearch
+            filterOption={filterOption}
+            placeholder={placeholder}
+            {...(displayStyle === 'tags' ? {
+                labelRender: (props) => {
+                    const option = options.find((o) => o.value === props.value);
+                    return <ReflistTag
+                        value={option?.value}
+                        description={option?.description}
+                        color={option?.color}
+                        icon={option?.icon}
+                        showIcon={showIcon}
+                        tagStyle={tagStyle}
+                        solidColor={solidColor}
+                        showItemName={showItemName}
+                        label={option?.label}
+                    />;
+                }
+            } : {})
+            }
         >
-            {options.map((option, index) => (
-                <Select.Option key={index} value={option.value}>
-                    {option.label}
+            {options?.map(({ value: localValue, label }) => (
+                <Select.Option value={localValue} key={label}>
+                    {label}
                 </Select.Option>
             ))}
-        </Select>
+        </Select >
     );
 }; 

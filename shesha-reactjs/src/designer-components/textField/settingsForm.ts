@@ -107,22 +107,14 @@ export const getSettings = (data: ITextFieldComponentProps) => {
                                         jsSetting: true,
                                         dropdownOptions: [
                                             {
-                                                label: 'text',
+                                                label: 'Text',
                                                 value: 'text',
                                             },
                                             {
-                                                label: 'password',
+                                                label: 'Password',
                                                 value: 'password',
                                             },
                                         ],
-                                    },
-                                    {
-                                        type: 'textField',
-                                        id: nanoid(),
-                                        propertyName: 'initialValue',
-                                        label: 'Default Value',
-                                        tooltip: 'Enter default value of component. (formData, formMode, globalState) are exposed',
-                                        jsSetting: true,
                                     },
                                 ],
                             })
@@ -171,6 +163,7 @@ export const getSettings = (data: ITextFieldComponentProps) => {
                                 id: nanoid(),
                                 label: 'Spell Check',
                                 inputType: 'switch',
+                                jsSetting: true,
                             })
                             .toJson()
                         ]
@@ -725,6 +718,7 @@ export const getSettings = (data: ITextFieldComponentProps) => {
                                 propertyName: 'permissions',
                                 label: 'Permissions',
                                 size: 'small',
+                                jsSetting: true,
                                 parentId: securityTabId
                             })
                             .toJson()

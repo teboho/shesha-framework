@@ -13,9 +13,10 @@ export const useStyles = createStyles(({ css, cx, prefixCls, token }, { style }:
   const shaGlobalTableFilter = "sha-global-table-filter";
 
   const entityPickerContainer = cx("entity-picker-container", css`
+    width: ${style?.width || '100%'};
     .${pickerInputGroup} {
       .${pickerInputGroupInput} {
-        width: calc(100% - ${pickerEllipsisBtnWidth});
+        width: calc(100% + ${pickerEllipsisBtnWidth});
       }
         
       .${pickerInputGroupEllipsis} {
@@ -47,6 +48,8 @@ export const useStyles = createStyles(({ css, cx, prefixCls, token }, { style }:
       
         .${shaReactTable} {
           margin: unset;
+          overflow: auto;
+          ${sheshaStyles.thinScrollbars}
         }
       
         .${entityPickerModalPagerContainer} {
@@ -75,6 +78,19 @@ export const useStyles = createStyles(({ css, cx, prefixCls, token }, { style }:
                 border-color: ${token.colorPrimary} !important;
               }
 
+        .ant-select-selector {
+          overflow: auto !important;
+          scrollbar-width: thin !important;
+          -ms-overflow-style: none !important;
+          &::-webkit-scrollbar {
+            width: 8px !important;
+          }
+        }
+
+        .ant-select-selection-overflow-item-suffix {
+          display: none !important;
+        };
+
         .ant-select-selector > ant-select-selection-search, ant-select-selection-placeholder {
           border-right: 1px solid #d9d9d9;
           padding: 0 8px !important;
@@ -95,6 +111,7 @@ export const useStyles = createStyles(({ css, cx, prefixCls, token }, { style }:
             font-family: ${style?.fontFamily || 'inherit'} !important;  
             
           }
+
       `);
 
   return {

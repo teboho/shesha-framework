@@ -1,55 +1,66 @@
-const evaluateString = (expression: string, data: any): any => {
-    try {
-        // Create a new function with 'data' as a parameter and the expression as the function body
-        const func = new Function('data', expression);
-        // Execute the function with the provided data
-        return func(data);
-    } catch (error) {
-        console.error('Error evaluating expression:', expression, error);
-        return null;
-    }
-};
-
-const getHeaderStyles = (primaryColor) => (
+export const getHeaderStyles = () => (
     {
-        "font": {
-            "color": "darkslategrey",
-            "size": 14,
-            "weight": "500",
-            "align": "left",
+        font: {
+            color: "darkslategray",
+            size: 14,
+            weight: "500",
+            align: "left",
+            type: "Segoe UI"
         },
-        "background": {
-            "type": "color",
-            "color": "#fff"
+        background: {
+            type: "color",
+            color: "#fff"
         },
-        "dimensions": {
-            "width": "auto",
-            "height": "auto",
-            "minHeight": "0",
-            "maxHeight": "auto",
-            "minWidth": "0",
-            "maxWidth": "auto"
+        dimensions: {
+            width: "auto",
+            height: "auto",
+            minHeight: "0",
+            maxHeight: "auto",
+            minWidth: "0",
+            maxWidth: "auto"
         },
-        "border": {
-            "radiusType": "all",
-            "borderType": "custom",
-            "border": {
-                "bottom": {
-                    "width": "2px",
-                    "style": "solid",
-                    "color": primaryColor
+        border: {
+            radiusType: "all",
+            borderType: "custom",
+            border: {
+                all: {},
+                top: {},
+                right: {},
+                bottom: {
+                    width: "2px",
+                    style: "solid",
+                    color: "var(--primary-color)"
                 },
+                left: {}
             },
-            "radius": {
-                "all": 0
+            radius: {
+                all: '0'
             }
         },
-        "stylingBox": "{\"paddingLeft\":\"0\",\"paddingBottom\":\"4\",\"paddingTop\":\"4\",\"paddingRight\":\"4\"}"
+        stylingBox: "{\"paddingLeft\":\"0\",\"paddingBottom\":\"4\",\"paddingTop\":\"4\",\"paddingRight\":\"0\"}"
     }
 );
 
-export const filterDynamicComponents = (components, query, data, primaryColor) => {
+export const getBodyStyles = () => ({
+    border: {
+        radiusType: "all",
+        borderType: "all",
+        border: {
+            all: { width: '0px', style: 'none', color: '' },
+            top: {},
+            right: {},
+            bottom: {},
+            left: {}
+        },
+        radius: {
+            all: 0
+        }
+    }
+});
+
+export const filterDynamicComponents = (components, query) => {
     if (!components || !Array.isArray(components)) return [];
+
 
     const lowerCaseQuery = query.toLowerCase();
 
@@ -58,8 +69,12 @@ export const filterDynamicComponents = (components, query, data, primaryColor) =
         return hidden || (!directMatch && !hasVisibleChildren);
     };
 
-    // Helper function to check if text matches query
-    const matchesQuery = (text) => text?.toLowerCase().includes(lowerCaseQuery);
+    // Helper function to check if text 
+    // matches query
+
+    const matchesQuery = (text) => {
+        return text?.toLowerCase().includes(lowerCaseQuery);
+    };
 
     const filterResult = components.map(component => {
         // Deep clone the component to avoid mutations
@@ -74,7 +89,7 @@ export const filterDynamicComponents = (components, query, data, primaryColor) =
 
         // Handle propertyRouter
         if (c.componentName === 'propertyRouter') {
-            const filteredComponents = filterDynamicComponents(c.components, query, data, primaryColor);
+            const filteredComponents = filterDynamicComponents(c.components, query);
 
             return {
                 ...c,
@@ -85,36 +100,23 @@ export const filterDynamicComponents = (components, query, data, primaryColor) =
 
         // Handle collapsiblePanel
         if (c.type === 'collapsiblePanel') {
-            const contentComponents = filterDynamicComponents(c.content?.components || [], query, data, primaryColor);
+            const contentComponents = filterDynamicComponents(c.content?.components || [], query);
             const hasVisibleChildren = contentComponents.length > 0;
 
             return {
                 ...c,
-                collapsible: c.collapsible ?? 'header',
+                collapsible: 'header',
                 content: {
                     ...c.content,
                     components: contentComponents
                 },
                 ghost: false,
-                collapsedByDefault: true,
-                headerStyles: getHeaderStyles(primaryColor),
-                border: {
-                    "hideBorder": false,
-                    "radiusType": "all",
-                    "borderType": "all",
-                    "border": {
-                        "all": {
-                            "width": "1px",
-                            "style": "none",
-                            "color": "#d9d9d9"
-                        },
-                    },
-                    "radius": {
-                        "all": 0
-                    }
-                },
-                "stylingBox": "{\"paddingLeft\":\"4\",\"paddingBottom\":\"4\",\"paddingTop\":\"4\",\"paddingRight\":\"4\",\"marginBottom\":\"5\"}",
-                "hidden": evaluateHidden(c.hidden, directMatch, hasVisibleChildren)
+                collapsedByDefault: false,
+                headerStyles: getHeaderStyles(),
+                allStyles: getBodyStyles(),
+                border: getBodyStyles().border,
+                stylingBox: "{\"paddingLeft\":\"4\",\"paddingBottom\":\"4\",\"paddingTop\":\"0\",\"paddingRight\":\"4\",\"marginBottom\":\"5\"}",
+                hidden: evaluateHidden(c.hidden, directMatch, hasVisibleChildren)
             };
         }
 
@@ -135,28 +137,13 @@ export const filterDynamicComponents = (components, query, data, primaryColor) =
 
         // Handle components with nested components
         if (c.components) {
-            const filteredComponents = filterDynamicComponents(c.components, query, data, primaryColor);
+            const filteredComponents = filterDynamicComponents(c.components, query);
             const hasVisibleChildren = filteredComponents.length > 0;
 
             return {
                 ...c,
                 components: filteredComponents,
                 hidden: evaluateHidden(c.hidden, directMatch, hasVisibleChildren)
-            };
-        }
-
-        // Handle inputs array if present
-        if (c.inputs) {
-            const filteredInputs = c.inputs?.filter(input =>
-                matchesQuery(input.label) ||
-                matchesQuery(input.propertyName) ||
-                (input.propertyName && matchesQuery(input.propertyName.split('.').join(' ')))
-            ) || [];
-
-            return {
-                ...c,
-                inputs: filteredInputs,
-                hidden: evaluateHidden(c.hidden, directMatch, filteredInputs.length > 0)
             };
         }
 
@@ -178,10 +165,6 @@ export const filterDynamicComponents = (components, query, data, primaryColor) =
             (c.inputs && c.inputs.length > 0)
         );
 
-        const isHidden = typeof c.hidden === 'string'
-            ? evaluateString(c.hidden, data)
-            : c.hidden;
-
-        return !isHidden || hasVisibleChildren;
+        return !c.hidden || hasVisibleChildren;
     });
 };

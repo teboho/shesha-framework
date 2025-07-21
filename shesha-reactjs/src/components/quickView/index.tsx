@@ -7,10 +7,11 @@ import { useFormConfiguration } from '@/providers/form/api';
 import { FormIdentifier } from '@/providers/form/models';
 import ParentProvider from '@/providers/parentProvider';
 import { get } from '@/utils/fetchers';
-import { App, Button, Popover, PopoverProps, Spin } from 'antd';
+import { App, Button, Popover, PopoverProps } from 'antd';
 import React, { CSSProperties, FC, PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import { ShaIconTypes } from '../iconPicker';
-import { getQuickViewInitialValues } from './utils';
+import { formItemLayout, getQuickViewInitialValues, loadingBox } from './utils';
+import { useStyles } from './styles/styles';
 
 export interface IQuickViewProps extends PropsWithChildren {
   /** The id or guid for the entity */
@@ -24,7 +25,7 @@ export interface IQuickViewProps extends PropsWithChildren {
   /** Metadata properties of value */
   dataProperties?: { [key in string]: any }[];
   /** The width of the quickview */
-  width?: number;
+  width?: number | string;
 
   className?: string;
 
@@ -44,19 +45,6 @@ export interface IQuickViewProps extends PropsWithChildren {
   emptyText?: string;
 }
 
-const formItemLayout = {
-  labelCol: {
-    xs: { span: 24 },
-    md: { span: 8 },
-    sm: { span: 8 },
-  },
-  wrapperCol: {
-    xs: { span: 24 },
-    md: { span: 16 },
-    sm: { span: 16 },
-  },
-};
-
 const QuickView: FC<Omit<IQuickViewProps, 'formType'>> = ({
   children,
   entityId,
@@ -66,7 +54,7 @@ const QuickView: FC<Omit<IQuickViewProps, 'formType'>> = ({
   displayProperty,
   displayName,
   initialFormData,
-  width = 600,
+  width = 400,
   popoverProps,
   dataProperties = [],
   disabled,
@@ -83,8 +71,7 @@ const QuickView: FC<Omit<IQuickViewProps, 'formType'>> = ({
   const { backendUrl, httpHeaders } = useSheshaApplication();
   const { refetch: fetchForm } = useFormConfiguration({ formId: formIdentifier, lazy: true });
   const { notification } = App.useApp();
-
-  //const cssStyle = getStyle(style, formData);
+  const {styles, cx} = useStyles();
 
   useEffect(() => {
     if (formIdentifier) {
@@ -142,12 +129,12 @@ const QuickView: FC<Omit<IQuickViewProps, 'formType'>> = ({
 
   const render = () => {
     if (children) {
-      return <div style={style}>{children}</div>;
+      return <div className={cx(styles.innerEntityReferenceButtonBoxStyle)}>{children}</div>;
     }
 
     if (displayType === 'icon') {
       return (
-        <Button style={style} type="link">
+        <Button type="link" className={cx(styles.innerEntityReferenceButtonBoxStyle)} style={style}>
           <ShaIcon iconName={iconName} />
         </Button>
       );
@@ -155,41 +142,50 @@ const QuickView: FC<Omit<IQuickViewProps, 'formType'>> = ({
 
     if (displayType === 'textTitle') {
       return (
-        <Button style={style} type="link">
-          {textTitle ?? (
-            <span>
-              <Spin size="small" /> Loading...
-            </span>
+        <Button type="link" className={cx(styles.innerEntityReferenceButtonBoxStyle)} style={style}>
+          {textTitle ? (
+            <span className={cx(styles.innerEntityReferenceSpanBoxStyle)}>{textTitle}</span>
+          ) : (
+            <>
+              {loadingBox(cx, styles)}
+            </>
           )}
         </Button>
       );
     }
 
+    const ifLoadingStateSuccess = () => loadingState === 'success' ? (
+      <span className={cx(styles.innerEntityReferenceSpanBoxStyle)}>{formTitle || emptyText}</span>
+    ) : (
+      <span className={cx(styles.innerEntityReferenceSpanBoxStyle)}>Quickview not configured properly</span>
+    );
+
     return (
-      <Button style={formTitle ? style : null} type="link">
+      <Button type="link" className={cx(styles.innerEntityReferenceButtonBoxStyle)} style={style}>
         {loadingState === 'loading' ? (
-          <span>
-            <Spin size="small" /> Loading...
-          </span>
-        ) : loadingState === 'success' ? (
-          formTitle || emptyText
-        ) : (
-          'Quickview not configured properly'
-        )}
+          <>
+            {loadingBox(cx, styles)}
+          </>
+        ) : ifLoadingStateSuccess()}
       </Button>
     );
   };
 
   if (disabled)
     return (
-      <Button disabled type="link">
-        {formTitle ?? emptyText}
+      <Button disabled type="link" className={cx(styles.innerEntityReferenceButtonBoxStyle)} style={style}>
+        <span className={cx(styles.innerEntityReferenceSpanBoxStyle)}>{formTitle || emptyText}</span>
       </Button>
     );
 
   const title = loadingState === 'error' ? 'Quickview not configured properly' : formTitle;
   return (
-    <Popover content={<div style={{ width }}>{formContent}</div>} title={title} {...popoverProps}>
+    <Popover
+      overlayInnerStyle={{ width, minWidth: width, maxHeight: '80vh', overflowY: 'auto', overflowX: 'auto' }}
+      content={formContent}
+      title={<div style={{ width, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{title}</div>}
+      {...popoverProps}
+    >
       {render()}
     </Popover>
   );
@@ -198,6 +194,7 @@ const QuickView: FC<Omit<IQuickViewProps, 'formType'>> = ({
 export const GenericQuickView: FC<IQuickViewProps> = (props) => {
   const { getEntityFormId } = useConfigurationItemsLoader();
   const [formConfig, setFormConfig] = useState<FormIdentifier>(props.formIdentifier ?? undefined);
+  const {styles, cx} = useStyles();
 
   useEffect(() => {
     if (props.className && !formConfig)
@@ -210,17 +207,15 @@ export const GenericQuickView: FC<IQuickViewProps> = (props) => {
         });
   }, [props.className, props.formType, formConfig]);
 
-  return formConfig ? (
-    <QuickView {...props} formIdentifier={formConfig} />
-  ) : formConfig === undefined ? (
-    <Button type="link">
-      <span>
-        <Spin size="small" /> Loading...
-      </span>
+  const buttonOrPopover = formConfig === undefined ? (
+    <Button type="link" className={cx(styles.innerEntityReferenceButtonBoxStyle)} style={props.style}>
+      {loadingBox(cx, styles)}
     </Button>
   ) : (
     <Popover content={'Quickview not configured properly'} title="Quickview not configured properly"></Popover>
   );
+
+  return formConfig ? <QuickView {...props} formIdentifier={formConfig} /> : buttonOrPopover;
 };
 
 export default QuickView;

@@ -12,6 +12,7 @@ export const getSettings = (data: any) => {
   const securityTabId = nanoid();
   const styleRouterId = nanoid();
   const customStylePanelId = nanoid();
+  const stylePanelId = nanoid();
 
   return {
     components: new DesignerToolbarSettings(data)
@@ -83,17 +84,9 @@ export const getSettings = (data: any) => {
                       jsSetting: true,
                       layout: 'horizontal',
                     },
-
                   ],
                 })
-                .addSettingsInput({
-                  inputType: 'textField',
-                  id: nanoid(),
-                  propertyName: 'defaultValue',
-                  label: 'Default Value',
-                  jsSetting: true,
-                  parentId: commonTabId,
-                })
+
                 .toJson(),
             ],
           },
@@ -110,6 +103,7 @@ export const getSettings = (data: any) => {
                   label: 'Data Source Type',
                   size: 'small',
                   jsSetting: true,
+                  parentId: dataTabId,
                   dropdownOptions: [
                     {
                       label: 'Values',
@@ -144,6 +138,7 @@ export const getSettings = (data: any) => {
                       labelName: 'label',
                       valueTitle: 'Value',
                       valueName: 'value',
+                      jsSetting: true,
                       mode: 'dialog',
                     },
                   ],
@@ -179,7 +174,7 @@ export const getSettings = (data: any) => {
                       type: 'codeEditor',
                       id: nanoid(),
                       propertyName: 'dataSourceUrl',
-                      label: 'Data Source Url',
+                      label: 'Data Source URL',
                       jsSetting: true,
                     },
                     {
@@ -277,6 +272,7 @@ export const getSettings = (data: any) => {
                         label: 'Direction',
                         size: 'small',
                         jsSetting: true,
+                        parentId: styleRouterId,
                         defaultValue: 'horizontal',
                         dropdownOptions: [
                           {
@@ -307,6 +303,7 @@ export const getSettings = (data: any) => {
                                 propertyName: 'style',
                                 hideLabel: false,
                                 label: 'Style',
+                                parentId: stylePanelId,
                                 description:
                                   'A script that returns the style of the element as an object. This should conform to CSSProperties',
                               })
@@ -331,6 +328,7 @@ export const getSettings = (data: any) => {
                   inputType: 'permissions',
                   propertyName: 'permissions',
                   label: 'Permissions',
+                  jsSetting: true,
                   size: 'small',
                   parentId: securityTabId,
                 })

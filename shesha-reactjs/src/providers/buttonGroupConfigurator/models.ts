@@ -4,6 +4,7 @@ import { IConfigurableActionConfiguration } from '@/interfaces/configurableActio
 import { IDynamicActionsConfiguration } from '@/designer-components/dynamicActionsConfigurator/models';
 import { EditMode, IStyleType } from '@/index';
 import React from 'react';
+import { ListItemWithId } from '@/components/listEditor/models';
 
 type ButtonGroupItemType = 'item' | 'group';
 
@@ -25,15 +26,15 @@ export type ButtonActionType =
 
 export interface IButtonGroupItemBase extends IStyleType {
   id: string;
-  name: string;
+  name?: string;
   block?: boolean;
   label?: string | React.ReactNode;
   tooltip?: string;
-  sortOrder: number;
+  sortOrder?: number;
   danger?: boolean;
   hidden?: boolean;
   isDynamic?: boolean;
-  itemType: ButtonGroupItemType;
+  itemType?: ButtonGroupItemType;
   icon?: string | React.ReactNode;
   iconPosition?: 'start' | 'end';
   downIcon?: string;
@@ -56,9 +57,11 @@ export interface IButtonGroupItemBase extends IStyleType {
   styles?: React.CSSProperties;
 }
 
-export interface IButtonGroupItem extends IButtonGroupItemBase {
-  itemSubType: ToolbarItemSubType;
+export interface IButtonGroupItem extends IButtonGroupItemBase, ListItemWithId {
+  itemSubType?: ToolbarItemSubType;
   styles?: React.CSSProperties;
+  dividerWidth?: string;
+  dividerColor?: string;
 }
 
 export interface IButtonItem extends Omit<IButtonGroupItem, 'type'> {

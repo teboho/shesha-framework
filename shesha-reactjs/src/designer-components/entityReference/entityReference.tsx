@@ -21,9 +21,7 @@ import { defaultStyles } from './utils';
 
 export type IActionParameters = [{ key: string; value: string }];
 
-export interface IEntityReferenceControlProps
-  extends Omit<IEntityReferenceProps, 'style'>,
-    Omit<IConfigurableFormComponent, 'style'> {
+export interface IEntityReferenceControlProps extends Omit<IEntityReferenceProps, 'style'>, IConfigurableFormComponent {
   /** @deprecated Use iconName instead */
   icon?: string;
 }
@@ -81,6 +79,33 @@ const EntityReferenceComponent: IToolboxComponent<IEntityReferenceControlProps> 
       .add<IEntityReferenceControlProps>(8, (prev) => ({
         ...prev,
         iconName: (prev?.iconName as ShaIconTypes) ?? (prev?.icon as ShaIconTypes),
+      }))
+      .add<IEntityReferenceControlProps>(9, (prev) => ({
+        ...prev,
+        style: prev.style,
+        mobile: {
+          ...prev.mobile,
+          style: prev.style,
+        },
+        tablet: {
+          ...prev.tablet,
+          style: prev.style,
+        },
+        desktop: {
+          ...prev.desktop,
+          style: prev.style,
+        },
+      }))
+      .add<IEntityReferenceControlProps>(10, (prev) => ({
+        ...prev,
+        modalWidth: (prev.modalWidth as string) === 'custom' ? '80%' : prev.modalWidth,
+        quickviewWidth: (() => {
+          if (prev.quickviewWidth == null || prev.quickviewWidth === '') return undefined;
+          if (typeof prev.quickviewWidth === 'number') return `${prev.quickviewWidth}px`;
+          if (/^\d+$/.test(prev.quickviewWidth)) return `${prev.quickviewWidth}px`; // digit-only string
+          if (/^\d+(px|%)$/.test(prev.quickviewWidth)) return prev.quickviewWidth;  // already valid
+          return prev.quickviewWidth; // keep keywords like 'auto', 'fit-content', etc.
+        })(),
       })),
   linkToModelMetadata: (model, propMetadata): IEntityReferenceControlProps => {
     return {

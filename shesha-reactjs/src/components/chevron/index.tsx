@@ -4,11 +4,12 @@ import { Button, Form, FormInstance } from "antd";
 import ConfigurableButton from "@/designer-components/button/configurableButton";
 import { pickStyleFromModel, useTheme } from "@/index";
 import { useStyles } from "./styles";
-import { fadeColor } from "@/providers/refList/provider/utils";
+import { fadeColor } from "@/components/refListSelectorDisplay/provider/utils";
 import { IChevronButton, IChevronControlProps } from "./models";
 import classNames from "classnames";
 import { addPx } from '@/utils/style';
 import { getFontStyle } from "@/designer-components/_settings/utils/font/utils";
+import { jsonSafeParse } from "@/utils/object";
 
 
 export const ChevronControl: FC<IChevronControlProps> = (props) => {
@@ -20,7 +21,7 @@ export const ChevronControl: FC<IChevronControlProps> = (props) => {
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [showRightArrow, setShowRightArrow] = useState(true);
     const containerRef = useRef(null);
-    const stylingBoxJSON = JSON.parse(stylingBox || '{}');
+    const stylingBoxJSON = jsonSafeParse(stylingBox || '{}');
     const stylingBoxCSS = pickStyleFromModel(stylingBoxJSON);    
 
     const renderButton = (props: IChevronButton, uuid: string, form?: FormInstance<any>) => {

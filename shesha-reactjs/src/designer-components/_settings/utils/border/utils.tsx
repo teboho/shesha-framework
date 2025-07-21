@@ -24,7 +24,7 @@ export const getBorderStyle = (input: IBorderValue, jsStyle: React.CSSProperties
     const { all = {}, top = {}, right = {}, bottom = {}, left = {} } = border;
 
     const handleBorderPart = (part, prefix: string, theme?: IConfigurableTheme) => {
-        const hideBorder = input?.border?.[part]?.style === 'none';
+        const hideBorder = !part?.color || !part?.width || input?.border?.[input.borderType]?.style === 'none';
         if (part?.width && !jsStyle[prefix] && !jsStyle[`${prefix}Width`]) style[`${prefix}Width`] = addPx(part?.width || all?.width);
         if (part?.style && !jsStyle[prefix] && !jsStyle[`${prefix}Style`]) style[`${prefix}Style`] = hideBorder ? 'none' : part?.style || all?.style;
         if (part?.color && !jsStyle[prefix] && !jsStyle[`${prefix}Color`]) style[`${prefix}Color`] = part?.color || all?.color;
@@ -58,7 +58,7 @@ export const getBorderStyle = (input: IBorderValue, jsStyle: React.CSSProperties
     };
 
 
-    if (!jsStyle.border) {
+    if (!jsStyle?.border) {
         if (input.borderType === 'all') {
             handleBorderPart(all, 'border', theme);
         } else {
@@ -70,17 +70,17 @@ export const getBorderStyle = (input: IBorderValue, jsStyle: React.CSSProperties
     };
 
     if (input?.radius) {
-        const { all, topLeft, topRight, bottomLeft, bottomRight } = input.radius;
+        const { all = 0, topLeft = 0, topRight = 0, bottomLeft = 0, bottomRight = 0 } = input.radius;
         if (input?.radiusType === 'all') {
-            style.borderTopRightRadius = `${all || 0}px`;
-            style.borderBottomRightRadius = `${all || 0}px`;
-            style.borderBottomLeftRadius = `${all || 0}px`;
-            style.borderTopLeftRadius = `${all || 0}px`;
+            style.borderTopRightRadius = addPx(all);
+            style.borderBottomRightRadius = addPx(all);
+            style.borderBottomLeftRadius = addPx(all);
+            style.borderTopLeftRadius = addPx(all);
         } else {
-            style.borderTopRightRadius = `${topRight || 0}px`;
-            style.borderBottomRightRadius = `${bottomRight || 0}px`;
-            style.borderBottomLeftRadius = `${bottomLeft || 0}px`;
-            style.borderTopLeftRadius = `${topLeft || 0}px`;
+            style.borderTopRightRadius = addPx(topRight);
+            style.borderBottomRightRadius = addPx(bottomRight);
+            style.borderBottomLeftRadius = addPx(bottomLeft);
+            style.borderTopLeftRadius = addPx(topLeft);
         }
     };
 
@@ -148,7 +148,6 @@ export const getBorderInputs = (path = '', isResponsive: boolean = true, hasMidd
         })
         .addSettingsInputRow({
             id: nanoid(),
-            parentId: 'borderStylePnl',
             inline: true,
             hidden: { _code: generateCode('borderType', false, isResponsive, path), _mode: 'code', _value: false } as any,
             inputs: [
@@ -167,6 +166,7 @@ export const getBorderInputs = (path = '', isResponsive: boolean = true, hasMidd
                     type: 'textField',
                     label: "Width",
                     hideLabel: true,
+                    placeholder: '0',
                     propertyName: `${borderProp}.all.width`,
                 },
                 {
@@ -175,6 +175,7 @@ export const getBorderInputs = (path = '', isResponsive: boolean = true, hasMidd
                     propertyName: `${borderProp}.all.style`,
                     type: "dropdown",
                     hideLabel: true,
+                    placeholder: 'Solid',
                     width: 60,
                     dropdownOptions: borderStyles,
                 },
@@ -188,8 +189,7 @@ export const getBorderInputs = (path = '', isResponsive: boolean = true, hasMidd
             ]
         })
         .addContainer({
-            id: 'borderStyleRow',
-            parentId: 'borderStylePnl',
+            id: nanoid(),
             hidden: { _code: generateCode('borderType', true, isResponsive, path), _mode: 'code', _value: false } as any,
             components: borderSides.slice(0, hasMiddle ? 5 : 4).map(sideValue => {
                 const side = sideValue.value;
@@ -197,7 +197,6 @@ export const getBorderInputs = (path = '', isResponsive: boolean = true, hasMidd
                 return new DesignerToolbarSettings()
                     .addSettingsInputRow({
                         id: nanoid(),
-                        parentId: 'borderStylePnl',
                         inline: true,
                         inputs: [
                             {
@@ -217,6 +216,7 @@ export const getBorderInputs = (path = '', isResponsive: boolean = true, hasMidd
                                 type: 'textField',
                                 label: "Width",
                                 hideLabel: true,
+                                placeholder: '0',
                                 propertyName: `${borderProp}.${side}.width`,
                             },
                             {
@@ -225,6 +225,7 @@ export const getBorderInputs = (path = '', isResponsive: boolean = true, hasMidd
                                 propertyName: `${borderProp}.${side}.style`,
                                 type: "dropdown",
                                 hideLabel: true,
+                                placeholder: 'Solid',
                                 width: 60,
                                 dropdownOptions: borderStyles,
                             },
@@ -262,13 +263,11 @@ export const getCornerInputs = (path = '', isResponsive: boolean = true, hideCor
         })
         .addSettingsInputRow({
             id: nanoid(),
-            parentId: 'borderStylePnl',
             inline: true,
             hidden: { _code: generateCode('radiusType', false, isResponsive, path), _mode: 'code', _value: false } as any,
             inputs: [
                 {
                     id: `borderRadiusStyleRow-all`,
-                    parentId: "borderStylePnl",
                     label: "Corner Radius",
                     hideLabel: true,
                     width: 80,
@@ -276,6 +275,7 @@ export const getCornerInputs = (path = '', isResponsive: boolean = true, hideCor
                     type: 'numberField',
                     icon: 'ExpandOutlined',
                     tooltip: 'Styles will apply to all corners',
+                    placeholder: '0',
                     propertyName: path ? `${path}.border.radius.all` : 'border.radius.all',
                 }
             ]
@@ -283,20 +283,19 @@ export const getCornerInputs = (path = '', isResponsive: boolean = true, hideCor
         .addSettingsInputRow({
             hidden: { _code: generateCode('radiusType', true, isResponsive, path), _mode: 'code', _value: false } as any,
             id: nanoid(),
-            parentId: 'borderStylePnl',
             inline: true,
             inputs: radiusCorners.map(cornerValue => {
                 const corner = cornerValue.value as string;
 
                 return {
                     id: `borderRadiusStyleRow-${corner}`,
-                    parentId: "borderStylePnl",
                     label: "Corner Radius",
                     hideLabel: true,
                     width: 80,
                     defaultValue: 0,
                     type: 'numberField',
                     icon: cornerValue.icon,
+                    placeholder: '0',
                     hidden: { _code: hideCornerConditions[corner], _mode: 'code', _value: false } as any,
                     tooltip: `${humanizeString(corner)} corner`,
                     propertyName: path ? `${path}.border.radius.${corner}` : `border.radius.${corner}`,

@@ -90,6 +90,7 @@ export const getSettings = (data: ITableComponentProps) => {
     const crudTabId = nanoid();
     const layoutTabId = nanoid();
     const emptyTableTabId = nanoid();
+    const eventsTabId = nanoid();
     const securityTabId = nanoid();
 
     return {
@@ -121,144 +122,32 @@ export const getSettings = (data: ITableComponentProps) => {
                         ]
                     },
                     {
-                        key: 'security',
-                        title: 'Security',
-                        id: securityTabId,
-                        components: [
-                            ...new DesignerToolbarSettings()
-                                .addSettingsInput({
-                                    id: nanoid(),
-                                    propertyName: 'permissions',
-                                    label: 'Permissions',
-                                    inputType: 'permissions',
-                                    parentId: securityTabId,
-                                    jsSetting: true,
-                                    tooltip: 'Enter a list of permissions that should be associated with this component',
-                                    })
-                                .toJson()
-                        ]
-                    },
-                    {
-                        key: 'appearance',
-                        title: 'Appearance',
-                        id: layoutTabId,
-                        components: [...new DesignerToolbarSettings()
-                            .addSettingsInputRow({
-                                id: nanoid(),
-                                inputs: [
-                                    {
-                                        id: nanoid(),
-                                        propertyName: 'minHeight',
-                                        label: 'Min Height',
-                                        type: 'numberField',
-                                        parentId: layoutTabId,
-                                        tooltip: 'The minimum height of the table (e.g. even when 0 rows). If blank then minimum height is 0.',
-                                        jsSetting: true,
-                                            },
-                                    {
-                                        id: nanoid(),
-                                        propertyName: 'maxHeight',
-                                        label: 'Max Height',
-                                        type: 'numberField',
-                                        parentId: layoutTabId,
-                                        tooltip: 'The maximum height of the table. If left blank should grow to display all rows, otherwise should allow for vertical scrolling.',
-                                        jsSetting: true,
-                                            }
-                                ]
-                            })
-                            .addCollapsiblePanel({
-                                id: 'tableStyles',
-                                propertyName: 'tableStylesCol',
-                                label: 'Customize Styles',
-                                labelAlign: 'right',
-                                ghost: true,
-                                parentId: layoutTabId,
-                                collapsible: 'header',
-                                content: {
-                                    id: 'tableStylesCollapsible',
-                                    components: [...new DesignerToolbarSettings()
-                                        .addSettingsInput({
-                                            id: nanoid(),
-                                            propertyName: 'containerStyle',
-                                            label: 'Table container style',
-                                            inputType: 'codeEditor',
-                                            parentId: layoutTabId,
-                                            description: 'The style that will be applied to the table container/wrapper',
-                                            exposedVariables: [],
-                                        })
-                                        .addSettingsInput({
-                                            id: nanoid(),
-                                            propertyName: 'tableStyle',
-                                            label: 'Table style',
-                                            inputType: 'codeEditor',
-                                            parentId: layoutTabId,
-                                            description: 'The style that will be applied to the table',
-                                            exposedVariables: [],
-                                        })
-                                        .toJson()
-
-
-
-                                    ]
-                                }
-                            })
-                            .addCollapsiblePanel({
-                                id: 'tableEmptyState',
-                                propertyName: 'tableEmptyState',
-                                label: 'Empty State',
-                                labelAlign: 'right',
-                                ghost: true,
-                                parentId: layoutTabId,
-                                collapsible: 'header',
-                                content: {
-                                    id: 'tableEmptyState',
-                                    components: [...new DesignerToolbarSettings()
-                                        .addSettingsInput({
-                                            id: nanoid(),
-                                            propertyName: 'noDataIcon',
-                                            label: 'Icon',
-                                            inputType: 'iconPicker',
-                                            parentId: emptyTableTabId,
-                                            jsSetting: true,
-                                        })
-                                        .addSettingsInput({
-                                            id: nanoid(),
-                                            propertyName: 'noDataText',
-                                            label: 'Primary Text',
-                                            inputType: 'textField',
-                                            parentId: emptyTableTabId,
-                                            jsSetting: true,
-                                            defaultValue: 'No Data',
-                                        })
-                                        .addSettingsInput({
-                                            id: nanoid(),
-                                            propertyName: 'noDataSecondaryText',
-                                            label: 'Secondary Text',
-                                            inputType: 'textField',
-                                            parentId: emptyTableTabId,
-                                            jsSetting: true,
-                                            defaultValue: 'No data is available for this table',
-                                        }).toJson()
-                                    ]
-                                }
-                            })
-                            .toJson()
-                        ]
-                    },
-                    {
                         key: 'data',
                         title: 'Data',
                         id: crudTabId,
                         components: [
                             ...new DesignerToolbarSettings()
-                                .addSettingsInput({
+                                .addSettingsInputRow({
                                     id: nanoid(),
-                                    propertyName: 'items',
-                                    label: data.readOnly ? 'View Columns' : 'Customize Columns',
-                                    inputType: 'columnsConfig',
-                                    jsSetting: true,
-                                    parentId: commonTabId,
-                                    })
+                                    inputs: [
+                                        {
+                                            id: nanoid(),
+                                            propertyName: 'items',
+                                            label: data.readOnly ? 'View Columns' : 'Customize Columns',
+                                            type: 'columnsConfig',
+                                            jsSetting: true,
+                                            parentId: commonTabId,
+                                        },
+                                        {
+                                            id: nanoid(),
+                                            propertyName: 'showExpandedView',
+                                            label: 'Show Expanded View',
+                                            type: 'switch',
+                                            jsSetting: true,
+                                            parentId: commonTabId,
+                                        }
+                                    ]
+                                })
                                 .addSettingsInputRow({
                                     id: nanoid(),
                                     inputs: [
@@ -273,7 +162,7 @@ export const getSettings = (data: ITableComponentProps) => {
                                         {
                                             id: nanoid(),
                                             propertyName: 'useMultiselect',
-                                            label: 'Use Multi-select',
+                                            label: 'Use Multi-Select',
                                             type: 'switch',
                                             jsSetting: true,
                                             parentId: commonTabId,
@@ -285,8 +174,9 @@ export const getSettings = (data: ITableComponentProps) => {
                                     propertyName: 'canEditInline',
                                     label: 'Can Edit Inline',
                                     inputType: 'dropdown',
+                                    jsSetting: true,
                                     parentId: crudTabId,
-                                        dropdownOptions: [
+                                    dropdownOptions: [
                                         { value: 'yes', label: 'Yes' },
                                         { value: 'no', label: 'No' },
                                         { value: 'inherit', label: 'Inherit' },
@@ -295,7 +185,6 @@ export const getSettings = (data: ITableComponentProps) => {
                                 })
                                 .addSettingsInputRow({
                                     id: nanoid(),
-
                                     hidden: { _code: 'return getSettingValue(data?.canEditInline) !== "js";', _mode: 'code', _value: false } as any,
                                     inputs: [
                                         {
@@ -352,7 +241,7 @@ export const getSettings = (data: ITableComponentProps) => {
                                             id: nanoid(),
                                             propertyName: 'customUpdateUrl',
                                             label: 'Custom Update URL',
-                                            type: 'textField',
+                                            type: 'endpointsAutocomplete',
                                             parentId: crudTabId,
                                         }
                                     ]
@@ -366,6 +255,7 @@ export const getSettings = (data: ITableComponentProps) => {
                                             propertyName: 'canAddInline',
                                             label: 'Can Add Inline',
                                             type: 'dropdown',
+                                            jsSetting: true,
                                             parentId: crudTabId,
                                             dropdownOptions: [
                                                 { value: 'yes', label: 'Yes' },
@@ -434,7 +324,7 @@ export const getSettings = (data: ITableComponentProps) => {
                                             id: nanoid(),
                                             propertyName: 'customCreateUrl',
                                             label: 'Custom Create URL',
-                                            type: 'textField',
+                                            type: 'endpointsAutocomplete',
                                             parentId: crudTabId,
                                         }
                                     ]
@@ -464,7 +354,7 @@ export const getSettings = (data: ITableComponentProps) => {
                                     parentId: crudTabId,
                                     tooltip: 'Custom business logic to be executed on saving of new/updated row (e.g. custom validation / calculations). This handler should return an object or a Promise<object>.',
                                     hidden: { _code: 'return getSettingValue(data?.canAddInline) === "no" && getSettingValue(data?.canEditInline) === "no";', _mode: 'code', _value: false } as any,
-                                        description: 'Allows custom business logic to be executed on saving of new/updated row (e.g. custom validation / calculations).',
+                                    description: 'Allows custom business logic to be executed on saving of new/updated row (e.g. custom validation / calculations).',
                                     exposedVariables: ROW_SAVE_EXPOSED_VARIABLES,
                                 })
                                 .addSettingsInput({
@@ -473,7 +363,8 @@ export const getSettings = (data: ITableComponentProps) => {
                                     label: 'Can Delete Inline',
                                     inputType: 'dropdown',
                                     parentId: crudTabId,
-                                        dropdownOptions: [
+                                    jsSetting: true,
+                                    dropdownOptions: [
                                         { value: 'yes', label: 'Yes' },
                                         { value: 'no', label: 'No' },
                                         { value: 'inherit', label: 'Inherit' },
@@ -505,7 +396,7 @@ export const getSettings = (data: ITableComponentProps) => {
                                             id: nanoid(),
                                             propertyName: 'customDeleteUrl',
                                             label: 'Custom Delete URL',
-                                            type: 'textField',
+                                            type: 'endpointsAutocomplete',
                                             parentId: crudTabId,
                                         }
                                     ]
@@ -515,32 +406,163 @@ export const getSettings = (data: ITableComponentProps) => {
                                 .toJson()
                         ]
                     },
-
                     {
                         key: 'events',
                         title: 'Events',
-                        id: securityTabId,
+                        id: eventsTabId,
                         components: [
                             ...new DesignerToolbarSettings()
                                 .addConfigurableActionConfigurator({
                                     id: nanoid(),
                                     propertyName: "dblClickActionConfiguration",
                                     parentId: 'root',
-                                    label: "On Double Click",
-                                    jsSetting: false,
-                                    })
+                                    label: "On Double-Click",
+                                })
                                 .addConfigurableActionConfigurator({
                                     id: nanoid(),
                                     propertyName: 'onRowSaveSuccessAction',
                                     label: 'On Row Save Success',
-                                    parentId: crudTabId,
                                     description: 'Custom business logic to be executed after successfull saving of new/updated row.',
                                     hideLabel: true,
-                                    jsSetting: true,
+                                })
+                                .addConfigurableActionConfigurator({
+                                    id: nanoid(),
+                                    propertyName: 'onRowDeleteSuccessAction',
+                                    label: 'On Row Delete Success',
+                                    description: 'Custom business logic to be executed after successfull deletion of a row.',
+                                    hideLabel: true,
                                 })
                                 .toJson()
                         ]
-                    }
+                    },
+                    {
+
+                        key: 'appearance',
+                        title: 'Appearance',
+                        id: layoutTabId,
+                        components: [...new DesignerToolbarSettings()
+                            .addSettingsInputRow({
+                                id: nanoid(),
+                                inputs: [
+                                    {
+                                        id: nanoid(),
+                                        propertyName: 'minHeight',
+                                        label: 'Min Height',
+                                        type: 'numberField',
+                                        parentId: layoutTabId,
+                                        tooltip: 'The minimum height of the table (e.g. even when 0 rows). If blank then minimum height is 0.',
+                                        jsSetting: true,
+                                    },
+                                    {
+                                        id: nanoid(),
+                                        propertyName: 'maxHeight',
+                                        label: 'Max Height',
+                                        type: 'numberField',
+                                        parentId: layoutTabId,
+                                        tooltip: 'The maximum height of the table. If left blank should grow to display all rows, otherwise should allow for vertical scrolling.',
+                                        jsSetting: true,
+                                    }
+                                ]
+                            })
+                            .addCollapsiblePanel({
+                                id: 'tableStyles',
+                                propertyName: 'tableStylesCol',
+                                label: 'Customize Styles',
+                                labelAlign: 'right',
+                                ghost: true,
+                                parentId: layoutTabId,
+                                collapsible: 'header',
+                                content: {
+                                    id: 'tableStylesCollapsible',
+                                    components: [...new DesignerToolbarSettings()
+                                        .addSettingsInputRow({
+                                            id: nanoid(),
+                                            inputs: [
+                                                {
+                                                    id: nanoid(),
+                                                    propertyName: 'tableStyle',
+                                                    label: 'Table Style',
+                                                    type: 'codeEditor',
+                                                    parentId: layoutTabId,
+                                                    description: 'The style that will be applied to the table',
+                                                    exposedVariables: [],
+                                                },
+                                                {
+                                                    id: nanoid(),
+                                                    propertyName: 'containerStyle',
+                                                    label: 'Table Container style',
+                                                    type: 'codeEditor',
+                                                    parentId: layoutTabId,
+                                                    description: 'The style that will be applied to the table container/wrapper',
+                                                    exposedVariables: [],
+                                                }
+                                            ]
+                                        })
+                                        .toJson()
+                                    ]
+                                }
+                            })
+                            .addCollapsiblePanel({
+                                id: 'tableEmptyState',
+                                propertyName: 'tableEmptyState',
+                                label: 'Empty State',
+                                labelAlign: 'right',
+                                ghost: true,
+                                parentId: layoutTabId,
+                                collapsible: 'header',
+                                content: {
+                                    id: 'tableEmptyState',
+                                    components: [...new DesignerToolbarSettings()
+                                        .addSettingsInput({
+                                            id: nanoid(),
+                                            propertyName: 'noDataIcon',
+                                            label: 'Icon',
+                                            inputType: 'iconPicker',
+                                            parentId: emptyTableTabId,
+                                            jsSetting: true,
+                                        })
+                                        .addSettingsInput({
+                                            id: nanoid(),
+                                            propertyName: 'noDataText',
+                                            label: 'Primary Text',
+                                            inputType: 'textField',
+                                            parentId: emptyTableTabId,
+                                            jsSetting: true,
+                                            defaultValue: 'No Data',
+                                        })
+                                        .addSettingsInput({
+                                            id: nanoid(),
+                                            propertyName: 'noDataSecondaryText',
+                                            label: 'Secondary Text',
+                                            inputType: 'textField',
+                                            parentId: emptyTableTabId,
+                                            jsSetting: true,
+                                            defaultValue: 'No data is available for this table',
+                                        }).toJson()
+                                    ]
+                                }
+                            })
+                            .toJson()
+                        ]
+                    },
+                    {
+                        key: 'security',
+                        title: 'Security',
+                        id: securityTabId,
+                        components: [
+                            ...new DesignerToolbarSettings()
+                                .addSettingsInput({
+                                    id: nanoid(),
+                                    propertyName: 'permissions',
+                                    label: 'Permissions',
+                                    inputType: 'permissions',
+                                    parentId: securityTabId,
+                                    jsSetting: true,
+                                    tooltip: 'Enter a list of permissions that should be associated with this component',
+                                })
+                                .toJson()
+                        ]
+                    },
                 ]
             })
             .toJson(),

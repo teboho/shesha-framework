@@ -1,13 +1,8 @@
-import React, {
-  CSSProperties,
-  FC,
-  PropsWithChildren,
-  ReactNode,
-  useMemo
-  } from 'react';
+import React, { CSSProperties, FC, PropsWithChildren, ReactNode, useMemo } from 'react';
 import { Button } from 'antd';
 import { FormIdentifier } from '@/interfaces';
 import { useShaRouting } from '@/providers/shaRouting';
+import { useStyles } from './styles/styles';
 
 export interface IShaLinkProps {
   linkTo?: string;
@@ -25,6 +20,8 @@ export interface IShaLinkProps {
   className?: string;
 
   style?: CSSProperties;
+
+  disabled?: boolean;
 }
 
 export const ShaLink: FC<PropsWithChildren<IShaLinkProps>> = ({
@@ -36,12 +33,14 @@ export const ShaLink: FC<PropsWithChildren<IShaLinkProps>> = ({
   children,
   className,
   style,
+  disabled,
 }) => {
   const { router, getFormUrl } = useShaRouting();
+  const {styles, cx} = useStyles();
 
   const paramsStr = useMemo(() => {
     if (!params) return undefined;
-    var str = [];
+    const str = [];
     for (const key of Object.keys(params)) str.push(encodeURIComponent(key) + '=' + encodeURIComponent(params[key]));
     return str.join('&');
   }, [params]);
@@ -57,9 +56,16 @@ export const ShaLink: FC<PropsWithChildren<IShaLinkProps>> = ({
   const childrenOrDisplayText = children || displayName;
 
   return (
-    <Button type="link" onClick={changeRoute} href={url} className={className} style={style}>
+    <Button
+      type="link"
+      onClick={changeRoute}
+      href={url}
+      className={cx(styles.innerEntityReferenceButtonBoxStyle, className)}
+      style={style}
+      disabled={disabled}
+    >
       {icon}
-      {childrenOrDisplayText && <span> {childrenOrDisplayText}</span>}
+      {!!childrenOrDisplayText && <span className={cx(styles.innerEntityReferenceSpanBoxStyle)}>{childrenOrDisplayText}</span>}
     </Button>
   );
 };

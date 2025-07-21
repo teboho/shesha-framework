@@ -124,15 +124,13 @@ export const ContextPropertyAutocomplete: FC<IContextPropertyAutocompleteProps> 
             readOnly={readOnly}
             value={value}
             onChange={(value) => {
-              if (value !== undefined) {
-                onChange(value);
-                setState({ ...state, context: value });
-              }
+              onChange(value);
+              setState({ ...state, context: value });
             }}
           />;
         }}
       </ConfigurableFormItem>
-      <MetadataProvider modelType={modelType ?? 'empty'} dataType={dataType}>
+      <MetadataProvider modelType={modelType} dataType={dataType}>
         <ConfigurableFormItem model={{...model as any, label: propertylabel, componentName: 'propertyName', propertyName: 'propertyName'}} >
           {(value, onChange) => {
             return <SettingsControl

@@ -3,7 +3,6 @@ import { FormLayout } from 'antd/lib/form/Form';
 import { IButtonGroupComponentProps } from './models';
 import { backgroundTypeOptions, positionOptions, repeatOptions, sizeOptions } from '@/designer-components/_settings/utils/background/utils';
 import { getBorderInputs, getCornerInputs } from '@/designer-components/_settings/utils/border/utils';
-import { overflowOptions } from '@/designer-components/_settings/utils/dimensions/utils';
 import { nanoid } from '@/utils/uuid';
 
 export const getSettings = (data: IButtonGroupComponentProps) => {
@@ -115,7 +114,7 @@ export const getSettings = (data: IButtonGroupComponentProps) => {
                                                 {
                                                     type: 'dropdown',
                                                     id: nanoid(),
-                                                    propertyName: 'spaceSize',
+                                                    propertyName: 'gap',
                                                     label: 'Gap',
                                                     tooltip: 'The size of space between items',
                                                     jsSetting: true,
@@ -214,16 +213,6 @@ export const getSettings = (data: IButtonGroupComponentProps) => {
                                                                 icon: "maxHeightIcon",
                                                             }
                                                         ]
-                                                    })
-                                                    .addSettingsInput({
-                                                        id: nanoid(),
-                                                        parentId: styleRouterId,
-                                                        inline: true,
-                                                        inputType: 'dropdown',
-                                                        label: 'Overflow',
-                                                        defaultValue: 'auto',
-                                                        propertyName: 'dimensions.overflow',
-                                                        dropdownOptions: overflowOptions
                                                     })
                                                     .toJson()
                                                 ]
@@ -512,6 +501,7 @@ export const getSettings = (data: IButtonGroupComponentProps) => {
                                 inputType: 'permissions',
                                 propertyName: 'permissions',
                                 label: 'Permissions',
+                                jsSetting: true,
                                 size: 'small',
                                 parentId: securityTabId
                             })

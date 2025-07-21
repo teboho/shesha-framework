@@ -20,7 +20,7 @@ export interface IColorPickerProps {
   readOnly?: boolean;
   size?: SizeType;
   style?: CSSProperties;
-  stylingBox?: string;
+  defaultValue?: ColorValueType;
 }
 
 const formatColor = (color: Color, format: ColorFormat) => {
@@ -45,10 +45,12 @@ export const readThemeColor = (theme: IConfigurableTheme) => ({
   'warning': theme.application?.warningColor,
   'error': theme.application?.errorColor,
   'info': theme.application?.infoColor,
-  'processing': theme.application?.processingColor
+  'processing': theme.application?.processingColor,
+  'primaryTextColor': theme?.text?.default,
+  'secondaryTextColor': theme?.text?.secondary
 });
 
-export const ColorPicker: FC<IColorPickerProps> = ({ value, onChange, title, presets, showText, allowClear, disabledAlpha, readOnly, size, style}) => {
+export const ColorPicker: FC<IColorPickerProps> = ({ value, onChange, title, presets, showText, allowClear, disabledAlpha, readOnly, size, style, defaultValue }) => {
   const [format, setFormat] = useState<ColorFormat>('hex');
   const { theme } = useTheme();
 
@@ -65,6 +67,25 @@ export const ColorPicker: FC<IColorPickerProps> = ({ value, onChange, title, pre
     event.stopPropagation();
   };
 
+  const panelRender = (panel: React.ReactNode) => (
+        <div onClick={onPanelClick}>
+        {title && (
+          <div
+            style={{
+              fontSize: 12,
+              color: 'rgba(0, 0, 0, 0.88)',
+              lineHeight: '20px',
+              marginBottom: 8,
+            }}
+          >
+            {title}
+          </div>
+
+        )}
+        {panel}
+      </div>
+    );
+
   return (
     <AntdColorPicker
       trigger='click'
@@ -78,26 +99,10 @@ export const ColorPicker: FC<IColorPickerProps> = ({ value, onChange, title, pre
       size={size}
       style={style}
       value={(readThemeColor(theme)[value as string] ?? value) ?? ""}
+      defaultValue={readThemeColor(theme)?.[defaultValue as string] ?? defaultValue}
       onChange={handleChange}
       presets={presets}
-      panelRender={(panel) => (
-        <div onClick={onPanelClick}>
-          {title && (
-            <div
-              style={{
-                fontSize: 12,
-                color: 'rgba(0, 0, 0, 0.88)',
-                lineHeight: '20px',
-                marginBottom: 8,
-              }}
-            >
-              {title}
-            </div>
-
-          )}
-          {panel}
-        </div>
-      )}
+      panelRender={panelRender}
     />
   );
 };

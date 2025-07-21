@@ -3,12 +3,12 @@ import { CSSProperties } from 'react';
 
 export const useStyles = createStyles(({ css, cx, token, prefixCls }, {
   headerStyle = {} as CSSProperties,
-  panelHeadType,
   bodyStyle = {} as CSSProperties,
   hideCollapseContent,
   isSimpleDesign,
   ghost,
-  accentStyle
+  accentStyle,
+  overflow
 }) => {
   const noContentPadding = "no-content-padding";
   const hideWhenEmpty = "hide-empty";
@@ -41,10 +41,10 @@ export const useStyles = createStyles(({ css, cx, token, prefixCls }, {
     minHeight,
     maxWidth,
     maxHeight,
-    borderTopLeftRadius = '8px',
-    borderTopRightRadius = '8px',
-    borderBottomLeftRadius = '8px',
-    borderBottomRightRadius = '8px',
+    borderTopLeftRadius = '0px',
+    borderTopRightRadius = '0px',
+    borderBottomLeftRadius = '0px',
+    borderBottomRightRadius = '0px',
     marginBottom,
     marginTop,
     marginLeft,
@@ -52,10 +52,7 @@ export const useStyles = createStyles(({ css, cx, token, prefixCls }, {
     paddingTop,
     paddingBottom,
     paddingLeft,
-    paddingRight,
-    overflow,
-    border,
-    ...rest
+    paddingRight
   } = bodyStyle;
 
   const {
@@ -99,7 +96,8 @@ export const useStyles = createStyles(({ css, cx, token, prefixCls }, {
       &.${hideWhenEmpty}:not(:has(.${prefixCls}-collapse-content .${prefixCls}-form-item:not(.${prefixCls}-form-item-hidden))) {
         display: none;
       }
-    --primary-color: ${token.colorPrimary}; 
+    --primary-color: ${token.colorPrimary};
+    --ant-line-width: ${hasBorder ? '0px' : '1px'} !important;
     ${hasBorder && '--ant-line-width: 0px !important;'}
     --ant-collapse-header-bg: transparent !important;
 
@@ -115,7 +113,6 @@ export const useStyles = createStyles(({ css, cx, token, prefixCls }, {
     }
    
     > .ant-collapse-item > .ant-collapse-content {
-      ${rest}
       width: ${width};
       min-width: ${minWidth};
       max-width: ${maxWidth};
@@ -127,20 +124,23 @@ export const useStyles = createStyles(({ css, cx, token, prefixCls }, {
       background-position: ${backgroundPosition};
       background-repeat: ${backgroundRepeat};
       position: relative;
-      overflow: ${overflow ?? 'auto'};
       padding-top: ${paddingTop} !important;
       padding-bottom: ${paddingBottom} !important;
       padding-left: ${paddingLeft} !important;
       padding-right: ${paddingRight} !important;
       border-radius : 0px 0px ${borderBottomRightRadius} ${borderBottomLeftRadius} !important;
-      border-top: ${borderTopWidth || borderWidth} ${borderTopStyle || borderStyle} ${borderTopColor || borderColor};
-      border-right: ${borderRightWidth || borderWidth} ${borderRightStyle || borderStyle} ${borderRightColor || borderColor};
-      border-left: ${borderLeftWidth || borderWidth} ${borderLeftStyle || borderStyle} ${borderLeftColor || borderColor};
-      border-bottom: ${borderBottomWidth || borderWidth} ${borderBottomStyle || borderStyle} ${borderBottomColor || borderColor};
+      border-top: ${ghost ? 'none' : borderTopWidth || borderWidth} ${borderTopStyle || borderStyle} ${borderTopColor || borderColor};
+      border-right: ${ghost ? 'none' : borderRightWidth || borderWidth} ${borderRightStyle || borderStyle} ${borderRightColor || borderColor};
+      border-left: ${ghost ? 'none' : borderLeftWidth || borderWidth} ${borderLeftStyle || borderStyle} ${borderLeftColor || borderColor};
+      border-bottom: ${ghost ? 'none' : borderBottomWidth || borderWidth} ${borderBottomStyle || borderStyle} ${borderBottomColor || borderColor};
 
       > .ant-collapse-content-box {
         --ant-collapse-content-padding: 0px !important;
         padding: 0px !important;
+        height: 100%;
+        width: 100%;
+        overflow: ${overflow?.overflow ?? 'auto'};
+        ${overflow};
       }
     }
 
@@ -157,14 +157,17 @@ export const useStyles = createStyles(({ css, cx, token, prefixCls }, {
       position: relative;
       visibility: ${hideCollapseContent ? 'hidden' : 'visible'};
       background: ${headerBgImage || headerBgColor};
+      width: ${width};
+      min-width: ${minWidth};
+      max-width: ${maxWidth};
       height: ${headerHeight};
       min-height: ${headerMinHeight};
       max-height: ${headerMaxHeight};
-      border-top: ${accentStyle && (panelHeadType === 'default' || panelHeadType === 'parent') ?
-      `3px` : headerBorderTopWidth || headerBorderWidth} ${headerBorderTopStyle || headerBorderStyle} ${accentStyle && (panelHeadType === 'default' || panelHeadType === 'parent') ?
+      border-top: ${accentStyle ?
+      `3px` : headerBorderTopWidth || headerBorderWidth} ${headerBorderTopStyle || headerBorderStyle} ${accentStyle ?
         'var(--primary-color)' : headerBorderTopColor || headerBorderColor};
       border-right: ${headerBorderRightWidth || headerBorderWidth} ${headerBorderRightStyle || headerBorderStyle} ${headerBorderRightColor || headerBorderColor};
-      border-left: ${accentStyle && panelHeadType === 'child' ? `3px` : headerBorderLeftWidth || headerBorderWidth} ${headerBorderLeftStyle || headerBorderStyle} ${accentStyle && panelHeadType === 'child' ? 'var(--primary-color)' : headerBorderLeftColor || headerBorderColor};
+      border-left: ${headerBorderLeftWidth || headerBorderWidth} ${headerBorderLeftStyle || headerBorderStyle} ${headerBorderLeftColor || headerBorderColor};
       border-bottom: ${headerBorderBottomWidth || headerBorderWidth} ${headerBorderBottomStyle || headerBorderStyle} ${headerBorderBottomColor || headerBorderColor};
       padding-top: ${headerPaddingTop} !important;
       padding-right: ${headerPaddingRight} !important;
@@ -196,13 +199,15 @@ export const useStyles = createStyles(({ css, cx, token, prefixCls }, {
         > .ant-collapse-header {
           --ant-collapse-header-padding: 5px 0px !important;
           border-bottom-left-radius: unset;
-          border-bottom-right-radius: unset;
+          border-bottom-right-radius: unset; 
+          border: none;
           ${accentStyle && `border-bottom: 2px solid ${token.colorPrimary};`}
-          ${accentStyle && (panelHeadType === 'default' || panelHeadType === 'parent') && `border-top: 3px solid var(--primary-color);`}
-          ${accentStyle && panelHeadType === 'child' && `border-left: 3px solid  var(--primary-color);`}
+          ${accentStyle && `border-top: 3px solid var(--primary-color);`}
           font-weight: ${fontWeight || '500'};
+        
         }
         > .ant-collapse-content {
+          border: none;
           > .ant-collapse-content-box {
             padding: 5px 0;
           }
@@ -227,7 +232,7 @@ export const useStyles = createStyles(({ css, cx, token, prefixCls }, {
         > .ant-collapse-header {
           --ant-collapse-header-padding: ${headerStyle?.padding || '12px 16px'} !important;
           padding: 12px 16px !important;
-          font-size: ${panelHeadType === 'parent' ? '13px' : '16px'};
+          font-size: 14px;
         }
       }
     }
@@ -249,9 +254,8 @@ export const useStyles = createStyles(({ css, cx, token, prefixCls }, {
 
     > .ant-collapse-item > .ant-collapse-header {
       visibility: ${hideCollapseContent ? 'hidden' : 'visible'};
-      ${accentStyle && (panelHeadType === 'default' || panelHeadType === 'parent') && `border-top: 3px solid var(--primary-color);`}
-      ${accentStyle && panelHeadType === 'child' && `border-left: 3px solid  var(--primary-color);`}
-      font-size: ${panelHeadType === 'parent' ? '13px' : '16px'};
+      ${accentStyle && `border-top: 3px solid var(--primary-color);`}
+      font-size: 14px;
       height: ${headerHeight};
       min-height: ${headerMinHeight};
       max-height: ${headerMaxHeight}

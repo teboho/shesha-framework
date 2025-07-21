@@ -207,7 +207,7 @@ export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, m
           font-weight: ${fontWeight} !important;
           font-family: ${fontFamily} !important;
         }
-        ${listType !== 'thumbnail' && style}
+        ${listType === 'thumbnail' && style}
       }
 
       .ant-upload-list-item-container {
@@ -215,6 +215,7 @@ export const useStyles = createStyles(({ token, css, cx, prefixCls }, { style, m
         width: var(--thumbnail-width) !important;
         height: var(--thumbnail-height) !important;
         border-radius: ${borderRadius} !important;
+        border: ${borderWidth} ${listType === 'thumbnail' ? borderStyle : 'none'} ${borderColor} !important;
         &.ant-upload-animate-inline-appear,
         &.ant-upload-animate-inline-appear-active,
         &.ant-upload-animate-inline {

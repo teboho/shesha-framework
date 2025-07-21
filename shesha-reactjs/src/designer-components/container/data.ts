@@ -168,11 +168,15 @@ export const defaultStyles = (prev?: IContainerComponentProps): IStyleType & ICo
     shadowStyle
   } = prev || {};
 
-
   const isBelow = shadowStyle === 'below';
   const isAbove = shadowStyle === 'above';
 
   return {
+    background: {
+      type: 'color',
+      color: '',
+
+    },
     dimensions: {
       width,
       height,
@@ -191,24 +195,23 @@ export const defaultStyles = (prev?: IContainerComponentProps): IStyleType & ICo
     },
     shadow: {
       blurRadius: isBelow || isAbove ? 4 : 0,
-      color: 'rgba(0, 0, 0, 0.15)',
+      color: '#000000',
       offsetX: 0,
       offsetY: isAbove ? -2 : isBelow ? 2 : 0,
       spreadRadius: 0
     },
-    display: prev?.display,
+    display: prev?.className === 'sha-index-table-control' || prev?.className === 'index-table-controls-right' ? 'flex' : prev?.display ?? null,
     direction: prev?.direction ?? "horizontal",
-    flexWrap: prev?.flexWrap ?? "wrap",
+    flexWrap: prev?.className === 'sha-index-table-control' || prev?.className === 'index-table-controls-right' ? 'nowrap' : prev?.flexWrap ?? "wrap",
     flexDirection: prev?.flexDirection ?? "row",
     justifyContent: prev?.justifyContent ?? "left",
-    alignItems: prev?.alignItems ?? "normal",
+    alignItems: prev?.className === 'index-table-controls-right' ? 'center' : prev?.alignItems ?? "normal",
     alignSelf: prev?.alignSelf ?? "normal",
     justifyItems: prev?.justifyItems ?? "normal",
     textJustify: prev?.textJustify ?? "auto",
     justifySelf: prev?.justifySelf ?? "normal",
     noDefaultStyling: prev?.noDefaultStyling ?? false,
     gridColumnsCount: prev?.gridColumnsCount ?? null,
-    gap: prev?.gap ?? '8px',
-    overflow: prev?.overflow ?? 'auto'
+    gap: prev?.gap ?? '8px'
   };
 };

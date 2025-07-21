@@ -1,7 +1,7 @@
 import { DesignerToolbarSettings } from '@/interfaces/toolbarSettings';
 import { FormLayout } from 'antd/lib/form/Form';
 import { fontTypes, fontWeights, textAlign } from '../_settings/utils/font/utils';
-import { borderStyles, getBorderInputs, getCornerInputs } from '../_settings/utils/border/utils';
+import { getBorderInputs, getCornerInputs } from '../_settings/utils/border/utils';
 import { nanoid } from '@/utils/uuid';
 import { backgroundTypeOptions, positionOptions, repeatOptions, sizeOptions } from '../_settings/utils/background/utils';
 
@@ -22,7 +22,7 @@ export const getSettings = (data) => {
   const backgroundStyleRowId = nanoid();
   const shadowStylePnlId = nanoid();
   const modalSettingsPnlId = nanoid();
-  const entityPickerDividerPnlId = nanoid();
+  const dataPanelContainerId = nanoid();
 
   return {
     components: new DesignerToolbarSettings(data)
@@ -59,85 +59,21 @@ export const getSettings = (data) => {
                 parentId: commonTabId,
                 hideLabel: true,
               })
-              .addSettingsInputRow({
+              .addSettingsInput({
                 id: nanoid(),
                 parentId: commonTabId,
-                inputs: [
-                  {
-                    type: 'textField',
-                    id: nanoid(),
-                    propertyName: 'placeholder',
-                    label: 'Placeholder',
-                    size: 'small',
-                    jsSetting: true,
-                  },
-                  {
-                    type: 'textArea',
-                    id: nanoid(),
-                    propertyName: 'description',
-                    label: 'Tooltip',
-                    jsSetting: true,
-                  },
-                ],
+                inputType: 'textField',
+                propertyName: 'placeholder',
+                label: 'Placeholder',
+                size: 'small',
+                jsSetting: true,
               })
-              .addSettingsInputRow({
+              .addSettingsInput({
+                inputType: 'textArea',
                 id: nanoid(),
-                parentId: commonTabId,
-                inputs: [
-                  {
-                    type: 'dropdown',
-                    id: nanoid(),
-                    propertyName: 'mode',
-                    label: 'Selection Type',
-                    size: 'small',
-                    jsSetting: true,
-                    dropdownOptions: [
-                      {
-                        label: 'Single',
-                        value: 'single',
-                      },
-                      {
-                        label: 'Multiple',
-                        value: 'multiple',
-                      },
-                    ],
-                  },
-                  {
-                    type: 'autocomplete',
-                    id: nanoid(),
-                    propertyName: 'entityType',
-                    label: 'Entity Type',
-                    jsSetting: true,
-                    dataSourceType: 'url',
-                    validate: {},
-                    dataSourceUrl: '/api/services/app/Metadata/EntityTypeAutocomplete',
-                    settingsValidationErrors: [],
-                  },
-                ],
-              })
-
-              .addSettingsInputRow({
-                id: nanoid(),
-                parentId: commonTabId,
-                readOnly: false,
-                hidden: { _code: 'return !getSettingValue(data?.entityType);', _mode: 'code', _value: false } as any,
-                inputs: [
-                  {
-                    type: 'propertyAutocomplete',
-                    id: nanoid(),
-                    propertyName: 'displayEntityKey',
-                    label: 'Display Property',
-                    labelAlign: 'right',
-                    parentId: dataPanelId,
-                    hidden: false,
-                    isDynamic: false,
-                    description: 'Name of the property that should be displayed in the field. Live empty to use default display property defined on the back-end.',
-                    validate: {},
-                    modelType: '{{data.entityType}}',
-                    autoFillProps: false,
-                    settingsValidationErrors: [],
-                  },
-                ],
+                propertyName: 'description',
+                label: 'Tooltip',
+                jsSetting: true,
               })
               .addSettingsInputRow({
                 id: nanoid(),
@@ -171,19 +107,83 @@ export const getSettings = (data) => {
             id: dataTabId,
             components: [...new DesignerToolbarSettings()
               .addContainer({
-                id: dataPanelId,
+                id: dataPanelContainerId,
                 parentId: dataTabId,
                 components: [...new DesignerToolbarSettings()
                   .addSettingsInputRow({
                     id: nanoid(),
-                    parentId: dataPanelId,
+                    parentId: dataPanelContainerId,
                     inputs: [
                       {
-                        type: 'queryBuilder',
+                        type: 'dropdown',
                         id: nanoid(),
+                        propertyName: 'mode',
+                        label: 'Selection Type',
+                        size: 'small',
+                        jsSetting: true,
+                        dropdownOptions: [
+                          {
+                            label: 'Single',
+                            value: 'single',
+                          },
+                          {
+                            label: 'Multiple',
+                            value: 'multiple',
+                          },
+                        ],
+                      },
+                      {
+                        type: 'autocomplete',
+                        id: nanoid(),
+                        propertyName: 'entityType',
+                        label: 'Entity Type',
+                        jsSetting: true,
+                        dataSourceType: 'url',
+                        validate: {},
+                        dataSourceUrl: '/api/services/app/Metadata/EntityTypeAutocomplete',
+                        settingsValidationErrors: [],
+                      },
+                    ],
+                  })
+                  .addSettingsInputRow({
+                    id: nanoid(),
+                    parentId: dataPanelContainerId,
+                    readOnly: false,
+                    hidden: { _code: 'return !getSettingValue(data?.entityType);', _mode: 'code', _value: false } as any,
+                    inputs: [
+                      {
+                        type: 'propertyAutocomplete',
+                        id: nanoid(),
+                        propertyName: 'displayEntityKey',
+                        label: 'Display Property',
+                        labelAlign: 'right',
+                        hidden: false,
+                        isDynamic: false,
+                        description: 'Name of the property that should be displayed in the field. Live empty to use default display property defined on the back-end.',
+                        validate: {},
+                        modelType: {
+                          _code: 'return getSettingValue(data?.entityType);',
+                          _mode: 'code',
+                          _value: false
+                        } as any,
+                        autoFillProps: false,
+                        settingsValidationErrors: [],
+                      },
+                    ],
+                  })
+                  .addSettingsInputRow({
+                    id: nanoid(),
+                    parentId: dataPanelContainerId,
+                    inputs: [
+                      {
+                        id: nanoid(),
+                        type: 'queryBuilder',
                         propertyName: 'filters',
                         label: 'Entity Filter',
-                        jsSetting: true,
+                        labelAlign: 'right',
+                        isDynamic: false,
+                        validate: {},
+                        settingsValidationErrors: [],
                         modelType: '{{data.entityType}}',
                         fieldsUnavailableHint: 'Please select `Entity Type` to be able to configure this filter.',
                         hidden: { _code: 'return !getSettingValue(data?.entityType);', _mode: 'code', _value: false } as any,
@@ -194,8 +194,9 @@ export const getSettings = (data) => {
                     inputType: 'dropdown',
                     id: nanoid(),
                     propertyName: 'valueFormat',
-                    parentId: dataPanelId,
+                    parentId: dataPanelContainerId,
                     label: 'Value Format',
+                    jsSetting: true,
                     dropdownOptions: [
                       {
                         label: 'Simple ID',
@@ -214,14 +215,14 @@ export const getSettings = (data) => {
                   })
                   .addSettingsInputRow({
                     id: nanoid(),
-                    parentId: dataPanelId,
+                    parentId: dataPanelContainerId,
                     hidden: { _code: 'return getSettingValue(data?.valueFormat) !== "custom";', _mode: 'code', _value: false } as any,
                     inputs: [
                       {
                         type: 'codeEditor',
                         id: nanoid(),
                         propertyName: 'incomeCustomJs',
-                        label: 'Id Value',
+                        label: 'ID Value',
                         parentId: dataPanelId,
                         validate: {},
                         settingsValidationErrors: [],
@@ -243,18 +244,23 @@ export const getSettings = (data) => {
                     id: nanoid(),
                     inputType: 'columnsConfig',
                     propertyName: 'items',
-                    parentId: dataPanelId,
+                    parentId: dataPanelContainerId,
                     label: 'Columns',
                     items: [],
-                    modelType: '{{data.entityType}}',
+                    modelType: {
+                      _code: 'return getSettingValue(data?.entityType);',
+                      _mode: 'code',
+                      _value: false
+                    } as any,
                     parentComponentType: 'entityPicker',
+                    jsSetting: true,
                   }).toJson()]
               })
               .addSettingsInput({
                 inputType: 'switch',
                 id: nanoid(),
                 propertyName: 'allowNewRecord',
-                parentId: 'root',
+                parentId: dataTabId,
                 label: 'Allow New Record',
               })
               .addCollapsiblePanel({
@@ -264,6 +270,7 @@ export const getSettings = (data) => {
                 labelAlign: 'right',
                 parentId: dataTabId,
                 collapsible: 'header',
+                ghost: true,
                 hidden: { _code: 'return !getSettingValue(data?.allowNewRecord);', _mode: 'code', _value: false } as any,
                 content: {
                   id: modalSettingsPnlId,
@@ -280,6 +287,7 @@ export const getSettings = (data) => {
                           labelAlign: 'right',
                           parentId: modalSettingsPnlId,
                           hidden: false,
+                          jsSetting: true,
                           validate: {
                             required: true,
                           }
@@ -293,6 +301,7 @@ export const getSettings = (data) => {
                           parentId: modalSettingsPnlId,
                           hidden: false,
                           size: 'small',
+                          jsSetting: true,
                           validate: {
                             required: true,
                           }
@@ -307,6 +316,7 @@ export const getSettings = (data) => {
                         label: 'Buttons Type',
                         type: 'dropdown',
                         width: 120,
+                        jsSetting: true,
                         dropdownOptions: [
                           { label: 'Default', value: 'default' },
                           { label: 'Custom', value: 'custom' },
@@ -320,6 +330,7 @@ export const getSettings = (data) => {
                         hidden: { _code: 'return !(getSettingValue(data?.showModalFooter) === true || getSettingValue(data?.footerButtons) === "default");', _mode: 'code', _value: false } as any,
                         propertyName: 'submitHttpVerb',
                         label: 'Submit HTTP Verb',
+                        jsSetting: true,
                         dropdownOptions: [
                           { label: 'POST', value: 'POST' },
                           { label: 'PUT', value: 'PUT' },
@@ -332,6 +343,7 @@ export const getSettings = (data) => {
                         hidden: { _code: 'return !(getSettingValue(data?.footerButtons) === "custom");', _mode: 'code', _value: false } as any,
                         label: 'Configure Modal Buttons',
                         type: 'buttonGroupConfigurator',
+                        jsSetting: true,
                       }
                       ]
                     })
@@ -341,6 +353,8 @@ export const getSettings = (data) => {
                       inputType: 'customDropdown',
                       label: 'Dialog Width',
                       allowClear: true,
+                      jsSetting: true,
+                      customTooltip: 'You can use any unit (%, px, em, etc). px by default if without unit',
                       customDropdownMode: 'single',
                       dropdownOptions: [
                         {
@@ -834,52 +848,6 @@ export const getSettings = (data) => {
                         ]
                       }
                     })
-                    .addCollapsiblePanel({
-                      id: nanoid(),
-                      propertyName: 'entityPickerDivider',
-                      label: 'Entity Picker Divider',
-                      labelAlign: 'right',
-                      ghost: true,
-                      content: {
-                        id: entityPickerDividerPnlId,
-                        components: [...new DesignerToolbarSettings()
-                          .addSettingsInputRow({
-                            id: nanoid(),
-                            parentId: entityPickerDividerPnlId,
-                            inline: true,
-                            readOnly: false,
-                            inputs: [
-                              {
-                                id: nanoid(),
-                                type: 'textField',
-                                label: "Width",
-                                hideLabel: true,
-                                propertyName: 'dividerWidth',
-                              },
-                              {
-                                id: nanoid(),
-                                label: "Style",
-                                propertyName: 'dividerStyle',
-                                type: "dropdown",
-                                hideLabel: true,
-                                width: 60,
-                                readOnly: { _code: 'return getSettingValue(data?.readOnly);', _mode: 'code', _value: false } as any,
-                                dropdownOptions: borderStyles,
-                              },
-                              {
-                                id: nanoid(),
-                                label: `Color`,
-                                propertyName: 'dividerColor',
-                                type: "colorPicker",
-                                readOnly: { _code: 'return getSettingValue(data?.readOnly);', _mode: 'code', _value: false } as any,
-                                hideLabel: true,
-                              }
-                            ]
-                          })
-                          .toJson()
-                        ]
-                      }
-                    })
                     .toJson()]
               }).toJson()]
           },
@@ -893,6 +861,7 @@ export const getSettings = (data) => {
                 inputType: 'permissions',
                 propertyName: 'permissions',
                 label: 'Permissions',
+                jsSetting: true,
                 size: 'small',
                 parentId: securityTabId
               })
