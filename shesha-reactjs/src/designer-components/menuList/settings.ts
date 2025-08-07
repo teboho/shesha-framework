@@ -48,7 +48,7 @@ export const getSettings = (data: any) => {
                     type: 'switch',
                     id: nanoid(),
                     propertyName: 'hidden',
-                    label: 'Hidden',
+                    label: 'Hide',
                     jsSetting: true,
                   }
                 ],
