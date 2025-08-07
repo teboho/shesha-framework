@@ -130,27 +130,24 @@ export const MenuListComponent: IToolboxComponent<IMenuListProps> = {
       </ConfigurableComponentRenderer>
     );
   },
-  initModel: (model) => ({
-    ...model,
-    gap: "12",
-    height: "6",
-    overflow: "dropdown",
-    width: "500px",
-    menuItemColor: "#000",
-    hoverItemColor: "#000",
-  }),
   settingsFormMarkup: model => getSettings(model),
   validateSettings: (model) =>
     validateConfigurableComponentSettings(getSettings(model), model),
   migrator: (m) => m
-    .add<IMenuListProps>(0, (prev) => ({ ...prev, overflow: 'dropdown' }))
+    .add<IMenuListProps>(0, (prev) => ({ ...prev, 
+    gap: "12",
+    height: "60px",
+    overflow: "scroll",
+    width: "100%",
+    menuItemColor: "#000",
+    hoverItemColor: "#000",
+    }))
     .add<IMenuListProps>(1, (prev) => {
       const { overflow, ...rest } = prev;
       type localType = Omit<IMenuListProps, 'overflow'>;
       const migratedStyles = migratePrevStyles(rest as localType, defaultStyles());
       return {
         ...prev,
-        overflow: 'dropdown',
         ...migratedStyles,
       };
     }),
