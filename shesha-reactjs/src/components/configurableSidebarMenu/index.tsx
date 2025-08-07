@@ -32,7 +32,7 @@ export const ConfigurableSidebarMenu: FC<IConfigurableSidebarMenuProps> = props 
   const editor = (editorProps: ISettingsEditorProps<ISideBarMenuProps>) => {
     return (
       <ComponentSettingsModal
-        title='Sidebar Menu Configuration'
+        title='Menu Configuration'
         settings={editorProps.settings ?? EmptySidebarProps}
         onSave={editorProps.onSave}
         onCancel={editorProps.onCancel}

@@ -11,7 +11,7 @@ const EmptySidebarProps: ISideBarMenuProps = {
 
 export const Editor: FC<IProps> = ({ settings, onCancel, onSave }) => (
   <ComponentSettingsModal
-    title="Sidebar Menu Configuration"
+    title="Menu Configuration"
     settings={settings ?? EmptySidebarProps}
     onSave={onSave}
     onCancel={onCancel}
