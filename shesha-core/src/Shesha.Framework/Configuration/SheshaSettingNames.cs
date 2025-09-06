@@ -6,6 +6,11 @@
 
         public const string SecuritySettings = "Shesha.Security";
 
+        public const string LogoutOnBrowserClose = "Shesha.Security.LogoutOnBrowserClose";
+        public const string LogoutOnBrowserCloseTimeout = "Shesha.Security.LogoutOnBrowserCloseTimeout";
+        public const string LogoutOnUserInactive = "Shesha.Security.LogoutOnUserInactive";
+        public const string LogoutOnUserInactiveTimeout = "Shesha.Security.LogoutOnUserInactiveTimeout";
+
         public const string SmtpSettings = "Shesha.SmtpSettings";
 
         public const string EmailSettings = "Shesha.EmailSettings";

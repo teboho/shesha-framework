@@ -136,6 +136,10 @@ namespace Shesha
                 s.SecuritySettings.WithDefaultValue(new SecuritySettings
                 {
                     AutoLogoffTimeout = 0,
+                    LogoutOnBrowserClose = false,
+                    LogoutOnBrowserCloseTimeout = 5, // 5 minutes
+                    LogoutOnUserInactive = false,
+                    LogoutOnUserInactiveTimeout = 30, // 30 minutes
                     UseResetPasswordViaEmailLink = true,
                     ResetPasswordEmailLinkLifetime = 60,
                     UseResetPasswordViaSmsOtp = true,
@@ -145,6 +149,12 @@ namespace Shesha
                     ResetPasswordViaSecurityQuestionsNumQuestionsAllowed = 3,
                     DefaultEndpointAccess = Domain.Enums.RefListPermissionedAccess.AllowAnonymous
                 });
+
+                // Register individual setting default values
+                s.LogoutOnBrowserClose.WithDefaultValue(false);
+                s.LogoutOnBrowserCloseTimeout.WithDefaultValue(5); // 5 minutes
+                s.LogoutOnUserInactive.WithDefaultValue(false);
+                s.LogoutOnUserInactiveTimeout.WithDefaultValue(30); // 30 minutes
             });
 
             IocManager.RegisterSettingAccessor<IPasswordComplexitySettings>(s => {

@@ -4,6 +4,7 @@ import { useShaRouting } from '@/providers/shaRouting';
 import { useHttpClient, useSettings, useSheshaApplication } from '..';
 import { useAuthenticatorInstance } from './authenticator';
 import { IAuthenticator } from './models';
+import BrowserCloseDetector from '@/components/browserCloseDetector';
 
 export interface IAuthProviderRefProps {
   anyOfPermissionsGranted?: (permissions: string[]) => boolean;
@@ -66,7 +67,9 @@ const AuthProvider: FC<PropsWithChildren<IAuthProviderProps>> = ({
 
   return (
     <AuthenticatorContext.Provider value={authenticator}>
-      {children}
+      <BrowserCloseDetector>
+        {children}
+      </BrowserCloseDetector>
     </AuthenticatorContext.Provider>
   );
 };

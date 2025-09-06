@@ -29,6 +29,12 @@ namespace Shesha.Authorization.Settings
             { 
                 AutoLogoffTimeout = dto.AutoLogoffTimeout,
 
+                // Auto logout settings
+                LogoutOnBrowserClose = dto.LogoutOnBrowserClose,
+                LogoutOnBrowserCloseTimeout = dto.LogoutOnBrowserCloseTimeout,
+                LogoutOnUserInactive = dto.LogoutOnUserInactive,
+                LogoutOnUserInactiveTimeout = dto.LogoutOnUserInactiveTimeout,
+
                 // Password reset
                 UseResetPasswordViaEmailLink = dto.ResetPasswordWithEmailLinkIsSupported,
                 ResetPasswordEmailLinkLifetime = dto.ResetPasswordWithEmailLinkExpiryDelay,
@@ -58,6 +64,10 @@ namespace Shesha.Authorization.Settings
             dto.DefaultAccountLockoutSeconds = await _securitySettings.DefaultAccountLockoutSeconds.GetValueOrNullAsync();
             dto.MaxFailedAccessAttemptsBeforeLockout = await _securitySettings.MaxFailedAccessAttemptsBeforeLockout.GetValueOrNullAsync();
             dto.AutoLogoffTimeout = settings.AutoLogoffTimeout;
+            dto.LogoutOnBrowserClose = settings.LogoutOnBrowserClose;
+            dto.LogoutOnBrowserCloseTimeout = settings.LogoutOnBrowserCloseTimeout;
+            dto.LogoutOnUserInactive = settings.LogoutOnUserInactive;
+            dto.LogoutOnUserInactiveTimeout = settings.LogoutOnUserInactiveTimeout;
 
             //Password complexity
             dto.RequireDigit = await _passwordComplexitySettings.RequireDigit.GetValueOrNullAsync();

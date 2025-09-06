@@ -43,6 +43,7 @@ export { default as GlobalTableFilterBase, type IGlobalTableFilterBaseProps } fr
 export { default as GooglePlacesAutocomplete, type IGooglePlacesAutocompleteProps } from './googlePlacesAutocomplete';
 export { default as HtmlHead, type IHtmlHeadProps } from './htmlHead';
 export { default as IdleTimerRenderer, type IIdleTimerRendererProps } from './idleTimerRenderer';
+export { default as BrowserCloseDetector, type IBrowserCloseDetectorProps } from './browserCloseDetector';
 export { DataTable, type IIndexTableProps, type IExtendedModalProps } from './dataTable';
 export {
   default as DatatableAdvancedFilter,

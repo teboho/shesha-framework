@@ -17,6 +17,26 @@ namespace Shesha.Configuration.Security
         public int AutoLogoffTimeout { get; set; }
 
         /// <summary>
+        /// Logout when the browser is closed
+        /// </summary>
+        public bool LogoutOnBrowserClose { get; set; }
+
+        /// <summary>
+        /// Logout timeout when browser is closed (in minutes)
+        /// </summary>
+        public int LogoutOnBrowserCloseTimeout { get; set; }
+
+        /// <summary>
+        /// Logout when the user is inactive
+        /// </summary>
+        public bool LogoutOnUserInactive { get; set; }
+
+        /// <summary>
+        /// Logout timeout when user is inactive (in minutes)
+        /// </summary>
+        public int LogoutOnUserInactiveTimeout { get; set; }
+
+        /// <summary>
         /// Use reset password via email
         /// </summary>
         public bool UseResetPasswordViaEmailLink { get; set; }
