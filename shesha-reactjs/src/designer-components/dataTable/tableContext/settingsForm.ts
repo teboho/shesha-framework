@@ -121,7 +121,7 @@ export const getSettings = (data: any) => {
                             parentId: dataTabId,
                             hidden: false,
                             dataSourceType: 'url',
-                            validate: {},
+                            validate: { required: true },
                             dataSourceUrl: '/api/services/app/Metadata/TypeAutocomplete',
                             settingsValidationErrors: [],
                             jsSetting: true,

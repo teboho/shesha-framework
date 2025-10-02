@@ -62,8 +62,7 @@ export const TablePager: FC<ITablePagerProps> = ({ showSizeChanger, showTotalIte
             content={(
               <p>The Table Pager component must be<br />placed inside of a Data Context<br />component to be fully functional.
                 <br />
-                <br />
-                <a href="https://docs.shesha.io/docs/category/tables-and-lists" target="_blank" rel="noopener noreferrer">See component documentation</a><br />for setup and usage.
+                <a href="https://docs.shesha.io/docs/category/tables-and-lists" target="_blank" rel="noopener noreferrer">See component documentation</a>for setup and usage.
               </p>
             )}
           >
@@ -114,8 +113,7 @@ export const TablePager: FC<ITablePagerProps> = ({ showSizeChanger, showTotalIte
             content={(
               <p>The Table Pager is within a Data Context<br />but no sibling Data Table or Data List<br />component has been configured with<br />columns or items.
                 <br />
-                <br />
-                <a href="https://docs.shesha.io/docs/category/tables-and-lists" target="_blank" rel="noopener noreferrer">See component documentation</a><br />for setup and usage.
+                <a href="https://docs.shesha.io/docs/category/tables-and-lists" target="_blank" rel="noopener noreferrer">See component documentation</a>for setup and usage.
               </p>
             )}
           >

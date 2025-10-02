@@ -143,11 +143,10 @@ export const TableViewSelector: FC<ITableViewSelectorProps> = ({
               backgroundColor: '#D9DCDC',
             }}
             content={(
-<p>The Table View Selector needs at least<br />one filter configured to be functional.<br />Add filters in the component settings.
-              <br />
-              <br />
-              <a href="https://docs.shesha.io/docs/category/tables-and-lists" target="_blank" rel="noopener noreferrer">See component documentation</a><br />for setup and usage.
-</p>
+              <p>The Table View Selector needs at least<br />one filter configured to be functional.<br />Add filters in the component settings.
+                <br />
+                <a href="https://docs.shesha.io/docs/category/tables-and-lists" target="_blank" rel="noopener noreferrer">See component documentation</a>for setup and usage.
+              </p>
             )}
           >
             <InfoCircleOutlined style={{ color: theme.application?.warningColor, cursor: 'help' }} />

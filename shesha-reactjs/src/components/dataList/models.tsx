@@ -36,6 +36,10 @@ export interface IDataListProps extends IDataListBaseProps, IDataListActions {
   noDataText?: string;
   noDataSecondaryText?: string;
   noDataIcon?: string;
+
+  defaultFormTemplate?: any;
+
+  onFieldsExtracted?: (fields: string[], formConfig: any) => void | Promise<void>;
 }
 
 export interface IDataListBaseProps extends IStyleType {
@@ -81,6 +85,9 @@ export interface IDataListBaseProps extends IStyleType {
   noDataIcon?: string;
 
   onNewListItemInitialize?: string;
+
+  /** Context scenario to determine appropriate messaging */
+  contextScenario?: 'outside-datacontext' | 'no-entitytype' | 'no-form' | 'loading';
 }
 
 interface IDataListActions {

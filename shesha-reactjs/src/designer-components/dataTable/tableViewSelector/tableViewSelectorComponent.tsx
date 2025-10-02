@@ -62,8 +62,7 @@ const TableViewSelectorComponent: IToolboxComponent<ITableViewSelectorComponentP
                   content={(
                     <p>The Table View Selector component must be<br /> placed inside of a Data Context<br /> component to be fully functional.
                       <br />
-                      <br />
-                      <a href="https://docs.shesha.io/docs/category/tables-and-lists" target="_blank" rel="noopener noreferrer">See component documentation</a><br />for setup and usage.
+                      <a href="https://docs.shesha.io/docs/category/tables-and-lists" target="_blank" rel="noopener noreferrer">See component documentation</a>for setup and usage.
                     </p>
                   )}
                 >

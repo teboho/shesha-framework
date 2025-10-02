@@ -41,7 +41,7 @@ export const TableContextInner: FC<ITableContextInnerProps> = (props) => {
 
   if (!sourceType)
     throw SheshaError.throwPropertyError('sourceType');
-  if (sourceType === 'Entity' && !entityType)
+  if (sourceType === 'Entity' && !entityType && !isDesignerMode)
     throw SheshaError.throwPropertyError('entityType');
   if (sourceType === 'Url' && !endpoint)
     throw SheshaError.throwPropertyError('endpoint');
