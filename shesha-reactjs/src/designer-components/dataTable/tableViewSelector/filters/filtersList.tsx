@@ -12,6 +12,12 @@ export interface IFiltersListProps {
 }
 
 export const FiltersList: FC<IFiltersListProps> = ({ value, onChange, readOnly }) => {
+  const createDefaultFilter = () => ({
+    id: nanoid(),
+    sortOrder: 0,
+    name: 'Default Filter',
+  });
+
   const makeNewFilter = (items: ITableViewProps[]) => {
     const itemsCount = (items ?? []).length;
     const itemNo = itemsCount + 1;
@@ -23,12 +29,17 @@ export const FiltersList: FC<IFiltersListProps> = ({ value, onChange, readOnly }
   };
 
   const localOnChange = (newValue: ITableViewProps[]) => {
-    onChange([...newValue]);
+    // Ensure there's always at least one filter
+    const finalValue = newValue.length === 0 ? [createDefaultFilter()] : newValue;
+    onChange([...finalValue]);
   };
+
+  // Ensure there's always at least one filter when initializing
+  const initialValue = (!value || value.length === 0) ? [createDefaultFilter()] : value;
 
   return (
         <ListEditor<ITableViewProps & ListItem>
-          value={value}
+          value={initialValue}
           onChange={localOnChange}
           initNewItem={makeNewFilter}
           readOnly={readOnly}

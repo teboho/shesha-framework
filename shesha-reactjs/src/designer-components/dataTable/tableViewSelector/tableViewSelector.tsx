@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import React, { FC, useEffect } from 'react';
 import TableViewSelectorRenderer from '@/components/tableViewSelectorRenderer';
-import { Alert } from 'antd';
 import { evaluateDynamicFilters } from '@/utils';
 import { ITableViewSelectorComponentProps } from './models';
 import { useDataContextOrUndefined } from '@/providers/dataContextProvider/contexts';
@@ -15,9 +14,20 @@ import {
 } from '@/providers';
 import { useDeepCompareEffect } from '@/hooks/useDeepCompareEffect';
 import { useShaFormDataUpdate, useShaFormInstance } from '@/providers/form/providers/shaFormProvider';
+import { nanoid } from '@/utils/uuid';
+import { IStoredFilter } from '@/providers/dataTable/interfaces';
 
 interface ITableViewSelectorProps extends ITableViewSelectorComponentProps {
 }
+
+const createDefaultFilter = (): IStoredFilter => ({
+  id: nanoid(),
+  name: 'Default Filter',
+  tooltip: 'Default filter - can be configured as needed',
+  expression: null,
+  selected: true,
+  defaultSelected: true,
+});
 
 export const TableViewSelector: FC<ITableViewSelectorProps> = ({
   id,
@@ -32,6 +42,7 @@ export const TableViewSelector: FC<ITableViewSelectorProps> = ({
     predefinedFilters,
     changePersistedFiltersToggle,
     modelType,
+    refreshTable,
   } = useDataTableStore();
 
   // ToDo: AS - need to optimize
@@ -49,6 +60,7 @@ export const TableViewSelector: FC<ITableViewSelectorProps> = ({
         selectedStoredFilterIds && selectedStoredFilterIds.length > 0 ? selectedStoredFilterIds[0] : null;
 
   const dataFetchDep = useDataFetchDependency(id);
+  const isDesignerMode = formMode === 'designer';
 
   //#region Filters
   const debounceEvaluateDynamicFiltersHelper = () => {
@@ -63,8 +75,11 @@ export const TableViewSelector: FC<ITableViewSelectorProps> = ({
 
     const permissionedFilters = filters.filter((f) => !f.permissions || (f.permissions && application.anyOfPermissionsGranted(f.permissions)));
 
+    // Ensure there's always at least one filter available
+    const filtersToEvaluate = permissionedFilters.length > 0 ? permissionedFilters : [createDefaultFilter()];
+
     evaluateDynamicFilters(
-      permissionedFilters,
+      filtersToEvaluate,
       match,
       propertyMetadataAccessor
     ).then((evaluatedFilters) => {
@@ -80,23 +95,21 @@ export const TableViewSelector: FC<ITableViewSelectorProps> = ({
   useEffect(() => {
     changePersistedFiltersToggle(persistSelectedFilters);
   }, [persistSelectedFilters]);
+
+  // Trigger table refresh when selected filter changes
+  useEffect(() => {
+    if (!isDesignerMode && selectedFilterId && predefinedFilters?.length > 0) {
+      // Small delay to ensure filter is applied before refresh
+      setTimeout(() => {
+        refreshTable();
+      }, 100);
+    }
+  }, [selectedFilterId, predefinedFilters, isDesignerMode, refreshTable]);
   //#endregion
 
   const changeSelectedFilter = (id: string) => {
     changeSelectedStoredFilterIds(id ? [id] : []);
   };
-
-  const defaultTitle = predefinedFilters?.length ? predefinedFilters[0]?.name : null;
-
-  const isDesignerMode = formMode === 'designer';
-
-  if (!defaultTitle) {
-    if (isDesignerMode) {
-      return <Alert message="Please make sure that you have at least 1 filter" type="warning" showIcon />;
-    }
-
-    return null;
-  }
 
   return (
         <TableViewSelectorRenderer
@@ -104,6 +117,7 @@ export const TableViewSelector: FC<ITableViewSelectorProps> = ({
           filters={predefinedFilters || []}
           onSelectFilter={changeSelectedFilter}
           selectedFilterId={selectedFilterId}
+          isDesignerMode={isDesignerMode}
         />
   );
 };
