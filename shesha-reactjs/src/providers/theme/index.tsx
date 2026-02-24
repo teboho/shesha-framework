@@ -1,7 +1,20 @@
 import { App, ConfigProvider, ThemeConfig } from 'antd';
 import React, { FC, PropsWithChildren, useCallback, useContext, useMemo, useReducer, useRef } from 'react';
 import { setThemeAction } from './actions';
-import { IConfigurableTheme, IThemeActionsContext, IThemeStateContext, THEME_CONTEXT_INITIAL_STATE, UiActionsContext, UiStateContext } from './contexts';
+import {
+  IConfigurableTheme,
+  IThemeActionsContext,
+  IThemeStateContext,
+  THEME_CONTEXT_INITIAL_STATE,
+  UiActionsContext,
+  UiStateContext,
+  IInputComponentSettings,
+  ILayoutComponentSettings,
+  IStandardComponentSettings,
+  IInlineComponentSettings,
+  IThemeFormLayoutSettings,
+  type ThemeLabelAlign,
+} from './contexts';
 import { uiReducer } from './reducer';
 import { defaultRequiredMark } from './shaRequiredMark';
 import { useSettings, useSheshaApplication } from '..';
@@ -146,4 +159,19 @@ function useTheme(): IThemeStateContext & IThemeActionsContext | undefined {
   return { ...useThemeState(), ...useThemeActions() };
 }
 
-export { ThemeProvider, useTheme, useThemeActions, useThemeState, type IConfigurableTheme };
+export {
+  ThemeProvider,
+  useTheme,
+  useThemeActions,
+  useThemeState,
+};
+
+export type {
+  IConfigurableTheme,
+  IInputComponentSettings,
+  ILayoutComponentSettings,
+  IStandardComponentSettings,
+  IInlineComponentSettings,
+  IThemeFormLayoutSettings,
+  ThemeLabelAlign,
+};

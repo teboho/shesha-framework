@@ -1,12 +1,14 @@
-import { Alert, Space } from 'antd';
+import { Alert, AlertProps, Space } from 'antd';
 import React, { FC } from 'react';
 
+const renderAlert = (message: string, type: AlertProps['type']) => ( <Alert style={{height: '28px'}} message={message} type={type} showIcon />);
+
 const AlertsExample: FC = () => (
-  <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-    <Alert message="Success alert" type="success" showIcon />
-    <Alert message="Info alert" type="info" showIcon />
-    <Alert message="Warning alert" type="warning" showIcon />
-    <Alert message="Error alert" type="error" showIcon />
+  <Space direction="vertical" size="small" style={{ width: '100%' }}>
+    {renderAlert("Success alert", "success")}
+    {renderAlert("Info alert", "info")}
+    {renderAlert("Warning alert", "warning")}
+    {renderAlert("Error alert", "error")}
   </Space>
 );
 

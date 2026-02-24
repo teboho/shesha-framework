@@ -12,6 +12,7 @@ import { GetResultTypeFunc } from '../codeEditor/interfaces';
 import { CodeLanguages } from '../codeEditor/types';
 import { IConfigurableActionConfiguratorComponentProps } from '../configurableActionsConfigurator/interfaces';
 import { IItemListConfiguratorModalProps } from '../itemListConfigurator/itemListConfiguratorModal';
+import { IColorPickerProps } from '@/components/colorPicker';
 
 export interface IRadioOption {
   value: string | number;
@@ -55,7 +56,7 @@ export interface ISettingsInputBase extends IComponentLabelProps,
 }
 
 // Color Picker
-export interface IColorPickerSettingsInputProps extends ISettingsInputBase {
+export interface IColorPickerSettingsInputProps extends ISettingsInputBase, Omit<IColorPickerProps, 'onChange' | 'style' | 'value'> {
   type: 'colorPicker';
   showText?: boolean;
 }

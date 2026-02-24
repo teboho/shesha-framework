@@ -1,12 +1,14 @@
-import { Col, Row, Alert, Typography } from 'antd';
+import { Col, Row, Alert, Typography, Tabs, Space } from 'antd';
 import React, { FC } from 'react';
-import { CollapsiblePanel, SectionSeparator } from '@/components';
+import { CollapsiblePanel, ComponentsContainer } from '@/components';
 import AlertsExample from './alertsExamples';
 import FormExample from './form';
 import ThemeParameters from './parameters';
-import TextsExample from './textsExample';
 import { useStyles } from './styles/styles';
-import { IConfigurableTheme } from '@/index';
+import { IConfigurableFormComponent, IConfigurableTheme } from '@/index';
+import LayoutExample from './layoutsExamples';
+import { InlineComponentsExample } from './inlineComponentsExample';
+import { nanoid } from '@/utils/uuid';
 
 export interface IConfigurableThemePageProps {
   value?: IConfigurableTheme;
@@ -17,41 +19,69 @@ export interface IConfigurableThemePageProps {
 export const ConfigurableThemeContent: FC<IConfigurableThemePageProps> = ({ value, onChange, readonly }) => {
   const { styles } = useStyles();
 
+  const GroupWrapper = ({title, children}) => (<Space direction="vertical" style={{ width: '100%'}}>
+    <h4 style={{ color: '#9d9d9d'}}>{title}</h4>
+    {children}
+    </Space>);
+
+  const previewItems = [
+    {
+      key: 'alerts',
+      label: 'Alerts',
+      children: <GroupWrapper title="Alerts"><AlertsExample /></GroupWrapper>,
+    },
+    {
+      key: 'forms',
+      label: 'Forms',
+      children: <GroupWrapper title="Forms"><FormExample theme={value} /></GroupWrapper>,
+    },
+    {
+      key: 'inline',
+      label: 'Inline components',
+      children: <GroupWrapper title="Inline components"><InlineComponentsExample /></GroupWrapper>,
+    },
+    {
+      key: 'layouts',
+      label: 'Layouts',
+      children: <GroupWrapper title="Layouts"><LayoutExample theme={value}/></GroupWrapper>
+    }
+  ];
+
   return (
     <Row gutter={16}>
-      <Col xs={24} sm={24} md={8} lg={6} xl={6} xxl={6}>
+      <Col xs={24} sm={24} md={14} lg={16} xl={17} xxl={18}>
         <CollapsiblePanel
           collapsible="disabled"
           header={(
+            <>
             <Typography.Text type="secondary" className={styles.themeHeader}>
-              Theme Parameters
+              Theme Settings
             </Typography.Text>
+            <Typography.Text type="secondary" className={styles.themeHeader}>
+            Customize the look and feel of your workspace
+          </Typography.Text>
+            </>
+            
           )}
           className={styles.themeParameters}
         >
-          <Alert type="info" message="You can modify the values by selecting the colour block" showIcon />
+          <Alert
+            type="info"
+            message="Configure your theme settings below. Changes are reflected in real-time in the preview panel."
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
           <ThemeParameters value={value} onChange={onChange} readonly={readonly} />
         </CollapsiblePanel>
       </Col>
 
-      <Col xs={24} sm={24} md={16} lg={18} xl={18} xxl={18}>
-        <CollapsiblePanel
-          className={styles.themeParameters}
-          header={(
-            <Typography.Text type="secondary" className={styles.themeHeader}>
-              Results
-            </Typography.Text>
-          )}
-        >
-          <SectionSeparator title="Alerts" />
-          <AlertsExample />
-
-          <SectionSeparator title="Forms" containerStyle={{ marginTop: '8px' }} />
-          <FormExample />
-
-          <SectionSeparator title="Texts" containerStyle={{ marginTop: '8px' }} />
-          <TextsExample />
-        </CollapsiblePanel>
+      <Col xs={24} sm={24} md={10} lg={8} xl={7} xxl={6}>
+        <div style={{padding: 16, backgroundColor: '#F0F2F5', borderRadius: 8}}>
+          <h3>Preview Card</h3>
+          <Space size="middle" direction='vertical' style={{ borderRadius: 8, background: '#fff', padding: 8, width: '100%'}}>
+          { previewItems.map(({children})=>(children)) }
+          </Space>
+        </div>
       </Col>
     </Row>
   );

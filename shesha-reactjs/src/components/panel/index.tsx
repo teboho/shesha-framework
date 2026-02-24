@@ -60,6 +60,7 @@ const defaultBodyStyle: React.CSSProperties = {
 
 export const CollapsiblePanel: FC<Omit<ICollapsiblePanelProps, 'radiusLeft' | 'radiusRight'>> = ({
   expandIconPosition = 'end',
+  accordion,
   onChange,
   header,
   extra,
@@ -93,6 +94,7 @@ export const CollapsiblePanel: FC<Omit<ICollapsiblePanelProps, 'radiusLeft' | 'r
       expandIconPosition={expandIconPosition}
       className={classNames(shaCollapsiblePanelStyle, { [styles.hideWhenEmpty]: hideWhenEmpty }, className)}
       ghost={ghost}
+      accordion={accordion}
       items={[
         {
           key: "1",
