@@ -1,14 +1,13 @@
-import { Col, Row, Alert, Typography, Tabs, Space } from 'antd';
+import { Col, Row, Alert, Typography, Space } from 'antd';
 import React, { FC } from 'react';
-import { CollapsiblePanel, ComponentsContainer } from '@/components';
+import { CollapsiblePanel } from '@/components';
 import AlertsExample from './alertsExamples';
 import FormExample from './form';
 import ThemeParameters from './parameters';
 import { useStyles } from './styles/styles';
-import { IConfigurableFormComponent, IConfigurableTheme } from '@/index';
+import { IConfigurableTheme } from '@/index';
 import LayoutExample from './layoutsExamples';
 import { InlineComponentsExample } from './inlineComponentsExample';
-import { nanoid } from '@/utils/uuid';
 
 export interface IConfigurableThemePageProps {
   value?: IConfigurableTheme;
@@ -19,7 +18,7 @@ export interface IConfigurableThemePageProps {
 export const ConfigurableThemeContent: FC<IConfigurableThemePageProps> = ({ value, onChange, readonly }) => {
   const { styles } = useStyles();
 
-  const GroupWrapper = ({title, children}) => (<Space direction="vertical" style={{ width: '100%'}}>
+  const GroupWrapper = ({title, children}) => (<Space className={ styles.space} direction="vertical" style={{ width: '100%'}}>
     <h4 style={{ color: '#9d9d9d'}}>{title}</h4>
     {children}
     </Space>);
@@ -76,9 +75,9 @@ export const ConfigurableThemeContent: FC<IConfigurableThemePageProps> = ({ valu
       </Col>
 
       <Col xs={24} sm={24} md={10} lg={8} xl={7} xxl={6}>
-        <div style={{padding: 16, backgroundColor: '#F0F2F5', borderRadius: 8}}>
+        <div className={styles.space} style={{padding: 16, backgroundColor: '#F0F2F5', borderRadius: 8}}>
           <h3>Preview Card</h3>
-          <Space size="middle" direction='vertical' style={{ borderRadius: 8, background: '#fff', padding: 8, width: '100%'}}>
+          <Space className={styles.space} size="middle" direction='vertical' style={{ borderRadius: 8, background: '#fff', padding: 8, width: '100%'}}>
           { previewItems.map(({children})=>(children)) }
           </Space>
         </div>

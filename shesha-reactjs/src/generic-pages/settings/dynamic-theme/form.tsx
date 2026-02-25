@@ -12,9 +12,8 @@ interface FormExampleProps {
 const FormExample: FC<FormExampleProps> = ({ theme }) => {
   const inputSettings = theme?.inputComponents;
   const formLayout = theme?.formLayout;
-  const layoutSettings = theme?.layoutComponents;
-  const standardSettings = theme?.standardComponents;
 
+  console.log("Theme :: ", theme);
   // Build form item layout based on settings
   const formItemLayout = formLayout?.layout === 'vertical' || inputSettings?.labelAlign === 'top'
     ? undefined
@@ -37,8 +36,9 @@ const FormExample: FC<FormExampleProps> = ({ theme }) => {
             {...formItemLayout}
             size='small'
             colon={inputSettings?.labelColon ?? true}
+            style={{ width: '100%'}}
           >
-           <Space direction="vertical" >
+           <Space direction="vertical" style={{ width: '100%'}}>
             <Form.Item
                 label="Text Input"
                 validateStatus="success"

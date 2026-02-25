@@ -34,6 +34,10 @@ export const useStyles = createStyles(({ css, cx }) => {
         &:last-child {
           margin-bottom: 0;
         }
+
+        .properties-label  {
+          top: 0px !important;
+        }
       }
 
       .ant-slider {
@@ -89,7 +93,7 @@ export const useStyles = createStyles(({ css, cx }) => {
   const space = cx(
     'theme-space',
     css`
-     > .ant-space-item: {
+    & .ant-space-item: {
       width: 100%;
       background: red;
      }

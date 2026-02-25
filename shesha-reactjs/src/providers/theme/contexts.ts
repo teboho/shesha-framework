@@ -15,6 +15,7 @@ export interface IInputComponentSettings {
   labelAlign?: ThemeLabelAlign;
   labelColon?: boolean;
   labelSpan?: number;
+  labelHeight?: string | number;
   contentSpan?: number;
   stylingBox?: string;
 }
@@ -39,6 +40,7 @@ export interface IInlineComponentSettings {
 export interface IThemeFormLayoutSettings {
   span?: number;
   layout?: 'vertical' | 'horizontal';
+  labelAlign?: 'left' | 'right' | 'top';
 }
 
 export interface IConfigurableTheme {
@@ -104,7 +106,6 @@ export const THEME_CONTEXT_INITIAL_STATE: IThemeStateContext = {
       gridGapHorizontal: 16,
       background: {
         type: 'color',
-
       },
       border: {
         borderType: 'all',
