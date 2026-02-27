@@ -1,22 +1,22 @@
-import { QuestionCircleOutlined } from '@ant-design/icons';
-import { Space, Tooltip, Radio, InputNumber, Input, Select, Slider, Switch } from 'antd';
-import React, { FC, useCallback, useMemo } from 'react';
-import { Show, CollapsiblePanel, ColorPicker, SectionSeparator } from '@/components';
+import { Space, Radio, InputNumber, Input, Select, Slider, Switch } from 'antd';
+import React, { FC, useMemo } from 'react';
+import { CollapsiblePanel, ColorPicker } from '@/components';
 import { IConfigurableTheme } from '@/providers/theme/contexts';
 import { humanizeString, toCamelCase } from '@/utils/string';
-import { BACKGROUND_PRESET_COLORS, PRESET_COLORS, SHESHA_COLORS, TEXT_PRESET_COLORS } from './presetColors';
-import { nanoid } from '@/utils/uuid';
+import { BACKGROUND_PRESET_COLORS, TEXT_PRESET_COLORS } from './presetColors';
 import { useStyles } from './styles/styles';
 import Box from '@/designer-components/styleBox/components/box';
 import { borderStyles } from '@/designer-components/_settings/utils/border/utils';
-import { useTheme } from '@/providers';
 import Icon from '@/components/icon/Icon';
-
-interface IThemeConfig {
-  name: string;
-  onChange: (color: any) => void;
-  hint?: string;
-}
+import {
+  createThemeUpdaters,
+  createColorConfigs,
+  getThemeValueWithFallback,
+  BORDER_RADIUS_CORNERS,
+  BORDER_SIDES,
+  LABEL_ALIGN_OPTIONS,
+} from './utils';
+import { HeaderContent, RenderInput, RenderColor, RenderDivider } from './components';
 
 export interface ThemeParametersProps {
   value?: IConfigurableTheme;
@@ -24,159 +24,33 @@ export interface ThemeParametersProps {
   readonly?: boolean;
 }
 
-interface IHeaderProps {
-  title?: string;
-  subtitle?: string;
-};
-
-const HeaderContent: FC<IHeaderProps> = ({ title, subtitle }) => {
-  const { theme } = useTheme();
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <h4 style={{ margin: 0, color: '#969696' }}>{title}</h4>
-      <p style={{ margin: 0, color: theme?.application?.primaryColor }}>{subtitle}</p>
-    </div>
-  );
-};
-
 const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, readonly }) => {
   const { styles } = useStyles();
 
-  const changeThemeInternal = (theme: IConfigurableTheme): void => {
-    if (onChange) onChange(theme);
-  };
+  // Create theme updater functions
+  const {
+    updateInputComponents,
+    updateLayoutComponents,
+    updateStandardComponents,
+    updateInlineComponents,
+    updateApplication,
+    updateText,
+  } = useMemo(() => createThemeUpdaters(theme, onChange), [theme, onChange]);
 
-  const mergeThemeSection = <K extends keyof IConfigurableTheme>(
-    section: K,
-    update: Partial<IConfigurableTheme[K]>,
-  ): IConfigurableTheme[K] => {
-    return { ...(theme?.[section] as Record<string, unknown> || {}), ...(update as Record<string, unknown>) } as unknown as IConfigurableTheme[K];
-  };
-
-  const updateTheme = <K extends keyof IConfigurableTheme>(
-    section: K,
-    update: Partial<IConfigurableTheme[K]>,
-  ): void => {
-    changeThemeInternal({
-      ...theme,
-      [section]: mergeThemeSection(section, update),
-    });
-  };
-
-  const updateInputComponents = (update: Partial<IConfigurableTheme['inputComponents']>): void => {
-    updateTheme('inputComponents', update);
-  };
-
-  const updateLayoutComponents = (update: Partial<IConfigurableTheme['layoutComponents']>): void => {
-    updateTheme('layoutComponents', update);
-  };
-
-  const updateStandardComponents = (update: Partial<IConfigurableTheme['standardComponents']>): void => {
-    updateTheme('standardComponents', update);
-  };
-
-  const updateInlineComponents = (update: Partial<IConfigurableTheme['inlineComponents']>): void => {
-    updateTheme('inlineComponents', update);
-  };
-
-  const renderInput = useCallback(({ value, onChange, icon, label, hint, type = 'number' }: { value: number | string; onChange: (value: number | string) => void; icon?: string; label: string; hint?: string; type?: 'number' | 'string' }) => (
-    <Space direction="horizontal">
-      <span>{humanizeString(label)} </span>
-      <Show when={Boolean(hint)}>
-        <Tooltip title={hint}>
-          <span className="sha-input-tooltip" style={{ cursor: 'pointer' }}>
-            <QuestionCircleOutlined />
-          </span>
-        </Tooltip>
-      </Show>
-      {type == 'number' ? (
-        <InputNumber
-          id={nanoid()}
-          prefix={<Icon icon={icon} style={{ color: '#d9d9d9', height: 16 }} />}
-          value={value}
-          size="small"
-          onChange={onChange}
-        />
-      ) : (
-        <Input
-          id={nanoid()}
-          prefix={<Icon icon={icon} />}
-          value={value}
-          size="small"
-          onChange={(e) => onChange(e.target.value)}
-        />
-      )}
-    </Space>
-
-  ), [theme]);
-  const renderColor = useCallback(
-    (
-      key: string,
-      colorName: string,
-      initialColor: string,
-      onChange: (color: any) => void,
-      presetColors?: string[],
-      hint?: string,
-    ) => (
-      <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start' }}>
-        <Space direction="horizontal" className={styles.themeColorSpace}>
-          <span>{humanizeString(colorName)} </span>
-          <Show when={Boolean(hint)}>
-            <Tooltip title={hint}>
-              <span className="sha-color-tooltip" style={{ cursor: 'pointer' }}>
-                <QuestionCircleOutlined />
-              </span>
-            </Tooltip>
-          </Show>
-          <ColorPicker
-            title={humanizeString(colorName)}
-            presets={[{ label: 'Presets', defaultOpen: true, colors: presetColors ?? PRESET_COLORS }, { label: 'Shesha', defaultOpen: false, colors: SHESHA_COLORS }]}
-            value={initialColor}
-            onChange={onChange}
-            readOnly={readonly}
-            allowClear={true}
-            style={{ border: 'none' }}
-            className={styles.themeColorPicker}
-            size="small"
-          />
-        </Space>
-      </div>
-    ),
-    [theme, readonly, styles],
+  // Create color configurations
+  const { colorConfigs, textConfigs, backgroundConfigs } = useMemo(
+    () => createColorConfigs(updateApplication, updateText, onChange, theme),
+    [theme, onChange],
   );
 
-  const renderDivider = () => (<SectionSeparator lineColor="#d9d9d9" lineThickness={1} lineWidth="100%" />);
-
-  const colorConfigs: IThemeConfig[] = useMemo(() => [
-    { name: 'primaryColor', onChange: (color: any) => updateTheme('application', { primaryColor: color.toHexString() }) },
-    { name: 'errorColor', onChange: (color: any) => updateTheme('application', { errorColor: color.toHexString() }) },
-    { name: 'warningColor', onChange: (color: any) => updateTheme('application', { warningColor: color.toHexString() }) },
-    { name: 'successColor', onChange: (color: any) => updateTheme('application', { successColor: color.toHexString() }) },
-    { name: 'infoColor', onChange: (color: any) => updateTheme('application', { infoColor: color.toHexString() }) },
-  ], [theme]);
-
-  const textConfigs: IThemeConfig[] = useMemo(() => [
-    { name: 'default', onChange: (color: any) => updateTheme('text', { default: color.toHexString() }) },
-    { name: 'secondary', onChange: (color: any) => updateTheme('text', { secondary: color.toHexString() }) },
-  ], [theme]);
-
-  const backgroundConfigs: IThemeConfig[] = useMemo(() => [
-    { name: 'pageBackground', onChange: (color: any) => changeThemeInternal({ ...theme, pageBackground: color.toString() }) },
-    { name: 'componentBackground', onChange: (color: any) => changeThemeInternal({ ...theme, componentBackground: color.toString() }) },
-  ], [theme]);
-
+  // Extract settings for easier access
   const inputSettings = theme?.inputComponents;
   const layoutSettings = theme?.layoutComponents;
   const standardSettings = theme?.standardComponents;
   const inlineSettings = theme?.inlineComponents;
 
-  // Common input props for settingsInput
-  const commonInputProps = {
-    readOnly: readonly,
-    jsSetting: false,
-  };
-
-  // Common props for CollapsiblePanel
+  // Common props
+  const commonInputProps = { readOnly: readonly, jsSetting: false };
   const commonPanelProps = {
     expandIconPosition: 'end' as const,
     className: styles.themeCard,
@@ -191,15 +65,11 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
         header={<HeaderContent title="Theme Settings" subtitle="Customize the look and feel of your workspace" />}
       >
         <Space direction="vertical" align="start" size="middle" className={styles.space}>
+          {/* Sidebar Theme */}
           <Space direction="vertical" align="start" className={styles.space}>
             <HeaderContent title="Theme" subtitle="" />
             <Radio.Group
-              onChange={(e) => {
-                changeThemeInternal({
-                  ...theme,
-                  sidebar: e.target.value,
-                });
-              }}
+              onChange={(e) => onChange({ ...theme, sidebar: e.target.value })}
               value={theme?.sidebar || 'light'}
             >
               <Radio.Button value="dark">Dark</Radio.Button>
@@ -207,38 +77,63 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
               <Radio.Button value="system">System</Radio.Button>
             </Radio.Group>
           </Space>
-          {renderDivider()}
+          <RenderDivider />
+
+          {/* Application Colors */}
           <Space direction="vertical" align="start" size="middle" className={styles.space}>
             <HeaderContent title="Colours" subtitle="Select a circle below to choose your desired colour" />
             <Space direction="horizontal" align="center">
-              {colorConfigs.map((config, index) =>
-                renderColor(`theme_${index}`, config.name.replace('Color', ''), theme?.application?.[config.name], (hex) => config.onChange(hex)),
-              )}
+              {colorConfigs.map((config, index) => (
+                <RenderColor
+                  key={`theme_${index}`}
+                  colorName={config.name.replace('Color', '')}
+                  initialColor={theme?.application?.[config.name]}
+                  onChange={config.onChange}
+                  className={styles.themeColorSpace}
+                  colorPickerClassName={styles.themeColorPicker}
+                />
+              ))}
             </Space>
-            {renderDivider()}
+            <RenderDivider />
+
+            {/* Text Colors */}
             <HeaderContent title="Text Colors" subtitle="Customize text colors for your application" />
             <Space direction="horizontal" align="center">
-              {textConfigs.map((config, index) =>
-                renderColor(
-                  `text_${index}`,
-                  config.name,
-                  theme?.text?.[config.name],
-                  (hex) => config.onChange(hex),
-                  TEXT_PRESET_COLORS,
-                  config?.hint,
-                ),
-              )}
+              {textConfigs.map((config, index) => (
+                <RenderColor
+                  key={`text_${index}`}
+                  colorName={config.name}
+                  initialColor={theme?.text?.[config.name]}
+                  onChange={config.onChange}
+                  presetColors={TEXT_PRESET_COLORS}
+                  hint={config?.hint}
+                  className={styles.themeColorSpace}
+                  colorPickerClassName={styles.themeColorPicker}
+                />
+              ))}
             </Space>
-            {renderDivider()}
+            <RenderDivider />
+
+            {/* Background Colors */}
             <HeaderContent title="Background Colors" subtitle="Customize background colors for your application" />
             <Space direction="horizontal" align="center">
-              {backgroundConfigs.map((config, index) => renderColor(
-                `bg_${index}`,
-                config.name,
-                theme?.[config.name],
-                (hex) => config.onChange(hex),
-                BACKGROUND_PRESET_COLORS,
-              ))}
+              {backgroundConfigs.map((config, index) => {
+                // Handle legacy layoutBackground property for pageBackground
+                const legacyKey = config.name === 'pageBackground' ? 'layoutBackground' : undefined;
+                const colorValue = getThemeValueWithFallback(theme, config.name, legacyKey);
+
+                return (
+                  <RenderColor
+                    key={`bg_${index}`}
+                    colorName={config.name}
+                    initialColor={colorValue}
+                    onChange={config.onChange}
+                    presetColors={BACKGROUND_PRESET_COLORS}
+                    className={styles.themeColorSpace}
+                    colorPickerClassName={styles.themeColorPicker}
+                  />
+                );
+              })}
             </Space>
           </Space>
         </Space>
@@ -250,7 +145,8 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
         header={<HeaderContent title="Layout Component Settings" subtitle="Configure layout component styling" />}
       >
         <Space size="middle" direction="vertical" className={styles.space}>
-          <Space direction="vertical" >
+          {/* Margin & Padding */}
+          <Space direction="vertical">
             <HeaderContent title="Margin & Padding" subtitle="Configure layout styling such as margin and padding" />
             <Box
               value={layoutSettings?.stylingBox}
@@ -258,58 +154,81 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
               readOnly={readonly}
             />
           </Space>
-          {renderDivider()}
+          <RenderDivider />
+
+          {/* Grid Gap */}
           <Space direction="vertical">
             <HeaderContent title="Grid Gap" subtitle="Configure layout component styling" />
             <Space direction="horizontal">
-              {renderInput({ value: layoutSettings?.gridGapHorizontal, onChange: (val) => updateLayoutComponents({ gridGapHorizontal: val }), label: 'Column Gap' })}
-              {renderInput({ value: layoutSettings?.gridGapVertical, onChange: (val) => updateLayoutComponents({ gridGapVertical: val }), label: 'Row Gap' })}
+              <RenderInput
+                value={layoutSettings?.gridGapHorizontal}
+                onChange={(val) => updateLayoutComponents({ gridGapHorizontal: val })}
+                label="Column Gap"
+                disabled={readonly}
+              />
+              <RenderInput
+                value={layoutSettings?.gridGapVertical}
+                onChange={(val) => updateLayoutComponents({ gridGapVertical: val })}
+                label="Row Gap"
+                disabled={readonly}
+              />
             </Space>
           </Space>
-          {renderDivider()}
+          <RenderDivider />
 
-          {/* Background Section */}
+          {/* Background */}
           <Space direction="vertical">
             <HeaderContent title="Background" subtitle="Configure background settings" />
-            {/* Background Color */}
-            {renderColor('color', '', '#ffff', (color: any) => updateLayoutComponents({
-              background: { ...layoutSettings?.background, color: color?.toHexString?.() ?? color },
-            }))}
+            <RenderColor
+              colorName=""
+              initialColor={layoutSettings?.background?.color || '#ffffff'}
+              onChange={(color: any) =>
+                updateLayoutComponents({
+                  background: { ...layoutSettings?.background, color: color?.toHexString?.() ?? color },
+                })
+              }
+              readonly={readonly}
+            />
           </Space>
+          <RenderDivider />
 
-          {renderDivider()}
-
-          {/* Border Section */}
+          {/* Border */}
           <Space direction="vertical">
             <HeaderContent title="Border" subtitle="Configure border settings" />
-            <Space direction="horizontal" size='large' style={{ alignItems: 'flex-start' }}>
+            <Space direction="horizontal" size="large" style={{ alignItems: 'flex-start' }}>
               <Radio.Group
                 value={layoutSettings?.border?.borderType}
                 size="small"
-                onChange={(e) => updateLayoutComponents({
-                  border: { ...layoutSettings?.border, borderType: e.target.value },
-                })}
+                onChange={(e) =>
+                  updateLayoutComponents({ border: { ...layoutSettings?.border, borderType: e.target.value } })
+                }
               >
-                <Radio.Button value="all"><Icon icon="BorderOutlined" /></Radio.Button>
-                <Radio.Button value="custom"><Icon icon="BorderOuterOutlined" /></Radio.Button>
+                <Radio.Button value="all">
+                  <Icon icon="BorderOutlined" />
+                </Radio.Button>
+                <Radio.Button value="custom">
+                  <Icon icon="BorderOuterOutlined" />
+                </Radio.Button>
               </Radio.Group>
 
-              {/* Border Settings */}
+              {/* All Border Settings */}
               {layoutSettings?.border?.borderType !== 'custom' && (
                 <Space direction="horizontal">
                   <Input
                     placeholder="0"
                     size="small"
                     value={layoutSettings?.border?.border?.all?.width}
-                    onChange={(e) => updateLayoutComponents({
-                      border: {
-                        ...layoutSettings?.border,
+                    onChange={(e) =>
+                      updateLayoutComponents({
                         border: {
-                          ...layoutSettings?.border?.border,
-                          all: { ...layoutSettings?.border?.border?.all, width: e.target.value },
+                          ...layoutSettings?.border,
+                          border: {
+                            ...layoutSettings?.border?.border,
+                            all: { ...layoutSettings?.border?.border?.all, width: e.target.value },
+                          },
                         },
-                      },
-                    })}
+                      })
+                    }
                     disabled={readonly}
                     style={{ width: 80 }}
                   />
@@ -318,52 +237,60 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                     size="small"
                     options={borderStyles}
                     value={layoutSettings?.border?.border?.all?.style}
-                    onChange={(val) => updateLayoutComponents({
-                      border: {
-                        ...layoutSettings?.border,
+                    onChange={(val) =>
+                      updateLayoutComponents({
                         border: {
-                          ...layoutSettings?.border?.border,
-                          all: { ...layoutSettings?.border?.border?.all, style: val },
+                          ...layoutSettings?.border,
+                          border: {
+                            ...layoutSettings?.border?.border,
+                            all: { ...layoutSettings?.border?.border?.all, style: val },
+                          },
                         },
-                      },
-                    })}
+                      })
+                    }
                     disabled={readonly}
                     style={{ width: 120 }}
                   />
                   <ColorPicker
                     value={layoutSettings?.border?.border?.all?.color}
-                    onChange={(val) => updateLayoutComponents({
-                      border: {
-                        ...layoutSettings?.border,
+                    onChange={(val) =>
+                      updateLayoutComponents({
                         border: {
-                          ...layoutSettings?.border?.border,
-                          all: { ...layoutSettings?.border?.border?.all, color: val?.toString?.() },
+                          ...layoutSettings?.border,
+                          border: {
+                            ...layoutSettings?.border?.border,
+                            all: { ...layoutSettings?.border?.border?.all, color: val?.toString?.() },
+                          },
                         },
-                      },
-                    })}
+                      })
+                    }
                     readOnly={readonly}
                     size="small"
                   />
                 </Space>
               )}
+
+              {/* Custom Border Settings */}
               {layoutSettings?.border?.borderType === 'custom' && (
-                <Space direction='vertical'>
-                  {['top', 'bottom', 'left', 'right'].map((side) => (
-                    <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: 8 }}>
+                <Space direction="vertical">
+                  {BORDER_SIDES.map((side) => (
+                    <div key={side} style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: 8 }}>
                       <span style={{ width: 50 }}>{humanizeString(side)}</span>
                       <Input
                         placeholder="0"
                         size="small"
                         value={layoutSettings?.border?.border?.[side]?.width}
-                        onChange={(e) => updateLayoutComponents({
-                          border: {
-                            ...layoutSettings?.border,
+                        onChange={(e) =>
+                          updateLayoutComponents({
                             border: {
-                              ...layoutSettings?.border?.border,
-                              [side]: { ...layoutSettings?.border?.border?.[side], width: e.target.value },
+                              ...layoutSettings?.border,
+                              border: {
+                                ...layoutSettings?.border?.border,
+                                [side]: { ...layoutSettings?.border?.border?.[side], width: e.target.value },
+                              },
                             },
-                          },
-                        })}
+                          })
+                        }
                         disabled={readonly}
                         style={{ width: 80 }}
                       />
@@ -372,29 +299,33 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                         size="small"
                         options={borderStyles}
                         value={layoutSettings?.border?.border?.[side]?.style}
-                        onChange={(val) => updateLayoutComponents({
-                          border: {
-                            ...layoutSettings?.border,
+                        onChange={(val) =>
+                          updateLayoutComponents({
                             border: {
-                              ...layoutSettings?.border?.border,
-                              [side]: { ...layoutSettings?.border?.border?.[side], style: val },
+                              ...layoutSettings?.border,
+                              border: {
+                                ...layoutSettings?.border?.border,
+                                [side]: { ...layoutSettings?.border?.border?.[side], style: val },
+                              },
                             },
-                          },
-                        })}
+                          })
+                        }
                         disabled={readonly}
                         style={{ width: 120 }}
                       />
                       <ColorPicker
                         value={layoutSettings?.border?.border?.[side]?.color}
-                        onChange={(val) => updateLayoutComponents({
-                          border: {
-                            ...layoutSettings?.border,
+                        onChange={(val) =>
+                          updateLayoutComponents({
                             border: {
-                              ...layoutSettings?.border?.border,
-                              [side]: { ...layoutSettings?.border?.border?.[side], color: val?.toString?.() },
+                              ...layoutSettings?.border,
+                              border: {
+                                ...layoutSettings?.border?.border,
+                                [side]: { ...layoutSettings?.border?.border?.[side], color: val?.toString?.() },
+                              },
                             },
-                          },
-                        })}
+                          })
+                        }
                         readOnly={readonly}
                         size="small"
                       />
@@ -404,21 +335,25 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
               )}
             </Space>
           </Space>
-          {renderDivider()}
+          <RenderDivider />
 
-          {/* Radius Section */}
+          {/* Border Radius */}
           <Space direction="vertical">
             <HeaderContent title="Border Radius" subtitle="Configure border radius settings" />
-            <Space direction="horizontal" size='large'>
+            <Space direction="horizontal" size="large">
               <Radio.Group
                 value={layoutSettings?.border?.radiusType}
                 size="small"
-                onChange={(e) => updateLayoutComponents({
-                  border: { ...layoutSettings?.border, radiusType: e.target.value },
-                })}
+                onChange={(e) =>
+                  updateLayoutComponents({ border: { ...layoutSettings?.border, radiusType: e.target.value } })
+                }
               >
-                <Radio.Button value="all"><Icon icon="ExpandOutlined" /></Radio.Button>
-                <Radio.Button value="custom"><Icon icon="RadiusUprightOutlined" /></Radio.Button>
+                <Radio.Button value="all">
+                  <Icon icon="ExpandOutlined" />
+                </Radio.Button>
+                <Radio.Button value="custom">
+                  <Icon icon="RadiusUprightOutlined" />
+                </Radio.Button>
               </Radio.Group>
 
               {layoutSettings?.border?.radiusType !== 'custom' && (
@@ -426,86 +361,83 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                   placeholder="0"
                   size="small"
                   value={layoutSettings?.border?.radius?.all}
-                  onChange={(val) => updateLayoutComponents({
-                    border: {
-                      ...layoutSettings?.border,
-                      radius: { ...layoutSettings?.border?.radius, all: val },
-                    },
-                  })}
+                  onChange={(val) =>
+                    updateLayoutComponents({
+                      border: { ...layoutSettings?.border, radius: { ...layoutSettings?.border?.radius, all: val } },
+                    })
+                  }
                   disabled={readonly}
                   style={{ width: 80 }}
                 />
               )}
+
               {layoutSettings?.border?.radiusType === 'custom' && (
                 <Space direction="horizontal">
-                  {[{ value: layoutSettings?.border?.radius?.topLeft, label: 'Top Left', icon: 'RadiusUpleftOutlined' },
-                  { value: layoutSettings?.border?.radius?.bottomLeft, label: 'Bottom Left', icon: 'RadiusBottomleftOutlined' },
-                  { value: layoutSettings?.border?.radius?.topRight, label: 'Top Right', icon: 'RadiusUprightOutlined' },
-                  { value: layoutSettings?.border?.radius?.bottomRight, label: 'Bottom Right', icon: 'RadiusBottomrightOutlined' }]
-                    .map(({ value, icon, label }) => {
-                      return (
-                        <>
-                          {renderInput({
-                            value: value, icon: icon, label: '', onChange: (val) => updateLayoutComponents({
-                              border: {
-                                ...layoutSettings?.border,
-                                radius: {
-                                  ...layoutSettings?.border?.radius,
-                                  [value]: { ...layoutSettings?.border?.radius?.[toCamelCase(label)], [toCamelCase(label)]: val },
-                                },
-                              },
-                            }),
-                          })}
-                        </>
-                      );
-                    })}
+                  {BORDER_RADIUS_CORNERS.map(({ key, label, icon }) => (
+                    <RenderInput
+                      key={key}
+                      value={layoutSettings?.border?.radius?.[key]}
+                      icon={icon}
+                      label={label}
+                      onChange={(val) =>
+                        updateLayoutComponents({
+                          border: {
+                            ...layoutSettings?.border,
+                            radius: { ...layoutSettings?.border?.radius, [toCamelCase(label)]: val },
+                          },
+                        })
+                      }
+                      disabled={readonly}
+                    />
+                  ))}
                 </Space>
               )}
             </Space>
           </Space>
-          {renderDivider()}
+          <RenderDivider />
 
-          {/* Shadow Section */}
+          {/* Shadow */}
           <Space direction="vertical">
             <HeaderContent title="Shadow" subtitle="Configure shadow settings" />
             <Space direction="horizontal">
-              {renderInput({
-                value: layoutSettings?.shadow?.offsetX,
-                onChange: (val) => updateLayoutComponents({
-                  shadow: { ...layoutSettings?.shadow, offsetX: val },
-                }),
-                label: 'Position',
-                icon: 'x',
-              })}
-              {renderInput({
-                value: layoutSettings?.shadow?.offsetY,
-                onChange: (val) => updateLayoutComponents({
-                  shadow: { ...layoutSettings?.shadow, offsetY: val },
-                }),
-                label: '',
-                icon: 'y',
-              })}
-              {renderInput({
-                icon: 'blurIcon',
-                value: layoutSettings?.shadow?.blurRadius,
-                onChange: (val) => updateLayoutComponents({
-                  shadow: { ...layoutSettings?.shadow, blurRadius: val },
-                }),
-                label: 'Blur',
-                hint: '',
-              })}
-              {renderInput({
-                icon: 'spreadIcon',
-                value: layoutSettings?.shadow?.spreadRadius,
-                onChange: (val) => updateLayoutComponents({
-                  shadow: { ...layoutSettings?.shadow, spreadRadius: val },
-                }),
-                label: '',
-                hint: '',
-              })}
-              {renderColor('', 'color', '', (color: any) => updateLayoutComponents({
-                shadow: { ...layoutSettings?.shadow, color: color?.toHexString?.() ?? color },
-              }))}
+              <RenderInput
+                value={layoutSettings?.shadow?.offsetX}
+                onChange={(val) => updateLayoutComponents({ shadow: { ...layoutSettings?.shadow, offsetX: val } })}
+                label="Position X"
+                icon="x"
+                disabled={readonly}
+              />
+              <RenderInput
+                value={layoutSettings?.shadow?.offsetY}
+                onChange={(val) => updateLayoutComponents({ shadow: { ...layoutSettings?.shadow, offsetY: val } })}
+                label="Position Y"
+                icon="y"
+                disabled={readonly}
+              />
+              <RenderInput
+                value={layoutSettings?.shadow?.blurRadius}
+                onChange={(val) => updateLayoutComponents({ shadow: { ...layoutSettings?.shadow, blurRadius: val } })}
+                label="Blur"
+                icon="blurIcon"
+                disabled={readonly}
+              />
+              <RenderInput
+                value={layoutSettings?.shadow?.spreadRadius}
+                onChange={(val) =>
+                  updateLayoutComponents({ shadow: { ...layoutSettings?.shadow, spreadRadius: val } })
+                }
+                label="Spread"
+                icon="spreadIcon"
+                disabled={readonly}
+              />
+              <RenderColor
+                colorName="color"
+                initialColor={layoutSettings?.shadow?.color || ''}
+                onChange={(color: any) =>
+                  updateLayoutComponents({ shadow: { ...layoutSettings?.shadow, color: color?.toHexString?.() ?? color } })
+                }
+                readonly={readonly}
+              />
             </Space>
           </Space>
         </Space>
@@ -517,15 +449,15 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
         header={<HeaderContent title="Form Layout" subtitle="Configure form layout settings" />}
       >
         <Space direction="vertical" size="large">
+          {/* Label Align */}
           <Space direction="vertical">
-            <HeaderContent title="Label Align" subtitle="Select below to choose your desired input label alignment." />
+            <HeaderContent
+              title="Label Align"
+              subtitle="Select below to choose your desired input label alignment."
+            />
             <Radio.Group
               value={inputSettings?.labelAlign || 'right'}
-              options={[
-                { label: 'Left', value: 'left' },
-                { label: 'Right', value: 'right' },
-                { label: 'Top', value: 'top' },
-              ]}
+              options={LABEL_ALIGN_OPTIONS}
               onChange={(e) => {
                 const value = e.target.value;
                 if (value === 'top') {
@@ -537,42 +469,45 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
               defaultValue="left"
             />
           </Space>
-          {renderDivider()}
+          <RenderDivider />
 
+          {/* Label Span */}
           {inputSettings?.labelAlign !== 'top' && (
             <Space direction="vertical">
-              <HeaderContent title="Label Span Settings" subtitle="The layout uses a 24-column grid system by default. Adjusting the slider to the right will increase the width of labels. " />
+              <HeaderContent
+                title="Label Span Settings"
+                subtitle="The layout uses a 24-column grid system by default. Adjusting the slider to the right will increase the width of labels."
+              />
               <Slider
-                id={nanoid()}
                 min={0}
                 max={24}
                 value={inputSettings?.labelSpan}
-                onChange={(val) => updateInputComponents({
-                  labelSpan: val,
-                  contentSpan: (24 - val) || 0,
-                })}
+                onChange={(val) => updateInputComponents({ labelSpan: val, contentSpan: 24 - val || 0 })}
               />
             </Space>
           )}
+
+          {/* Label Colon */}
           <Space direction="vertical">
-            <HeaderContent title="Label Colon" subtitle="When label colon is enabled it will suffix the label with a colon." />
+            <HeaderContent
+              title="Label Colon"
+              subtitle="When label colon is enabled it will suffix the label with a colon."
+            />
             <Switch
-              id={nanoid()}
               value={inputSettings?.labelColon}
               onChange={(val) => updateInputComponents({ labelColon: val })}
               {...commonInputProps}
             />
           </Space>
-          {renderDivider()}
+          <RenderDivider />
 
-          {/* Margin Control */}
+          {/* Margin & Padding */}
           <Box
             value={inputSettings?.stylingBox}
             onChange={(val) => updateInputComponents({ stylingBox: val })}
             readOnly={readonly}
           />
         </Space>
-
       </CollapsiblePanel>
 
       {/* Standard Component Settings Section */}
@@ -580,7 +515,6 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
         {...commonPanelProps}
         header={<HeaderContent title="Standard Component Settings" subtitle="Configure standard component styling" />}
       >
-        {/* Margin Control */}
         <Box
           value={standardSettings?.stylingBox}
           onChange={(val) => updateStandardComponents({ stylingBox: val })}
@@ -591,7 +525,12 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
       {/* Inline Component Settings Section */}
       <CollapsiblePanel
         {...commonPanelProps}
-        header={<HeaderContent title="Inline Component Settings" subtitle="Customize inline component appearance and behavior" />}
+        header={
+          <HeaderContent
+            title="Inline Component Settings"
+            subtitle="Customize inline component appearance and behavior"
+          />
+        }
       >
         <Box
           value={inlineSettings?.stylingBox}

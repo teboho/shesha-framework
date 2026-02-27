@@ -12,7 +12,7 @@ const LayoutExample: FC<LayoutExampleProps> = ({ theme }) => {
   const layoutStylingBoxAsCSS = pickStyleFromModel(layoutStylingBoxParsed);
   const horizontalGap = theme?.layoutComponents?.gridGapHorizontal;
   const verticalGap = theme?.layoutComponents?.gridGapVertical;
-  const { fullStyle } = useFormComponentStyles({ ...theme.layoutComponents, jsStyle: '' });
+  const { fullStyle } = useFormComponentStyles({ ...(theme?.layoutComponents ?? {}), jsStyle: '' });
 
   return (
     <Card styles={{ body: { ...layoutStylingBoxAsCSS, ...fullStyle } }} title="Card">

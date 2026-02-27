@@ -43,7 +43,7 @@ const migrateTheme = (theme: IConfigurableTheme): IConfigurableTheme => {
 
   // Migrate legacy marginPadding structure to individual stylingBox properties
   if (migratedTheme.marginPadding) {
-    const { formFields, layout, grid, standard, inline } = migratedTheme.marginPadding;
+    const { formFields, layout, standard, inline } = migratedTheme.marginPadding;
 
     if (formFields && !migratedTheme.inputComponents?.stylingBox) {
       migratedTheme.inputComponents = {

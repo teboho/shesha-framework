@@ -50,7 +50,7 @@ export const ConfigurableThemeContent: FC<IConfigurableThemePageProps> = ({ valu
 
   return (
     <Row gutter={16} style={{ height: 'calc(100vh - 205px)' }}>
-      <Col xs={24} sm={24} md={14} lg={16} xl={17} xxl={18}>
+      <Col xs={24} sm={24} md={14} lg={16} xl={17} xxl={18} style={{ height: '100%', overflowY: 'auto' }}>
         <CollapsiblePanel
           collapsible="disabled"
           header={(
@@ -79,7 +79,9 @@ export const ConfigurableThemeContent: FC<IConfigurableThemePageProps> = ({ valu
         <div className={styles.space} style={{ padding: 16, backgroundColor: '#F0F2F5', borderRadius: 8 }}>
           <h3>Preview Card</h3>
           <Space className={styles.space} size="middle" direction="vertical">
-            {previewItems.map(({ children }) => (children))}
+            {previewItems.map(({ key, children }) => (
+              <React.Fragment key={key}>{children}</React.Fragment>
+            ))}
           </Space>
         </div>
       </Col>

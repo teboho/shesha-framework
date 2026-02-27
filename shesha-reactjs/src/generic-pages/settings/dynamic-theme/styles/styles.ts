@@ -4,9 +4,6 @@ export const useStyles = createStyles(({ css, cx }) => {
   const themeParameters = cx(
     'theme-parameters',
     css`
-      height: 85vh;
-      overflow-y: auto;
-      scrollbar-width: none;
 
       &::-webkit-scrollbar {
         display: none;
