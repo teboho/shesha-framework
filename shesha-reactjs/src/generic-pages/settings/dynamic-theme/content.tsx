@@ -1,5 +1,5 @@
 import { Col, Row, Alert, Typography, Space } from 'antd';
-import React, { FC } from 'react';
+import React, { FC, ReactElement } from 'react';
 import { CollapsiblePanel } from '@/components';
 import AlertsExample from './alertsExamples';
 import FormExample from './form';
@@ -18,16 +18,18 @@ export interface IConfigurableThemePageProps {
 export const ConfigurableThemeContent: FC<IConfigurableThemePageProps> = ({ value, onChange, readonly }) => {
   const { styles } = useStyles();
 
-  const GroupWrapper = ({title, children}) => (<Space className={ styles.space} direction="vertical" style={{ width: '100%'}}>
-    <h4 style={{ color: '#9d9d9d'}}>{title}</h4>
-    {children}
-    </Space>);
+  const GroupWrapper = ({ title, children }): ReactElement => (
+    <Space className={styles.space} direction="vertical" style={{ width: '100%' }}>
+      <h4 style={{ color: '#9d9d9d' }}>{title}</h4>
+      {children}
+    </Space>
+  );
 
   const previewItems = [
     {
       key: 'alerts',
       label: 'Alerts',
-      children: <GroupWrapper title="Alerts"><AlertsExample /></GroupWrapper>,
+      children: <GroupWrapper title="Alerts"><AlertsExample theme={value} /></GroupWrapper>,
     },
     {
       key: 'forms',
@@ -37,30 +39,29 @@ export const ConfigurableThemeContent: FC<IConfigurableThemePageProps> = ({ valu
     {
       key: 'inline',
       label: 'Inline components',
-      children: <GroupWrapper title="Inline components"><InlineComponentsExample /></GroupWrapper>,
+      children: <GroupWrapper title="Inline components"><InlineComponentsExample theme={value} /></GroupWrapper>,
     },
     {
       key: 'layouts',
       label: 'Layouts',
-      children: <GroupWrapper title="Layouts"><LayoutExample theme={value}/></GroupWrapper>
-    }
+      children: <GroupWrapper title="Layouts"><LayoutExample theme={value} /></GroupWrapper>,
+    },
   ];
 
   return (
-    <Row gutter={16}>
+    <Row gutter={16} style={{ height: 'calc(100vh - 205px)' }}>
       <Col xs={24} sm={24} md={14} lg={16} xl={17} xxl={18}>
         <CollapsiblePanel
           collapsible="disabled"
           header={(
             <>
-            <Typography.Text type="secondary" className={styles.themeHeader}>
-              Theme Settings
-            </Typography.Text>
-            <Typography.Text type="secondary" className={styles.themeHeader}>
-            Customize the look and feel of your workspace
-          </Typography.Text>
+              <Typography.Text type="secondary" className={styles.themeHeader}>
+                Theme Settings
+              </Typography.Text>
+              <Typography.Text type="secondary" className={styles.themeHeader}>
+                Customize the look and feel of your workspace
+              </Typography.Text>
             </>
-            
           )}
           className={styles.themeParameters}
         >
@@ -74,11 +75,11 @@ export const ConfigurableThemeContent: FC<IConfigurableThemePageProps> = ({ valu
         </CollapsiblePanel>
       </Col>
 
-      <Col xs={24} sm={24} md={10} lg={8} xl={7} xxl={6}>
-        <div className={styles.space} style={{padding: 16, backgroundColor: '#F0F2F5', borderRadius: 8}}>
+      <Col xs={24} sm={24} md={10} lg={8} xl={7} xxl={6} style={{ height: '100%', overflowY: 'auto' }}>
+        <div className={styles.space} style={{ padding: 16, backgroundColor: '#F0F2F5', borderRadius: 8 }}>
           <h3>Preview Card</h3>
-          <Space className={styles.space} size="middle" direction='vertical' style={{ borderRadius: 8, background: '#fff', padding: 8, width: '100%'}}>
-          { previewItems.map(({children})=>(children)) }
+          <Space className={styles.space} size="middle" direction="vertical">
+            {previewItems.map(({ children }) => (children))}
           </Space>
         </div>
       </Col>

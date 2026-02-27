@@ -57,7 +57,7 @@ export const Page: FC<PropsWithChildren<IPageProps>> = ({
   const hasStatus = Boolean(status);
 
   return (
-    <section className="sha-page" style={{ background: theme?.layoutBackground }}>
+    <section className="sha-page" style={{ background: theme?.pageBackground }}>
       <ShaSpin spinning={loading || false} tip={loadingText}>
         <Show when={showHeading}>
           <div className="sha-page-heading">

@@ -93,7 +93,7 @@ const DefaultHorizontalLayout: FC<PropsWithChildren<IHorizontalLayoutProps>> = (
             className={classNames(styles.layoutBackground, headingClass, {
               [styles.layoutBackgroundNoPadding]: noPadding,
             })}
-            style={{ ...layoutBackgroundStyle, background: themeFromStorage?.layoutBackground }}
+            style={{ ...layoutBackgroundStyle, background: themeFromStorage?.pageBackground }}
           >
             {(hasHeading || isFixedHeading) && (
               <div className={isFixedHeading ? 'fixed-heading-wrapper' : 'heading-wrapper'}>

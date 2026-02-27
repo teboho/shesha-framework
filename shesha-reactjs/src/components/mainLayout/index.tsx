@@ -242,7 +242,7 @@ const DefaultLayout: FC<PropsWithChildren<IMainLayoutProps>> = (props) => {
               className={classNames(styles.shaSiteLayoutBackground, headingClass, {
                 [styles.shaSiteLayoutBackgroundNoPadding]: noPadding,
               })}
-              style={{ ...layoutBackgroundStyle, background: themeFromStorage?.layoutBackground }}
+              style={{ ...layoutBackgroundStyle, background: themeFromStorage?.pageBackground }}
             >
               {children}
             </div>

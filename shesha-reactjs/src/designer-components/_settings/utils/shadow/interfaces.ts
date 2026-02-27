@@ -7,9 +7,9 @@ export interface IShadowComponentProps extends IConfigurableFormComponent {
 };
 
 export interface IShadowValue {
-  offsetX?: number;
-  offsetY?: number;
-  blurRadius?: number;
-  spreadRadius?: number;
+  offsetX?: string | number;
+  offsetY?: string | number;
+  blurRadius?: string | number;
+  spreadRadius?: string | number;
   color: string;
 }

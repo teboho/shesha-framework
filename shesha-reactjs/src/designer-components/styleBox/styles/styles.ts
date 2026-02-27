@@ -77,6 +77,7 @@ export const useStyles = createStyles(({ css, cx, prefixCls }) => {
           background-color: ${background};
           height: 100%;
           width: 100%;
+          position: relative;
         }
       
         .${paddTop} {

@@ -1,5 +1,6 @@
 import { IBackgroundValue, IBorderValue, IShadowValue } from '@/designer-components/_settings/utils/index';
 import { createNamedContext } from '@/utils/react';
+import { FormLabelAlign } from 'antd/es/form/interface';
 import { Theme } from 'antd/lib/config-provider/context';
 
 interface ITextTheme {
@@ -8,7 +9,7 @@ interface ITextTheme {
   link?: string;
 }
 
-export type ThemeLabelAlign = 'left' | 'right' | 'top';
+export type ThemeLabelAlign = FormLabelAlign | 'top';
 
 
 export interface IInputComponentSettings {
@@ -22,8 +23,8 @@ export interface IInputComponentSettings {
 
 export interface ILayoutComponentSettings {
   stylingBox?: string;
-  gridGapVertical?: number;
-  gridGapHorizontal?: number;
+  gridGapVertical?: string | number;
+  gridGapHorizontal?: string | number;
   background?: IBackgroundValue;
   border?: IBorderValue;
   shadow?: IShadowValue;
@@ -110,11 +111,11 @@ export const THEME_CONTEXT_INITIAL_STATE: IThemeStateContext = {
       border: {
         borderType: 'all',
         border: {
-          top: { width: 1, color: '#d9d9d9', style: 'solid'},
-          bottom: { width: 1, color: '#d9d9d9', style: 'solid'},
-          left: { width: 1, color: '#d9d9d9', style: 'solid'},
-          right: { width: 1, color: '#d9d9d9', style: 'solid'},
-          all: { width: 1, color: '#d9d9d9', style: 'solid'}
+          top: { width: 1, color: '#d9d9d9', style: 'solid' },
+          bottom: { width: 1, color: '#d9d9d9', style: 'solid' },
+          left: { width: 1, color: '#d9d9d9', style: 'solid' },
+          right: { width: 1, color: '#d9d9d9', style: 'solid' },
+          all: { width: 1, color: '#d9d9d9', style: 'solid' },
         },
       },
       shadow: {
@@ -122,7 +123,7 @@ export const THEME_CONTEXT_INITIAL_STATE: IThemeStateContext = {
         color: '#000',
         offsetX: 0,
         offsetY: 0,
-      }
+      },
     },
     standardComponents: {
       stylingBox: '{"marginBottom":"5","paddingLeft":"8","paddingBottom":"8","paddingTop":"8","paddingRight":"8"}',

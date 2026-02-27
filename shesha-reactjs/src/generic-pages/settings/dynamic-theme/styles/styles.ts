@@ -4,7 +4,7 @@ export const useStyles = createStyles(({ css, cx }) => {
   const themeParameters = cx(
     'theme-parameters',
     css`
-      height: 100%;
+      height: 85vh;
       overflow-y: auto;
       scrollbar-width: none;
 
@@ -41,7 +41,8 @@ export const useStyles = createStyles(({ css, cx }) => {
       }
 
       .ant-slider {
-        margin: 8px 0;
+        margin: 8px;
+        max-width: 300px;
       }
     `,
   );
@@ -88,17 +89,17 @@ export const useStyles = createStyles(({ css, cx }) => {
     'theme-color-space',
     css`
      align-items: center;
-    `
-  )
+    `,
+  );
   const space = cx(
     'theme-space',
     css`
-    & .ant-space-item: {
-      width: 100%;
-      background: red;
-     }
-    `
-  )
+    width: 100%;
+      > .ant-space-item {
+        width: 100%;
+      }
+    `,
+  );
 
   return {
     themeParameters,

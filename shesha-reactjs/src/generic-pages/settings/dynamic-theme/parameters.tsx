@@ -1,23 +1,20 @@
 import { QuestionCircleOutlined } from '@ant-design/icons';
-import { Form, Row, Space, Tooltip, Radio, Switch, InputNumber } from 'antd';
+import { Space, Tooltip, Radio, InputNumber, Input, Select, Slider, Switch } from 'antd';
 import React, { FC, useCallback, useMemo } from 'react';
-import { Show, CollapsiblePanel, ColorPicker, SectionSeparator, ComponentsContainer } from '@/components';
-import { IConfigurableTheme, ThemeLabelAlign } from '@/providers/theme/contexts';
-import { humanizeString } from '@/utils/string';
+import { Show, CollapsiblePanel, ColorPicker, SectionSeparator } from '@/components';
+import { IConfigurableTheme } from '@/providers/theme/contexts';
+import { humanizeString, toCamelCase } from '@/utils/string';
 import { BACKGROUND_PRESET_COLORS, PRESET_COLORS, SHESHA_COLORS, TEXT_PRESET_COLORS } from './presetColors';
-import { InputRow } from '@/designer-components/settingsInputRow';
-import { SettingInput } from '@/designer-components/settingsInput/settingsInput';
 import { nanoid } from '@/utils/uuid';
 import { useStyles } from './styles/styles';
 import Box from '@/designer-components/styleBox/components/box';
-import { borderStyles, getBorderInputs, getCornerInputs } from '@/designer-components/_settings/utils/border/utils';
+import { borderStyles } from '@/designer-components/_settings/utils/border/utils';
 import { useTheme } from '@/providers';
-import { useFormBuilderFactory } from '@/form-factory/hooks';
-import { RadioWrapper } from '@/designer-components/inputComponent/wrappers/radio';
+import Icon from '@/components/icon/Icon';
 
 interface IThemeConfig {
   name: string;
-  onChange: (hex: string) => void;
+  onChange: (color: any) => void;
   hint?: string;
 }
 
@@ -29,7 +26,7 @@ export interface ThemeParametersProps {
 
 interface IHeaderProps {
   title?: string;
-  subtitle?: string
+  subtitle?: string;
 };
 
 const HeaderContent: FC<IHeaderProps> = ({ title, subtitle }) => {
@@ -44,7 +41,6 @@ const HeaderContent: FC<IHeaderProps> = ({ title, subtitle }) => {
 
 const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, readonly }) => {
   const { styles } = useStyles();
-  const fbf = useFormBuilderFactory();
 
   const changeThemeInternal = (theme: IConfigurableTheme): void => {
     if (onChange) onChange(theme);
@@ -83,16 +79,42 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
     updateTheme('inlineComponents', update);
   };
 
-  const updateFormLayout = (update: Partial<IConfigurableTheme['formLayout']>): void => {
-    updateTheme('formLayout', update);
-  };
+  const renderInput = useCallback(({ value, onChange, icon, label, hint, type = 'number' }: { value: number | string; onChange: (value: number | string) => void; icon?: string; label: string; hint?: string; type?: 'number' | 'string' }) => (
+    <Space direction="horizontal">
+      <span>{humanizeString(label)} </span>
+      <Show when={Boolean(hint)}>
+        <Tooltip title={hint}>
+          <span className="sha-input-tooltip" style={{ cursor: 'pointer' }}>
+            <QuestionCircleOutlined />
+          </span>
+        </Tooltip>
+      </Show>
+      {type == 'number' ? (
+        <InputNumber
+          id={nanoid()}
+          prefix={<Icon icon={icon} style={{ color: '#d9d9d9', height: 16 }} />}
+          value={value}
+          size="small"
+          onChange={onChange}
+        />
+      ) : (
+        <Input
+          id={nanoid()}
+          prefix={<Icon icon={icon} />}
+          value={value}
+          size="small"
+          onChange={(e) => onChange(e.target.value)}
+        />
+      )}
+    </Space>
 
+  ), [theme]);
   const renderColor = useCallback(
     (
       key: string,
       colorName: string,
       initialColor: string,
-      onChange: (color: string) => void,
+      onChange: (color: any) => void,
       presetColors?: string[],
       hint?: string,
     ) => (
@@ -123,25 +145,25 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
     [theme, readonly, styles],
   );
 
-  const renderDivider = () => (<SectionSeparator lineColor="gray" lineThickness={2} lineWidth="100%" />);
+  const renderDivider = () => (<SectionSeparator lineColor="#d9d9d9" lineThickness={1} lineWidth="100%" />);
 
   const colorConfigs: IThemeConfig[] = useMemo(() => [
-    { name: 'primaryColor', onChange: (hex: string) => updateTheme('application', { primaryColor: hex }) },
-    { name: 'errorColor', onChange: (hex: string) => updateTheme('application', { errorColor: hex }) },
-    { name: 'warningColor', onChange: (hex: string) => updateTheme('application', { warningColor: hex }) },
-    { name: 'successColor', onChange: (hex: string) => updateTheme('application', { successColor: hex }) },
-    { name: 'infoColor', onChange: (hex: string) => updateTheme('application', { infoColor: hex }) },
-  ], []);
+    { name: 'primaryColor', onChange: (color: any) => updateTheme('application', { primaryColor: color.toHexString() }) },
+    { name: 'errorColor', onChange: (color: any) => updateTheme('application', { errorColor: color.toHexString() }) },
+    { name: 'warningColor', onChange: (color: any) => updateTheme('application', { warningColor: color.toHexString() }) },
+    { name: 'successColor', onChange: (color: any) => updateTheme('application', { successColor: color.toHexString() }) },
+    { name: 'infoColor', onChange: (color: any) => updateTheme('application', { infoColor: color.toHexString() }) },
+  ], [theme]);
 
   const textConfigs: IThemeConfig[] = useMemo(() => [
-    { name: 'default', onChange: (hex: string) => updateTheme('text', { default: hex }) },
-    { name: 'secondary', onChange: (hex: string) => updateTheme('text', { secondary: hex }) },
-  ], []);
+    { name: 'default', onChange: (color: any) => updateTheme('text', { default: color.toHexString() }) },
+    { name: 'secondary', onChange: (color: any) => updateTheme('text', { secondary: color.toHexString() }) },
+  ], [theme]);
 
   const backgroundConfigs: IThemeConfig[] = useMemo(() => [
-    { name: 'pageBackground', onChange: (hex: string) => updateTheme('pageBackground', hex as any) },
-    { name: 'componentBackground', onChange: (hex: string) => updateTheme('componentBackground', hex as any) },
-  ], []);
+    { name: 'pageBackground', onChange: (color: any) => changeThemeInternal({ ...theme, pageBackground: color.toString() }) },
+    { name: 'componentBackground', onChange: (color: any) => changeThemeInternal({ ...theme, componentBackground: color.toString() }) },
+  ], [theme]);
 
   const inputSettings = theme?.inputComponents;
   const layoutSettings = theme?.layoutComponents;
@@ -193,6 +215,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                 renderColor(`theme_${index}`, config.name.replace('Color', ''), theme?.application?.[config.name], (hex) => config.onChange(hex)),
               )}
             </Space>
+            {renderDivider()}
             <HeaderContent title="Text Colors" subtitle="Customize text colors for your application" />
             <Space direction="horizontal" align="center">
               {textConfigs.map((config, index) =>
@@ -206,6 +229,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                 ),
               )}
             </Space>
+            {renderDivider()}
             <HeaderContent title="Background Colors" subtitle="Customize background colors for your application" />
             <Space direction="horizontal" align="center">
               {backgroundConfigs.map((config, index) => renderColor(
@@ -225,325 +249,265 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
         {...commonPanelProps}
         header={<HeaderContent title="Layout Component Settings" subtitle="Configure layout component styling" />}
       >
-        <Space direction='vertical' size='middle'>
-          <HeaderContent title="Margin & Padding" subtitle="Configure layout styling such as margin and padding" />
-          <Box 
-          value={layoutSettings?.stylingBox} 
-          onChange={(val) => updateLayoutComponents({ stylingBox: val })} 
-          readOnly={readonly}
-          />
-          <HeaderContent title="Grid Gap" subtitle="Configure layout component styling" />
-          <InputRow>
-            <SettingInput
-              type="numberField"
-              label="Column Gap"
-              propertyName="layoutComponents.gridGapHorizontal"
-              value={layoutSettings?.gridGapHorizontal}
-              onChange={(val) => updateLayoutComponents({ gridGapHorizontal: val })}
-              {...commonInputProps}
+        <Space size="middle" direction="vertical" className={styles.space}>
+          <Space direction="vertical" >
+            <HeaderContent title="Margin & Padding" subtitle="Configure layout styling such as margin and padding" />
+            <Box
+              value={layoutSettings?.stylingBox}
+              onChange={(val) => updateLayoutComponents({ stylingBox: val })}
+              readOnly={readonly}
             />
-            <SettingInput
-              type="numberField"
-              label="Row Gap"
-              propertyName="layoutComponents.gridGapVertical"
-              value={layoutSettings?.gridGapVertical}
-              onChange={(val) => updateLayoutComponents({ gridGapVertical: val })}
-              {...commonInputProps}
-            />
-          </InputRow>
-        
-        {/* Background Section */}
-        <HeaderContent title="Background" subtitle="Configure background settings" />
-        {/* Background Color */}
-        {renderColor('color', '', '#ffff', (val) => updateLayoutComponents({
-            background: { ...layoutSettings?.background, color: val },
-          }))}
+          </Space>
+          {renderDivider()}
+          <Space direction="vertical">
+            <HeaderContent title="Grid Gap" subtitle="Configure layout component styling" />
+            <Space direction="horizontal">
+              {renderInput({ value: layoutSettings?.gridGapHorizontal, onChange: (val) => updateLayoutComponents({ gridGapHorizontal: val }), label: 'Column Gap' })}
+              {renderInput({ value: layoutSettings?.gridGapVertical, onChange: (val) => updateLayoutComponents({ gridGapVertical: val }), label: 'Row Gap' })}
+            </Space>
+          </Space>
+          {renderDivider()}
 
-        {/* Border Section */}
-        <HeaderContent title="Border" subtitle="Configure border settings" />
-        <RadioWrapper 
-          propertyName='' 
-          type='radio' 
-          label='Type' 
-          onChange={(val) => updateLayoutComponents({
-            border: { ...layoutSettings?.border, borderType: val.target.value },
-          })}
-          buttonGroupOptions={[
-            { value: 'all', title: 'All'},
-            { value: 'custom', title: 'Custom'}
-          ]}
-          />
+          {/* Background Section */}
+          <Space direction="vertical">
+            <HeaderContent title="Background" subtitle="Configure background settings" />
+            {/* Background Color */}
+            {renderColor('color', '', '#ffff', (color: any) => updateLayoutComponents({
+              background: { ...layoutSettings?.background, color: color?.toHexString?.() ?? color },
+            }))}
+          </Space>
 
-        {/* Border Settings */}
-        {layoutSettings?.border?.borderType !== 'custom' && (
-          <InputRow
-            inputs={[
-              {
-                type: 'textField',
-                id: nanoid(),
-                propertyName: 'layoutComponents.border.border.all.width',
-                label: 'Width',
-                placeholder: '0',
-                hideLabel: true,
-                value: layoutSettings?.border?.border?.all?.width,
-                onChange: (val) => updateLayoutComponents({
-                  border: {
-                    ...layoutSettings?.border,
-                    border: {
-                      ...layoutSettings?.border?.border,
-                      all: { ...layoutSettings?.border?.border?.all, width: val },
-                    },
-                  },
-                }),
-                ...commonInputProps,
-              } as any,
-              {
-                type: 'dropdown',
-                id: nanoid(),
-                propertyName: 'layoutComponents.border.border.all.style',
-                label: 'Style',
-                hideLabel: true,
-                placeholder: 'Solid',
-                dropdownOptions: borderStyles,
-                value: layoutSettings?.border?.border?.all?.style,
-                onChange: (val) => updateLayoutComponents({
-                  border: {
-                    ...layoutSettings?.border,
-                    border: {
-                      ...layoutSettings?.border?.border,
-                      all: { ...layoutSettings?.border?.border?.all, style: val },
-                    },
-                  },
-                }),
-                ...commonInputProps,
-              } as any,
-              {
-                type: 'colorPicker',
-                id: nanoid(),
-                propertyName: 'layoutComponents.border.border.all.color',
-                label: 'Color',
-                hideLabel: true,
-                value: layoutSettings?.border?.border?.all?.color,
-                onChange: (val) => updateLayoutComponents({
-                  border: {
-                    ...layoutSettings?.border,
-                    border: {
-                      ...layoutSettings?.border?.border,
-                      all: { ...layoutSettings?.border?.border?.all, color: val },
-                    },
-                  },
-                }),
-                ...commonInputProps,
-              } as any,
-            ]}
-          />
-        )}
-        {layoutSettings?.border?.borderType === 'custom' && (
-            ['top', 'bottom', 'left', 'right'].map((side) => {
-              return (
-                <InputRow
-            inputs={[
-              {
-                type: 'textField',
-                id: nanoid(),
-                propertyName: '',
-                label: 'Width',
-                placeholder: '0',
-                hideLabel: true,
-                value: layoutSettings?.border?.border?.all?.width,
-                onChange: (val) => updateLayoutComponents({
-                  border: {
-                    ...layoutSettings?.border,
-                    border: {
-                      ...layoutSettings?.border?.border,
-                      [side]: { ...layoutSettings?.border?.border?.[side], width: val },
-                    },
-                  },
-                }),
-                ...commonInputProps,
-              } as any,
-              {
-                type: 'dropdown',
-                id: nanoid(),
-                propertyName: 'layoutComponents.border.border.all.style',
-                label: 'Style',
-                hideLabel: true,
-                placeholder: 'Solid',
-                dropdownOptions: borderStyles,
-                value: layoutSettings?.border?.border?.all?.style,
-                onChange: (val) => updateLayoutComponents({
-                  border: {
-                    ...layoutSettings?.border,
-                    border: {
-                      ...layoutSettings?.border?.border,
-                      all: { ...layoutSettings?.border?.border?.all, style: val },
-                    },
-                  },
-                }),
-                ...commonInputProps,
-              } as any,
-              {
-                type: 'colorPicker',
-                id: nanoid(),
-                propertyName: 'layoutComponents.border.border.all.color',
-                label: 'Color',
-                hideLabel: true,
-                value: layoutSettings?.border?.border?.all?.color,
-                onChange: (val) => updateLayoutComponents({
-                  border: {
-                    ...layoutSettings?.border,
-                    border: {
-                      ...layoutSettings?.border?.border,
-                      all: { ...layoutSettings?.border?.border?.all, color: val },
-                    },
-                  },
-                }),
-                ...commonInputProps,
-              } as any,
-            ]}
-          />
-              )
-            })
-        )}
+          {renderDivider()}
 
-        {/* Radius Section */}
-        <HeaderContent title="Border Radius" subtitle="Configure border radius settings" />
-        <RadioWrapper 
-          propertyName='' 
-          type='radio' 
-          label='Type' 
-          onChange={(val) => updateLayoutComponents({
-            border: { ...layoutSettings?.border, radiusType: val.target.value },
-          })}
-          buttonGroupOptions={[
-            { value: 'all', title: 'All'},
-            { value: 'custom', title: 'Custom'}
-          ]}
-          />
+          {/* Border Section */}
+          <Space direction="vertical">
+            <HeaderContent title="Border" subtitle="Configure border settings" />
+            <Space direction="horizontal" size='large' style={{ alignItems: 'flex-start' }}>
+              <Radio.Group
+                value={layoutSettings?.border?.borderType}
+                size="small"
+                onChange={(e) => updateLayoutComponents({
+                  border: { ...layoutSettings?.border, borderType: e.target.value },
+                })}
+              >
+                <Radio.Button value="all"><Icon icon="BorderOutlined" /></Radio.Button>
+                <Radio.Button value="custom"><Icon icon="BorderOuterOutlined" /></Radio.Button>
+              </Radio.Group>
 
-        {layoutSettings?.border?.radiusType !== 'custom' && (
-          <InputRow
-            inline
-            inputs={[
-              {
-                type: 'numberField',
-                id: nanoid(),
-                propertyName: 'layoutComponents.border.radius.all',
-                label: 'Radius',
-                placeholder: 0,
-                hideLabel: true,
-                value: layoutSettings?.border?.radius?.all,
-                onChange: (val) => updateLayoutComponents({
-                  border: {
-                    ...layoutSettings?.border,
-                    radius: { ...layoutSettings?.border?.radius, all: val },
-                  },
-                }),
-                ...commonInputProps,
-              } as any,
-            ]}
-          />
-        )}
-                {layoutSettings?.border?.radiusType === 'custom' && (
-            ['topLeft', 'bottomLeft', 'topRight', 'bottomRight'].map((side) => {
-              return (
-                <InputRow
-            inputs={[
-              {
-                type: 'textField',
-                id: nanoid(),
-                propertyName: '',
-                label: 'Width',
-                placeholder: '0',
-                hideLabel: true,
-                value: layoutSettings?.border?.radius?.[side],
-                onChange: (val) => updateLayoutComponents({
-                  border: {
-                    ...layoutSettings?.border,
+              {/* Border Settings */}
+              {layoutSettings?.border?.borderType !== 'custom' && (
+                <Space direction="horizontal">
+                  <Input
+                    placeholder="0"
+                    size="small"
+                    value={layoutSettings?.border?.border?.all?.width}
+                    onChange={(e) => updateLayoutComponents({
+                      border: {
+                        ...layoutSettings?.border,
+                        border: {
+                          ...layoutSettings?.border?.border,
+                          all: { ...layoutSettings?.border?.border?.all, width: e.target.value },
+                        },
+                      },
+                    })}
+                    disabled={readonly}
+                    style={{ width: 80 }}
+                  />
+                  <Select
+                    placeholder="Solid"
+                    size="small"
+                    options={borderStyles}
+                    value={layoutSettings?.border?.border?.all?.style}
+                    onChange={(val) => updateLayoutComponents({
+                      border: {
+                        ...layoutSettings?.border,
+                        border: {
+                          ...layoutSettings?.border?.border,
+                          all: { ...layoutSettings?.border?.border?.all, style: val },
+                        },
+                      },
+                    })}
+                    disabled={readonly}
+                    style={{ width: 120 }}
+                  />
+                  <ColorPicker
+                    value={layoutSettings?.border?.border?.all?.color}
+                    onChange={(val) => updateLayoutComponents({
+                      border: {
+                        ...layoutSettings?.border,
+                        border: {
+                          ...layoutSettings?.border?.border,
+                          all: { ...layoutSettings?.border?.border?.all, color: val?.toString?.() },
+                        },
+                      },
+                    })}
+                    readOnly={readonly}
+                    size="small"
+                  />
+                </Space>
+              )}
+              {layoutSettings?.border?.borderType === 'custom' && (
+                <Space direction='vertical'>
+                  {['top', 'bottom', 'left', 'right'].map((side) => (
+                    <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'center', gap: 8 }}>
+                      <span style={{ width: 50 }}>{humanizeString(side)}</span>
+                      <Input
+                        placeholder="0"
+                        size="small"
+                        value={layoutSettings?.border?.border?.[side]?.width}
+                        onChange={(e) => updateLayoutComponents({
+                          border: {
+                            ...layoutSettings?.border,
+                            border: {
+                              ...layoutSettings?.border?.border,
+                              [side]: { ...layoutSettings?.border?.border?.[side], width: e.target.value },
+                            },
+                          },
+                        })}
+                        disabled={readonly}
+                        style={{ width: 80 }}
+                      />
+                      <Select
+                        placeholder="Solid"
+                        size="small"
+                        options={borderStyles}
+                        value={layoutSettings?.border?.border?.[side]?.style}
+                        onChange={(val) => updateLayoutComponents({
+                          border: {
+                            ...layoutSettings?.border,
+                            border: {
+                              ...layoutSettings?.border?.border,
+                              [side]: { ...layoutSettings?.border?.border?.[side], style: val },
+                            },
+                          },
+                        })}
+                        disabled={readonly}
+                        style={{ width: 120 }}
+                      />
+                      <ColorPicker
+                        value={layoutSettings?.border?.border?.[side]?.color}
+                        onChange={(val) => updateLayoutComponents({
+                          border: {
+                            ...layoutSettings?.border,
+                            border: {
+                              ...layoutSettings?.border?.border,
+                              [side]: { ...layoutSettings?.border?.border?.[side], color: val?.toString?.() },
+                            },
+                          },
+                        })}
+                        readOnly={readonly}
+                        size="small"
+                      />
+                    </div>
+                  ))}
+                </Space>
+              )}
+            </Space>
+          </Space>
+          {renderDivider()}
+
+          {/* Radius Section */}
+          <Space direction="vertical">
+            <HeaderContent title="Border Radius" subtitle="Configure border radius settings" />
+            <Space direction="horizontal" size='large'>
+              <Radio.Group
+                value={layoutSettings?.border?.radiusType}
+                size="small"
+                onChange={(e) => updateLayoutComponents({
+                  border: { ...layoutSettings?.border, radiusType: e.target.value },
+                })}
+              >
+                <Radio.Button value="all"><Icon icon="ExpandOutlined" /></Radio.Button>
+                <Radio.Button value="custom"><Icon icon="RadiusUprightOutlined" /></Radio.Button>
+              </Radio.Group>
+
+              {layoutSettings?.border?.radiusType !== 'custom' && (
+                <InputNumber
+                  placeholder="0"
+                  size="small"
+                  value={layoutSettings?.border?.radius?.all}
+                  onChange={(val) => updateLayoutComponents({
                     border: {
-                      ...layoutSettings?.border?.border,
-                      [side]: { ...layoutSettings?.border?.radius?.[side], [side]: val },
+                      ...layoutSettings?.border,
+                      radius: { ...layoutSettings?.border?.radius, all: val },
                     },
-                  },
-                }),
-                ...commonInputProps,
-              } as any
-            ]}
-          />
-              )
-            })
-        )}
+                  })}
+                  disabled={readonly}
+                  style={{ width: 80 }}
+                />
+              )}
+              {layoutSettings?.border?.radiusType === 'custom' && (
+                <Space direction="horizontal">
+                  {[{ value: layoutSettings?.border?.radius?.topLeft, label: 'Top Left', icon: 'RadiusUpleftOutlined' },
+                  { value: layoutSettings?.border?.radius?.bottomLeft, label: 'Bottom Left', icon: 'RadiusBottomleftOutlined' },
+                  { value: layoutSettings?.border?.radius?.topRight, label: 'Top Right', icon: 'RadiusUprightOutlined' },
+                  { value: layoutSettings?.border?.radius?.bottomRight, label: 'Bottom Right', icon: 'RadiusBottomrightOutlined' }]
+                    .map(({ value, icon, label }) => {
+                      return (
+                        <>
+                          {renderInput({
+                            value: value, icon: icon, label: '', onChange: (val) => updateLayoutComponents({
+                              border: {
+                                ...layoutSettings?.border,
+                                radius: {
+                                  ...layoutSettings?.border?.radius,
+                                  [value]: { ...layoutSettings?.border?.radius?.[toCamelCase(label)], [toCamelCase(label)]: val },
+                                },
+                              },
+                            }),
+                          })}
+                        </>
+                      );
+                    })}
+                </Space>
+              )}
+            </Space>
+          </Space>
+          {renderDivider()}
 
-        {/* Shadow Section */}
-        <HeaderContent title="Shadow" subtitle="Configure shadow settings" />
-        <InputRow
-          inputs={[
-            {
-              type: 'numberField',
-              id: nanoid(),
-              propertyName: 'layoutComponents.shadow.offsetX',
-              label: 'position',
-              tooltip: 'Offset X',
-              icon: 'dragOutlined',
-              value: layoutSettings?.shadow?.offsetX,
-              onChange: (val) => updateLayoutComponents({
-                shadow: { ...layoutSettings?.shadow, offsetX: val },
-              }),
-              ...commonInputProps,
-            } as any,
-            {
-              type: 'numberField',
-              id: nanoid(),
-              propertyName: 'layoutComponents.shadow.offsetY',
-              label: 'Offset Y',
-              hideLabel: true,
-              tooltip: 'Offset Y',
-              icon: 'dragOutlined',
-              value: layoutSettings?.shadow?.offsetY,
-              onChange: (val) => updateLayoutComponents({
-                shadow: { ...layoutSettings?.shadow, offsetY: val },
-              }),
-              ...commonInputProps,
-            } as any,
-            {
-              type: 'numberField',
-              id: nanoid(),
-              propertyName: 'layoutComponents.shadow.blurRadius',
-              label: 'Blur',
-              tooltip: 'Blur radius',
-              icon: 'eyeInvisibleOutlined',
-              value: layoutSettings?.shadow?.blurRadius,
-              onChange: (val) => updateLayoutComponents({
-                shadow: { ...layoutSettings?.shadow, blurRadius: val },
-              }),
-              ...commonInputProps,
-            } as any,
-            {
-              type: 'numberField',
-              id: nanoid(),
-              propertyName: 'layoutComponents.shadow.spreadRadius',
-              label: 'Spread',
-              tooltip: 'Spread radius',
-              icon: 'expandOutlined',
-              value: layoutSettings?.shadow?.spreadRadius,
-              onChange: (val) => updateLayoutComponents({
-                shadow: { ...layoutSettings?.shadow, spreadRadius: val },
-              }),
-              ...commonInputProps,
-            } as any,
-            {
-              type: 'colorPicker',
-              id: nanoid(),
-              propertyName: 'layoutComponents.shadow.color',
-              label: 'Color',
-              value: layoutSettings?.shadow?.color,
-              onChange: (val) => updateLayoutComponents({
-                shadow: { ...layoutSettings?.shadow, color: val },
-              }),
-              ...commonInputProps,
-            } as any,
-          ]}
-        />
+          {/* Shadow Section */}
+          <Space direction="vertical">
+            <HeaderContent title="Shadow" subtitle="Configure shadow settings" />
+            <Space direction="horizontal">
+              {renderInput({
+                value: layoutSettings?.shadow?.offsetX,
+                onChange: (val) => updateLayoutComponents({
+                  shadow: { ...layoutSettings?.shadow, offsetX: val },
+                }),
+                label: 'Position',
+                icon: 'x',
+              })}
+              {renderInput({
+                value: layoutSettings?.shadow?.offsetY,
+                onChange: (val) => updateLayoutComponents({
+                  shadow: { ...layoutSettings?.shadow, offsetY: val },
+                }),
+                label: '',
+                icon: 'y',
+              })}
+              {renderInput({
+                icon: 'blurIcon',
+                value: layoutSettings?.shadow?.blurRadius,
+                onChange: (val) => updateLayoutComponents({
+                  shadow: { ...layoutSettings?.shadow, blurRadius: val },
+                }),
+                label: 'Blur',
+                hint: '',
+              })}
+              {renderInput({
+                icon: 'spreadIcon',
+                value: layoutSettings?.shadow?.spreadRadius,
+                onChange: (val) => updateLayoutComponents({
+                  shadow: { ...layoutSettings?.shadow, spreadRadius: val },
+                }),
+                label: '',
+                hint: '',
+              })}
+              {renderColor('', 'color', '', (color: any) => updateLayoutComponents({
+                shadow: { ...layoutSettings?.shadow, color: color?.toHexString?.() ?? color },
+              }))}
+            </Space>
+          </Space>
         </Space>
       </CollapsiblePanel>
 
@@ -552,65 +516,63 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
         {...commonPanelProps}
         header={<HeaderContent title="Form Layout" subtitle="Configure form layout settings" />}
       >
-        <InputRow
-          inputs={[
-            {
-              type: 'radio',
-              propertyName: 'inputComponents.labelAlign',
-              id: nanoid(),
-              label: 'Label Alignment',
-              buttonGroupOptions: [
-                { value: 'left', title: 'Left' },
-                { value: 'right', title: 'Right' },
-                { value: 'top', title: 'Top' }
-              ],
-              value: inputSettings?.labelAlign || 'right',
-              onChange: (val) => updateInputComponents({ labelAlign: val }),
-              ...commonInputProps,
-            } as any,
-          ]}
-        />
+        <Space direction="vertical" size="large">
+          <Space direction="vertical">
+            <HeaderContent title="Label Align" subtitle="Select below to choose your desired input label alignment." />
+            <Radio.Group
+              value={inputSettings?.labelAlign || 'right'}
+              options={[
+                { label: 'Left', value: 'left' },
+                { label: 'Right', value: 'right' },
+                { label: 'Top', value: 'top' },
+              ]}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === 'top') {
+                  updateInputComponents({ labelAlign: value, labelSpan: 24, contentSpan: 24 });
+                } else {
+                  updateInputComponents({ labelAlign: value });
+                }
+              }}
+              defaultValue="left"
+            />
+          </Space>
+          {renderDivider()}
 
-        <SettingInput
-          id={nanoid()}
-          type="numberField"
-          propertyName="inputComponents.labelSpan"
-          label="Label Span (1-24)"
-          tooltip="The span for labels in a 24-column grid"
-          value={inputSettings?.labelSpan}
-          onChange={(val) => updateInputComponents({ 
-            labelSpan: val,
-            contentSpan: 24 - (val || 0),
-          })}
-          {...commonInputProps}
-        />
+          {inputSettings?.labelAlign !== 'top' && (
+            <Space direction="vertical">
+              <HeaderContent title="Label Span Settings" subtitle="The layout uses a 24-column grid system by default. Adjusting the slider to the right will increase the width of labels. " />
+              <Slider
+                id={nanoid()}
+                min={0}
+                max={24}
+                value={inputSettings?.labelSpan}
+                onChange={(val) => updateInputComponents({
+                  labelSpan: val,
+                  contentSpan: (24 - val) || 0,
+                })}
+              />
+            </Space>
+          )}
+          <Space direction="vertical">
+            <HeaderContent title="Label Colon" subtitle="When label colon is enabled it will suffix the label with a colon." />
+            <Switch
+              id={nanoid()}
+              value={inputSettings?.labelColon}
+              onChange={(val) => updateInputComponents({ labelColon: val })}
+              {...commonInputProps}
+            />
+          </Space>
+          {renderDivider()}
 
-        <SettingInput
-          id={nanoid()}
-          label="Label Height"
-          propertyName="inputComponents.labelHeight"
-          type="textField"
-          value={inputSettings?.labelHeight}
-          onChange={(val) => updateInputComponents({ labelHeight: val })}
-          {...commonInputProps}
-        />
+          {/* Margin Control */}
+          <Box
+            value={inputSettings?.stylingBox}
+            onChange={(val) => updateInputComponents({ stylingBox: val })}
+            readOnly={readonly}
+          />
+        </Space>
 
-        <SettingInput
-          id={nanoid()}
-          type="switch"
-          propertyName="inputComponents.labelColon"
-          label="Show Label Colon"
-          value={inputSettings?.labelColon}
-          onChange={(val) => updateInputComponents({ labelColon: val })}
-          {...commonInputProps}
-        />
-
-        {/* Margin Control */}
-        <Box
-          value={inputSettings?.stylingBox}
-          onChange={(val) => updateInputComponents({ stylingBox: val })}
-          readOnly={readonly} 
-        />
       </CollapsiblePanel>
 
       {/* Standard Component Settings Section */}
@@ -619,10 +581,10 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
         header={<HeaderContent title="Standard Component Settings" subtitle="Configure standard component styling" />}
       >
         {/* Margin Control */}
-        <Box 
-          value={standardSettings?.stylingBox} 
-          onChange={(val) => updateStandardComponents({ stylingBox: val })} 
-          readOnly={readonly} 
+        <Box
+          value={standardSettings?.stylingBox}
+          onChange={(val) => updateStandardComponents({ stylingBox: val })}
+          readOnly={readonly}
         />
       </CollapsiblePanel>
 
@@ -631,10 +593,10 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
         {...commonPanelProps}
         header={<HeaderContent title="Inline Component Settings" subtitle="Customize inline component appearance and behavior" />}
       >
-        <Box 
-          value={inlineSettings?.stylingBox} 
-          onChange={(val) => updateInlineComponents({ stylingBox: val })} 
-          readOnly={readonly} 
+        <Box
+          value={inlineSettings?.stylingBox}
+          onChange={(val) => updateInlineComponents({ stylingBox: val })}
+          readOnly={readonly}
         />
       </CollapsiblePanel>
     </div>
