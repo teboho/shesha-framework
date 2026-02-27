@@ -162,13 +162,13 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
             <Space direction="horizontal">
               <RenderInput
                 value={layoutSettings?.gridGapHorizontal}
-                onChange={(val) => updateLayoutComponents({ gridGapHorizontal: val })}
+                onChange={(val) => updateLayoutComponents({ gridGapHorizontal: val ?? 0 })}
                 label="Column Gap"
                 disabled={readonly}
               />
               <RenderInput
                 value={layoutSettings?.gridGapVertical}
-                onChange={(val) => updateLayoutComponents({ gridGapVertical: val })}
+                onChange={(val) => updateLayoutComponents({ gridGapVertical: val ?? 0 })}
                 label="Row Gap"
                 disabled={readonly}
               />
@@ -383,7 +383,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                         updateLayoutComponents({
                           border: {
                             ...layoutSettings?.border,
-                            radius: { ...layoutSettings?.border?.radius, [toCamelCase(label)]: val },
+                            radius: { ...layoutSettings?.border?.radius, [key]: val },
                           },
                         })
                       }

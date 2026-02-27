@@ -50,14 +50,14 @@ export const useStyles = createStyles(({ css, cx, prefixCls }) => {
       
         .${margTop} {
           position: absolute;
-          top: 12px;
+          top: 6px;
           left: 107px;
         }
       
         .${margLeft} {
           position: absolute;
           left: 2px;
-          top: 79px;
+          top: 69px;
         }
       
         .${margBottom} {
@@ -69,7 +69,7 @@ export const useStyles = createStyles(({ css, cx, prefixCls }) => {
         .${margRight} {
           position: absolute;
           left: 205px;
-          top: 79px;
+          top: 69px;
         }
       
         .${margin} {
