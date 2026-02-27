@@ -66,7 +66,7 @@ export const RenderInput: FC<IRenderInputProps> = ({
         prefix={icon ? <Icon icon={icon} style={{ color: '#d9d9d9', height: 16 }} /> : undefined}
         value={value}
         size="small"
-        onChange={onChange}
+        onChange={(val) => onChange(val ?? 0)}
         disabled={disabled}
       />
     ) : (

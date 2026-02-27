@@ -1,13 +1,7 @@
 import { Alert, AlertProps, Space } from 'antd';
 import React, { FC, ReactElement } from 'react';
-import { IConfigurableTheme } from '@/index';
 
-interface AlertsExampleProps {
-  theme?: IConfigurableTheme;
-}
-
-const AlertsExample: FC<AlertsExampleProps> = ({ theme }) => {
-
+const AlertsExample: FC = () => {
   const renderAlert = (message: string, type: AlertProps['type']): ReactElement => (
     <Alert style={{ height: '28px' }} message={message} type={type} showIcon />
   );

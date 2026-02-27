@@ -34,7 +34,15 @@ export const updateThemeSection = <K extends keyof IConfigurableTheme>(
 export const createThemeUpdaters = (
   theme: IConfigurableTheme,
   onChange: (theme: IConfigurableTheme) => void,
-) => {
+): {
+  updateTheme: <K extends keyof IConfigurableTheme>(section: K, update: Partial<IConfigurableTheme[K]>) => void;
+  updateInputComponents: (update: Partial<IConfigurableTheme['inputComponents']>) => void;
+  updateLayoutComponents: (update: Partial<IConfigurableTheme['layoutComponents']>) => void;
+  updateStandardComponents: (update: Partial<IConfigurableTheme['standardComponents']>) => void;
+  updateInlineComponents: (update: Partial<IConfigurableTheme['inlineComponents']>) => void;
+  updateApplication: (update: Partial<IConfigurableTheme['application']>) => void;
+  updateText: (update: Partial<IConfigurableTheme['text']>) => void;
+} => {
   const updateTheme = <K extends keyof IConfigurableTheme>(
     section: K,
     update: Partial<IConfigurableTheme[K]>,
@@ -93,18 +101,22 @@ export const createColorConfigs = (
   updateText: (update: Partial<IConfigurableTheme['text']>) => void,
   onChange: (theme: IConfigurableTheme) => void,
   theme: IConfigurableTheme,
-) => {
+): {
+  colorConfigs: IThemeColorConfig[];
+  textConfigs: IThemeColorConfig[];
+  backgroundConfigs: IThemeColorConfig[];
+} => {
   const colorConfigs: IThemeColorConfig[] = [
-    { name: 'primaryColor', onChange: (color: any) => updateApplication({ primaryColor: color.toHexString() }) },
-    { name: 'errorColor', onChange: (color: any) => updateApplication({ errorColor: color.toHexString() }) },
-    { name: 'warningColor', onChange: (color: any) => updateApplication({ warningColor: color.toHexString() }) },
-    { name: 'successColor', onChange: (color: any) => updateApplication({ successColor: color.toHexString() }) },
-    { name: 'infoColor', onChange: (color: any) => updateApplication({ infoColor: color.toHexString() }) },
+    { name: 'primaryColor', onChange: (color: any) => updateApplication({ primaryColor: color.toString() }) },
+    { name: 'errorColor', onChange: (color: any) => updateApplication({ errorColor: color.toString() }) },
+    { name: 'warningColor', onChange: (color: any) => updateApplication({ warningColor: color.toString() }) },
+    { name: 'successColor', onChange: (color: any) => updateApplication({ successColor: color.toString() }) },
+    { name: 'infoColor', onChange: (color: any) => updateApplication({ infoColor: color.toString() }) },
   ];
 
   const textConfigs: IThemeColorConfig[] = [
-    { name: 'default', onChange: (color: any) => updateText({ default: color.toHexString() }) },
-    { name: 'secondary', onChange: (color: any) => updateText({ secondary: color.toHexString() }) },
+    { name: 'default', onChange: (color: any) => updateText({ default: color.toString() }) },
+    { name: 'secondary', onChange: (color: any) => updateText({ secondary: color.toString() }) },
   ];
 
   const backgroundConfigs: IThemeColorConfig[] = [
@@ -119,7 +131,6 @@ export const createColorConfigs = (
       onChange: (color: any) => onChange({ ...theme, componentBackground: color.toString() }),
     },
   ];
-
   return { colorConfigs, textConfigs, backgroundConfigs };
 };
 

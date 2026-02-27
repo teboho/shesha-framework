@@ -1,4 +1,4 @@
-import { createStyles } from 'antd-style';
+import { createStyles, sheshaStyles } from '@/styles';
 
 export const useStyles = createStyles(({ css, cx }) => {
   const themeParameters = cx(
@@ -98,6 +98,21 @@ export const useStyles = createStyles(({ css, cx }) => {
     `,
   );
 
+  const contentContainer = cx(
+    'theme-content-container',
+    css`
+      height: calc(100vh - 205px);
+    `,
+  );
+  const contentColumn = cx(
+    'theme-content-container',
+    css`
+      height: 100%;
+      overflow-y: auto;  
+      ${sheshaStyles.thinScrollbars}
+    `,
+  );
+
   return {
     themeParameters,
     themeHeader,
@@ -106,5 +121,7 @@ export const useStyles = createStyles(({ css, cx }) => {
     themeColorPicker,
     themeColorSpace,
     space,
+    contentContainer,
+    contentColumn,
   };
 });

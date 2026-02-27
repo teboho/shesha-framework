@@ -2,7 +2,7 @@ import { Space, Radio, InputNumber, Input, Select, Slider, Switch } from 'antd';
 import React, { FC, useMemo } from 'react';
 import { CollapsiblePanel, ColorPicker } from '@/components';
 import { IConfigurableTheme } from '@/providers/theme/contexts';
-import { humanizeString, toCamelCase } from '@/utils/string';
+import { humanizeString } from '@/utils/string';
 import { BACKGROUND_PRESET_COLORS, TEXT_PRESET_COLORS } from './presetColors';
 import { useStyles } from './styles/styles';
 import Box from '@/designer-components/styleBox/components/box';
@@ -54,7 +54,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
   const commonPanelProps = {
     expandIconPosition: 'end' as const,
     className: styles.themeCard,
-    collapsedByDefault: false,
+    collapsedByDefault: true,
   };
 
   return (
@@ -62,6 +62,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
       {/* Theme Colors Section */}
       <CollapsiblePanel
         {...commonPanelProps}
+        collapsedByDefault={false}
         header={<HeaderContent title="Theme Settings" subtitle="Customize the look and feel of your workspace" />}
       >
         <Space direction="vertical" align="start" size="middle" className={styles.space}>
@@ -185,8 +186,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
               onChange={(color: any) =>
                 updateLayoutComponents({
                   background: { ...layoutSettings?.background, color: color?.toHexString?.() ?? color },
-                })
-              }
+                })}
               readonly={readonly}
             />
           </Space>
@@ -200,8 +200,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                 value={layoutSettings?.border?.borderType}
                 size="small"
                 onChange={(e) =>
-                  updateLayoutComponents({ border: { ...layoutSettings?.border, borderType: e.target.value } })
-                }
+                  updateLayoutComponents({ border: { ...layoutSettings?.border, borderType: e.target.value } })}
               >
                 <Radio.Button value="all">
                   <Icon icon="BorderOutlined" />
@@ -227,8 +226,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                             all: { ...layoutSettings?.border?.border?.all, width: e.target.value },
                           },
                         },
-                      })
-                    }
+                      })}
                     disabled={readonly}
                     style={{ width: 80 }}
                   />
@@ -246,8 +244,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                             all: { ...layoutSettings?.border?.border?.all, style: val },
                           },
                         },
-                      })
-                    }
+                      })}
                     disabled={readonly}
                     style={{ width: 120 }}
                   />
@@ -262,8 +259,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                             all: { ...layoutSettings?.border?.border?.all, color: val?.toString?.() },
                           },
                         },
-                      })
-                    }
+                      })}
                     readOnly={readonly}
                     size="small"
                   />
@@ -289,8 +285,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                                 [side]: { ...layoutSettings?.border?.border?.[side], width: e.target.value },
                               },
                             },
-                          })
-                        }
+                          })}
                         disabled={readonly}
                         style={{ width: 80 }}
                       />
@@ -308,8 +303,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                                 [side]: { ...layoutSettings?.border?.border?.[side], style: val },
                               },
                             },
-                          })
-                        }
+                          })}
                         disabled={readonly}
                         style={{ width: 120 }}
                       />
@@ -324,8 +318,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                                 [side]: { ...layoutSettings?.border?.border?.[side], color: val?.toString?.() },
                               },
                             },
-                          })
-                        }
+                          })}
                         readOnly={readonly}
                         size="small"
                       />
@@ -345,8 +338,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                 value={layoutSettings?.border?.radiusType}
                 size="small"
                 onChange={(e) =>
-                  updateLayoutComponents({ border: { ...layoutSettings?.border, radiusType: e.target.value } })
-                }
+                  updateLayoutComponents({ border: { ...layoutSettings?.border, radiusType: e.target.value } })}
               >
                 <Radio.Button value="all">
                   <Icon icon="ExpandOutlined" />
@@ -364,8 +356,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                   onChange={(val) =>
                     updateLayoutComponents({
                       border: { ...layoutSettings?.border, radius: { ...layoutSettings?.border?.radius, all: val } },
-                    })
-                  }
+                    })}
                   disabled={readonly}
                   style={{ width: 80 }}
                 />
@@ -385,8 +376,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                             ...layoutSettings?.border,
                             radius: { ...layoutSettings?.border?.radius, [key]: val },
                           },
-                        })
-                      }
+                        })}
                       disabled={readonly}
                     />
                   ))}
@@ -403,17 +393,19 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
               <RenderInput
                 value={layoutSettings?.shadow?.offsetX}
                 onChange={(val) => updateLayoutComponents({ shadow: { ...layoutSettings?.shadow, offsetX: val } })}
-                label="Position X"
+                label="Position"
                 icon="x"
                 disabled={readonly}
               />
               <RenderInput
                 value={layoutSettings?.shadow?.offsetY}
                 onChange={(val) => updateLayoutComponents({ shadow: { ...layoutSettings?.shadow, offsetY: val } })}
-                label="Position Y"
+                label=""
                 icon="y"
                 disabled={readonly}
               />
+            </Space>
+            <Space direction="horizontal">
               <RenderInput
                 value={layoutSettings?.shadow?.blurRadius}
                 onChange={(val) => updateLayoutComponents({ shadow: { ...layoutSettings?.shadow, blurRadius: val } })}
@@ -424,8 +416,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
               <RenderInput
                 value={layoutSettings?.shadow?.spreadRadius}
                 onChange={(val) =>
-                  updateLayoutComponents({ shadow: { ...layoutSettings?.shadow, spreadRadius: val } })
-                }
+                  updateLayoutComponents({ shadow: { ...layoutSettings?.shadow, spreadRadius: val } })}
                 label="Spread"
                 icon="spreadIcon"
                 disabled={readonly}
@@ -434,12 +425,12 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                 colorName="color"
                 initialColor={layoutSettings?.shadow?.color || ''}
                 onChange={(color: any) =>
-                  updateLayoutComponents({ shadow: { ...layoutSettings?.shadow, color: color?.toHexString?.() ?? color } })
-                }
+                  updateLayoutComponents({ shadow: { ...layoutSettings?.shadow, color: color?.toHexString?.() ?? color } })}
                 readonly={readonly}
               />
             </Space>
           </Space>
+          <RenderDivider />
         </Space>
       </CollapsiblePanel>
 
@@ -525,12 +516,12 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
       {/* Inline Component Settings Section */}
       <CollapsiblePanel
         {...commonPanelProps}
-        header={
+        header={(
           <HeaderContent
             title="Inline Component Settings"
             subtitle="Customize inline component appearance and behavior"
           />
-        }
+        )}
       >
         <Box
           value={inlineSettings?.stylingBox}
