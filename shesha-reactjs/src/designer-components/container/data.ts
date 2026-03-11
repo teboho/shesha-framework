@@ -1,5 +1,6 @@
 import { ICommonContainerProps, IContainerComponentProps, IStyleType } from '@/index';
 import { nanoid } from '@/utils/uuid';
+import { IConfigurableTheme, getLayoutComponentThemeDefaults } from "@/providers/theme";
 
 export const JUSTIFY_ITEMS = [
   { id: nanoid(), label: 'Center', value: 'center' },
@@ -153,7 +154,9 @@ export const ALIGN_SELF = [
 ];
 
 
-export const defaultStyles = (prev?: IContainerComponentProps): IStyleType & ICommonContainerProps => {
+export const defaultStyles = (prev?: IContainerComponentProps, theme?: IConfigurableTheme): IStyleType & ICommonContainerProps => {
+  const themeDefaults = getLayoutComponentThemeDefaults(theme);
+
   const {
     width = 'auto',
     height = 'auto',
@@ -171,11 +174,17 @@ export const defaultStyles = (prev?: IContainerComponentProps): IStyleType & ICo
   const isBelow = shadowStyle === 'below';
   const isAbove = shadowStyle === 'above';
 
+  // Use theme border if available, otherwise use defaults
+  const themeBorder = themeDefaults.border;
+
+  // Use theme grid gap as default if available
+  // Theme gridGapHorizontal/Vertical can be applied to gap property
+  const themeGap = themeDefaults.gridGapHorizontal || themeDefaults.gridGapVertical;
+
   return {
-    background: {
+    background: themeDefaults.background ?? {
       type: 'color',
       color: '',
-
     },
     dimensions: {
       width,
@@ -185,7 +194,7 @@ export const defaultStyles = (prev?: IContainerComponentProps): IStyleType & ICo
       minWidth,
       maxWidth,
     },
-    border: {
+    border: themeBorder ?? {
       radiusType: 'all',
       borderType: 'all',
       border: {
@@ -193,16 +202,17 @@ export const defaultStyles = (prev?: IContainerComponentProps): IStyleType & ICo
       },
       radius: { all: borderRadius },
     },
-    shadow: {
+    shadow: themeDefaults.shadow ?? {
       blurRadius: isBelow || isAbove ? 4 : 0,
       color: '#000000',
       offsetX: 0,
       offsetY: isAbove ? -2 : isBelow ? 2 : 0,
       spreadRadius: 0,
     },
+    stylingBox: themeDefaults.stylingBox,
     display: prev?.className === 'sha-index-table-control' || prev?.className === 'index-table-controls-right' ? 'flex' : prev?.display ?? null,
     direction: prev?.direction ?? "horizontal",
-    flexWrap: prev?.className === 'sha-index-table-control' || prev?.className === 'index-table-controls-right' ? 'nowrap' : prev?.flexWrap ?? "wrap",
+    flexWrap: prev?.className === 'sha-index-table-control' || prev?.className === 'index-table-controls-right' ? 'nowrap' : prev?.flexWrap ?? 'nowrap',
     flexDirection: prev?.flexDirection ?? "row",
     justifyContent: prev?.justifyContent ?? "left",
     alignItems: prev?.className === 'index-table-controls-right' ? 'center' : prev?.alignItems ?? "normal",
@@ -212,6 +222,7 @@ export const defaultStyles = (prev?: IContainerComponentProps): IStyleType & ICo
     justifySelf: prev?.justifySelf ?? "normal",
     noDefaultStyling: prev?.noDefaultStyling ?? false,
     gridColumnsCount: prev?.gridColumnsCount ?? null,
-    gap: prev?.gap ?? '8px',
+    // Apply theme grid gap as default if component doesn't have its own gap
+    gap: prev?.gap ?? (themeGap ? `${themeGap}px` : '8px'),
   };
 };

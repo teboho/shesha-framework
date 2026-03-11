@@ -12,6 +12,7 @@ import {
 } from './models';
 import { DATE_TIME_FORMATS } from '../dateField/utils';
 import { IStyleType } from '@/index';
+import { IConfigurableTheme, getInlineComponentThemeDefaults } from "@/providers/theme";
 
 // Common date formats to support
 const SUPPORTED_DATE_FORMATS = [
@@ -88,7 +89,9 @@ export const getContent = (content: string, { dataType = 'string', dateFormat, n
   }
 };
 
-export const defaultStyles = (textType: string): IStyleType => {
+export const defaultStyles = (textType: string, theme?: IConfigurableTheme): IStyleType => {
+  const themeDefaults = getInlineComponentThemeDefaults(theme);
+
   return {
     font: {
       color: '#000',
@@ -116,6 +119,8 @@ export const defaultStyles = (textType: string): IStyleType => {
       minWidth: '0px',
       maxWidth: 'auto',
     },
+    // Apply theme stylingBox as default if available
+    stylingBox: themeDefaults.stylingBox,
   };
 };
 

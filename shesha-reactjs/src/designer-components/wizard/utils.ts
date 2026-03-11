@@ -3,6 +3,7 @@ import { nanoid } from '@/utils/uuid';
 import { IWizardSequence, IWizardStepProps } from './models';
 import { IStyleType } from '@/index';
 import { CSSProperties } from 'react';
+import { IConfigurableTheme, getLayoutComponentThemeDefaults } from "@/providers/theme";
 
 export const EXPOSED_VARIABLES = [
   { id: nanoid(), name: 'data', description: 'The form data', type: 'object' },
@@ -120,12 +121,14 @@ export const onAddNewItem = (items: IWizardStepProps[]): IWizardStepProps => {
 };
 
 
-export const defaultStyles = (): IStyleType => {
+export const defaultStyles = (theme?: IConfigurableTheme): IStyleType => {
+  const themeDefaults = getLayoutComponentThemeDefaults(theme);
+
   return {
-    background: { type: 'color', color: '' },
+    background: themeDefaults.background ?? { type: 'color', color: '' },
     font: { weight: '400', size: 16, color: '#000', type: 'Segoe UI' },
     dimensions: { width: 'auto', height: 'auto', minHeight: '0px', maxHeight: 'auto', minWidth: '0px', maxWidth: 'auto' },
-    border: {
+    border: themeDefaults.border ?? {
       radiusType: 'all',
       borderType: 'all',
       border: {
@@ -137,6 +140,7 @@ export const defaultStyles = (): IStyleType => {
       },
       radius: { all: 8 },
     },
-    stylingBox: "{\"marginBottom\":\"5\",\"paddingBottom\":\"16\",\"paddingTop\":\"16\",\"paddingLeft\":\"16\",\"paddingRight\":\"16\"}",
+    shadow: themeDefaults.shadow,
+    stylingBox: themeDefaults.stylingBox ?? "{\"marginBottom\":\"5\",\"paddingBottom\":\"16\",\"paddingTop\":\"16\",\"paddingLeft\":\"16\",\"paddingRight\":\"16\"}",
   };
 };

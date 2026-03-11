@@ -1,6 +1,7 @@
 import { IFontValue } from '@/designer-components/_settings/utils/font/interfaces';
 import { IStyleType } from '@/providers/form/models';
 import { CSSProperties } from 'react';
+import { IConfigurableTheme, getStandardComponentThemeDefaults } from "@/providers/theme";
 
 type DefaultStyles = Omit<IStyleType, 'style'> & {
   titleFont: IFontValue;
@@ -8,7 +9,9 @@ type DefaultStyles = Omit<IStyleType, 'style'> & {
   style: IStyleType['style'] | CSSProperties;
 };
 
-export const defaultStyles = (): DefaultStyles => {
+export const defaultStyles = (theme?: IConfigurableTheme): DefaultStyles => {
+  const themeDefaults = getStandardComponentThemeDefaults(theme);
+
   return {
     background: { type: 'color', color: '#fff' },
     titleFont: { weight: '300', size: 20, color: '#000', type: 'Segoe UI', align: 'center' },
@@ -42,5 +45,7 @@ export const defaultStyles = (): DefaultStyles => {
       blurRadius: 30,
       spreadRadius: -10,
     },
+    // Apply theme stylingBox as default if available
+    stylingBox: themeDefaults.stylingBox,
   };
 };

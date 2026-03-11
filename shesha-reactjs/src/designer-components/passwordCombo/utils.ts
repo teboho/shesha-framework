@@ -53,7 +53,7 @@ export const getFormItemProps = (
   className: classNames({ 'form-item-hidden': model?.hideLabel }),
   name: getFieldNameFromExpression(model?.propertyName),
   label: model?.hideLabel ? null : model?.label,
-  labelAlign: model?.labelAlign,
+  labelAlign: model?.labelAlign === 'top' ? undefined : model?.labelAlign,
   hidden: hidden,
   tooltip: model?.description,
   rules: hidden ? [] : getValidationRules(model, { formData }),

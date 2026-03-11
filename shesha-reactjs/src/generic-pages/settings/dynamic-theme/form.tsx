@@ -1,10 +1,8 @@
 import { SmileOutlined } from '@ant-design/icons';
-import { Form, Input, Space } from 'antd';
+import { Form, Input } from 'antd';
 import React, { FC } from 'react';
 import { IConfigurableTheme } from '@/providers/theme/contexts';
-import { jsonSafeParse } from '@/utils/object';
-import { pickStyleFromModel, StyleBoxValue } from '@/index';
-import { FormLabelAlign } from 'antd/es/form/interface';
+import { useFormComponentStyles } from '@/index';
 
 interface FormExampleProps {
   theme?: IConfigurableTheme;
@@ -20,58 +18,59 @@ const FormExample: FC<FormExampleProps> = ({ theme }) => {
     labelCol: { span: inputSettings?.labelSpan ?? 6 },
     wrapperCol: { span: inputSettings?.contentSpan ?? 18 },
     // Label align to mean we set for layout to vertical so don't apply label align
-    labelAlign: labelAlign !== 'top' ? labelAlign as FormLabelAlign : null,
+    labelAlign: labelAlign !== 'top' ? labelAlign : null,
   };
 
-  // Calculate margins for standard components
-  const inputStylingBoxParsed = jsonSafeParse<StyleBoxValue>(inputSettings?.stylingBox || '{}');
-  const inputStylingBoxAsCSS = pickStyleFromModel(inputStylingBoxParsed);
-
-  const inputMargins = {
-    ...inputStylingBoxAsCSS,
-  };
+  const { fullStyle } = useFormComponentStyles({ ...inputSettings, jsStyle: '' });
+  const allStyles = { ...fullStyle, backgroundColor: theme?.componentBackground };
+  const { marginTop: marginTopAll, marginBottom: marginBottomAll, marginLeft: marginLeftAll, marginRight: marginRightAll, ...rest } = allStyles;
+  const marginStyle = { marginTop: marginTopAll, marginBottom: marginBottomAll, marginLeft: marginLeftAll, marginRight: marginRightAll };
+  const styles = { ...rest };
 
   return (
     <Form
-      layout={formLayout?.layout === 'vertical' || inputSettings?.labelAlign === 'top' ? 'vertical' : 'horizontal'}
+      layout={formLayout?.layout === 'horizontal' || inputSettings?.labelAlign !== 'top' ? 'horizontal' : 'vertical'}
       {...formItemLayout}
       size="small"
       colon={inputSettings?.labelColon ?? true}
       style={{ width: '100%' }}
     >
-      <Space direction="vertical" style={{ width: '100%' }}>
+      <div style={marginStyle}>
         <Form.Item
           label="Text Input"
           validateStatus="success"
-          style={inputMargins}
         >
-          <Input placeholder="Enter text" defaultValue="Sample text" />
+          <Input placeholder="Enter text" defaultValue="Sample text" style={styles} />
         </Form.Item>
+      </div>
+      <div style={marginStyle}>
         <Form.Item
           label="Failed"
           validateStatus="error"
           help="This field has an error"
-          style={{ ...inputMargins }}
+          style={marginStyle}
         >
-          <Input placeholder="Error input" />
+          <Input placeholder="Error input" style={styles} />
         </Form.Item>
-
+      </div>
+      <div style={marginStyle}>
         <Form.Item
           label="Warning"
           validateStatus="warning"
-          style={{ ...inputMargins }}
+          style={marginStyle}
         >
-          <Input placeholder="Warning input" prefix={<SmileOutlined />} />
+          <Input placeholder="Warning input" prefix={<SmileOutlined />} style={styles} />
         </Form.Item>
-
+      </div>
+      <div style={marginStyle}>
         <Form.Item
           label="Validating"
           validateStatus="validating"
-          style={{ ...inputMargins }}
+          style={marginStyle}
         >
-          <Input placeholder="Warning input" prefix={<SmileOutlined />} />
+          <Input placeholder="Warning input" prefix={<SmileOutlined />} style={styles} />
         </Form.Item>
-      </Space>
+      </div>
     </Form>
   );
 };

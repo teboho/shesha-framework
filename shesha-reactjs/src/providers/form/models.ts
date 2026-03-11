@@ -26,7 +26,7 @@ export interface ISubmitActionArguments {
 
 export type FormMode = 'designer' | 'edit' | 'readonly';
 
-export type LabelAlign = 'left' | 'right';
+export type LabelAlign = 'left' | 'right' | 'top';
 
 export type PropertySettingMode = 'value' | 'code';
 
@@ -74,6 +74,8 @@ export interface IStyleType {
   secondaryTextColor?: ColorValueType;
   overflow?: boolean | "dropdown" | "menu" | "scroll";
   hideScrollBar?: boolean;
+  autoWidth?: boolean;
+  autoHeight?: boolean;
 }
 
 export interface IInputStyles extends IStyleType {
@@ -197,6 +199,19 @@ export interface IFormComponentStyles {
   appearanceStyle: CSSProperties;
   /** Styles assempled from {...appearanceStyle, ...jsStyle} */
   fullStyle: CSSProperties;
+  /** Margin styles extracted from fullStyle for wrapper use */
+  margins: CSSProperties;
+  /** Additional theme configuration properties */
+  themeConfig?: {
+    // Layout component theme properties
+    gridGapHorizontal?: string | number;
+    gridGapVertical?: string | number;
+    // Input component theme properties
+    labelAlign?: 'left' | 'right' | 'top';
+    labelColon?: boolean;
+    labelSpan?: number;
+    contentSpan?: number;
+  };
 }
 
 /**
@@ -209,7 +224,8 @@ export interface IConfigurableFormComponent
   IComponentLabelProps,
   IComponentVisibilityProps,
   IComponentRuntimeProps,
-  IComponentMetadata {
+  IComponentMetadata,
+  IStyleType {
   /** Type of the component */
   type: string;
 
@@ -249,6 +265,8 @@ export interface IConfigurableFormComponent
   /** Default css style applied as string */
   stylingBox?: string;
 
+  wrapperStyle?: string;
+
   noDataText?: string;
 
   noDataIcon?: string;
@@ -274,6 +292,7 @@ export interface IConfigurableFormComponent
   enableStyleOnReadonly?: boolean;
 
   listType?: 'text' | 'thumbnail';
+
 }
 
 export const isConfigurableFormComponent = (component: unknown): component is IConfigurableFormComponent =>
@@ -502,3 +521,12 @@ export type GenericDictionary = { [key: string]: any };
 export const STYLE_BOX_CSS_POPERTIES = ['marginTop', 'marginRight', 'marginBottom', 'marginLeft', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'] as const;
 export type StyleBoxCssProperties = typeof STYLE_BOX_CSS_POPERTIES[number];
 export type StyleBoxValue = Pick<CSSProperties, StyleBoxCssProperties>;
+
+export interface IContainerConfig {
+  dimensions?: IDimensionsValue;
+  stylingBox?: string;
+  style?: string;
+}
+export interface IComponentModelProps extends IConfigurableFormComponent {
+  container?: IContainerConfig;
+}

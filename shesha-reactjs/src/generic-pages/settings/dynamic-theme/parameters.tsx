@@ -1,5 +1,5 @@
 import { Space, Radio, InputNumber, Input, Select, Slider, Switch } from 'antd';
-import React, { FC, useMemo } from 'react';
+import React, { FC, useMemo, useState } from 'react';
 import { CollapsiblePanel, ColorPicker } from '@/components';
 import { IConfigurableTheme } from '@/providers/theme/contexts';
 import { humanizeString } from '@/utils/string';
@@ -42,6 +42,8 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
     () => createColorConfigs(updateApplication, updateText, onChange, theme),
     [theme, onChange],
   );
+
+  const [formLayout, setFormLayout] = useState({ labelSpan: 6, componentSpan: 18 });
 
   // Extract settings for easier access
   const inputSettings = theme?.inputComponents;
@@ -143,7 +145,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
       {/* Layout Component Settings Section */}
       <CollapsiblePanel
         {...commonPanelProps}
-        header={<HeaderContent title="Layout Component Settings" subtitle="Configure layout component styling" />}
+        header={<HeaderContent title="Layout Component Settings" subtitle="Configure the styling of layout componens such as:  Panels, Cards, Tabs, etc." />}
       >
         <Space size="middle" direction="vertical" className={styles.space}>
           {/* Margin & Padding */}
@@ -434,10 +436,10 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
         </Space>
       </CollapsiblePanel>
 
-      {/* Form Layout Section */}
+      {/* Input Component Section */}
       <CollapsiblePanel
         {...commonPanelProps}
-        header={<HeaderContent title="Form Layout" subtitle="Configure form layout settings" />}
+        header={<HeaderContent title="Input Component settings" subtitle="Configure the styling of layout componens such as:  TextField, NumberField, TextArea, etc." />}
       >
         <Space direction="vertical" size="large">
           {/* Label Align */}
@@ -454,7 +456,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                 if (value === 'top') {
                   updateInputComponents({ labelAlign: value, labelSpan: 24, contentSpan: 24 });
                 } else {
-                  updateInputComponents({ labelAlign: value });
+                  updateInputComponents({ labelAlign: value, labelSpan: formLayout.labelSpan, contentSpan: formLayout.componentSpan });
                 }
               }}
               defaultValue="left"
@@ -473,7 +475,10 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
                 min={0}
                 max={24}
                 value={inputSettings?.labelSpan}
-                onChange={(val) => updateInputComponents({ labelSpan: val, contentSpan: 24 - val || 0 })}
+                onChange={(val) => {
+                  updateInputComponents({ labelSpan: val, contentSpan: 24 - val || 0 });
+                  setFormLayout({ labelSpan: val, componentSpan: 24 - val || 0 });
+                }}
               />
             </Space>
           )}
@@ -504,7 +509,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
       {/* Standard Component Settings Section */}
       <CollapsiblePanel
         {...commonPanelProps}
-        header={<HeaderContent title="Standard Component Settings" subtitle="Configure standard component styling" />}
+        header={<HeaderContent title="Standard Component Settings" subtitle="Configure the styling of layout componens such as:  Statistic, Charts, KeyInformationBar, etc." />}
       >
         <Box
           value={standardSettings?.stylingBox}
@@ -519,7 +524,7 @@ const ThemeParameters: FC<ThemeParametersProps> = ({ value: theme, onChange, rea
         header={(
           <HeaderContent
             title="Inline Component Settings"
-            subtitle="Customize inline component appearance and behavior"
+            subtitle="Configure the styling of layout componens such as:  Text, Icon, Button, etc."
           />
         )}
       >

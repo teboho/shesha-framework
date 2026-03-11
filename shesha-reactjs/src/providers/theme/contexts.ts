@@ -1,6 +1,6 @@
 import { IBackgroundValue, IBorderValue, IShadowValue } from '@/designer-components/_settings/utils/index';
+import { LabelAlign } from '@/index';
 import { createNamedContext } from '@/utils/react';
-import { FormLabelAlign } from 'antd/es/form/interface';
 import { Theme } from 'antd/lib/config-provider/context';
 
 interface ITextTheme {
@@ -9,7 +9,7 @@ interface ITextTheme {
   link?: string;
 }
 
-export type ThemeLabelAlign = FormLabelAlign | 'top';
+export type ThemeLabelAlign = LabelAlign;
 
 
 export interface IInputComponentSettings {

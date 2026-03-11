@@ -175,3 +175,14 @@ export type {
   IThemeFormLayoutSettings,
   ThemeLabelAlign,
 };
+
+export {
+  getInputComponentThemeDefaults,
+  getLayoutComponentThemeDefaults,
+  getStandardComponentThemeDefaults,
+  getInlineComponentThemeDefaults,
+  getThemeBaseStyles,
+  mergeThemeDefaultsWithComponentDefaults,
+} from './styleUtils';
+
+export type { IThemeStyleType } from './styleUtils';

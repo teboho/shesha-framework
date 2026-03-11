@@ -1,5 +1,6 @@
 import { IStyleType } from "@/index";
 import { IButtonComponentProps } from "./interfaces";
+import { IConfigurableTheme, getInlineComponentThemeDefaults } from "@/providers/theme";
 
 export const buttonTypes = [
   {
@@ -28,7 +29,9 @@ export const buttonTypes = [
   },
 ];
 
-export const defaultStyles = (prev: IButtonComponentProps): IStyleType => {
+export const defaultStyles = (prev: IButtonComponentProps, theme?: IConfigurableTheme): IStyleType => {
+  const themeDefaults = getInlineComponentThemeDefaults(theme);
+
   return {
     background: { type: 'color' },
     font: { weight: '400', size: 14, type: 'Segoe UI', align: 'center' },
@@ -52,6 +55,8 @@ export const defaultStyles = (prev: IButtonComponentProps): IStyleType => {
       minWidth: '0px',
       maxWidth: 'auto',
     },
+    // Apply theme stylingBox as default if available
+    stylingBox: themeDefaults.stylingBox,
   };
 };
 

@@ -2,7 +2,7 @@ import { createStyles } from '@/styles';
 
 export const useStyles = createStyles(({ css, cx }) => {
   const inlineInputs = cx(css`
-        align-items: flex-start !important;
+        align-items: flex-end !important;
         display: flex;
         flex-wrap: wrap;
         gap: 0px 8px;

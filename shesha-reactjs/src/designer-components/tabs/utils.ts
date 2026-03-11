@@ -1,29 +1,34 @@
 import { nanoid } from "@/utils/uuid";
 import { ITabPaneProps } from "./models";
 import { IStyleType } from "@/index";
+import { IConfigurableTheme, getLayoutComponentThemeDefaults } from "@/providers/theme";
 
 const initialBorder: IStyleType['border']['border']['all'] = { width: '1px', color: '#f0f0f0', style: 'solid' };
 
-export const defaultStyles: IStyleType = {
-  font: {
-    size: 14,
-    weight: '500',
-    type: 'Segoe UI',
-    color: '',
-  },
-  background: { type: 'color', color: '#FFFFFF' },
-  dimensions: { width: 'auto', height: 'auto', minHeight: '0px', maxHeight: 'auto', minWidth: '0px', maxWidth: 'auto' },
-  border: {
-    border: {
-      all: initialBorder, top: initialBorder, right: initialBorder,
-      bottom: initialBorder, left: initialBorder,
+export const defaultStyles = (theme?: IConfigurableTheme): IStyleType => {
+  const themeDefaults = getLayoutComponentThemeDefaults(theme);
+
+  return {
+    font: {
+      size: 14,
+      weight: '500',
+      type: 'Segoe UI',
+      color: '',
     },
-    radius: { all: 8, topLeft: 0, topRight: 0, bottomLeft: 0, bottomRight: 0 },
-    radiusType: 'all',
-    borderType: 'all',
-  },
-  shadow: { blurRadius: 0, color: 'rgba(0, 0, 0, 0.15)', offsetX: 0, offsetY: 0, spreadRadius: 0 },
-  stylingBox: "{\"marginBottom\":\"5\",\"paddingLeft\":\"16\",\"paddingBottom\":\"16\",\"paddingTop\":\"16\",\"paddingRight\":\"16\"}",
+    background: themeDefaults.background ?? { type: 'color', color: '#FFFFFF' },
+    dimensions: { width: 'auto', height: 'auto', minHeight: '0px', maxHeight: 'auto', minWidth: '0px', maxWidth: 'auto' },
+    border: themeDefaults.border ?? {
+      border: {
+        all: initialBorder, top: initialBorder, right: initialBorder,
+        bottom: initialBorder, left: initialBorder,
+      },
+      radius: { all: 8, topLeft: 0, topRight: 0, bottomLeft: 0, bottomRight: 0 },
+      radiusType: 'all',
+      borderType: 'all',
+    },
+    shadow: themeDefaults.shadow ?? { blurRadius: 0, color: 'rgba(0, 0, 0, 0.15)', offsetX: 0, offsetY: 0, spreadRadius: 0 },
+    stylingBox: themeDefaults.stylingBox ?? "{\"marginBottom\":\"5\",\"paddingLeft\":\"16\",\"paddingBottom\":\"16\",\"paddingTop\":\"16\",\"paddingRight\":\"16\"}",
+  };
 };
 
 export const defaultCardStyles: IStyleType = {

@@ -11,6 +11,6 @@ export { useWebStorage } from './useWebStorage';
 export { useFormExpression } from './useFormExpression';
 export { useNextRouter } from './useNextRouter';
 export { useUi } from './useUi';
-export { useActualContextData, useActualContextExecution, useActualContextExecutionExecutor, useCalculatedModel } from './formComponentHooks';
+export { useActualContextData, useActualContextExecution, useActualContextExecutionExecutor, useCalculatedModel, useFormComponentStyles, type UseFormComponentStylesOptions } from './formComponentHooks';
 export { useLayoutSelection, type LayoutMode, type ILayoutSelectionHook } from './useLayoutSelection';
 export { useRefInitialized } from './useRefInitialized';

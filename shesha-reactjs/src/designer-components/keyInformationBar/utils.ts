@@ -1,6 +1,9 @@
 import { IStyleType } from "@/index";
+import { IConfigurableTheme, getStandardComponentThemeDefaults } from "@/providers/theme";
 
-export const defaultStyles = (): IStyleType => {
+export const defaultStyles = (theme?: IConfigurableTheme): IStyleType => {
+  const themeDefaults = getStandardComponentThemeDefaults(theme);
+
   return {
     background: { type: 'color', color: '#fff' },
     border: {
@@ -43,6 +46,7 @@ export const defaultStyles = (): IStyleType => {
       minWidth: '0px',
       maxWidth: 'auto',
     },
-    stylingBox: "{\"marginBottom\":\"5\"}",
+    // Apply theme stylingBox as default if available
+    stylingBox: themeDefaults.stylingBox ?? "{\"marginBottom\":\"5\"}",
   };
 };

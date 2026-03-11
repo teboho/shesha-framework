@@ -5,6 +5,7 @@ import { DisabledDateTemplate, IDateFieldProps } from './interfaces';
 import { range } from 'lodash';
 import { IStyleType } from '@/index';
 import { DatePicker } from '@/components/antd';
+import { IConfigurableTheme, getInputComponentThemeDefaults } from "@/providers/theme";
 
 export const DATE_TIME_FORMATS = {
   time: 'HH:mm:ss',
@@ -116,9 +117,11 @@ export const getFormat = (props: IDateFieldProps, properties: IPropertyMetadata[
   }
 };
 
-export const defaultStyles = (): IStyleType => {
+export const defaultStyles = (theme?: IConfigurableTheme): IStyleType => {
+  const themeDefaults = getInputComponentThemeDefaults(theme);
+
   return {
-    background: { type: 'color', color: '#fff' },
+    background: themeDefaults?.background ?? { type: 'color', color: '#fff' },
     font: { weight: '400', size: 14, color: '#000', type: 'Segoe UI' },
     border: {
       border: {
@@ -133,5 +136,7 @@ export const defaultStyles = (): IStyleType => {
       radiusType: 'all',
     },
     dimensions: { width: '100%', height: '32px', minHeight: '0px', maxHeight: 'auto', minWidth: '0px', maxWidth: 'auto' },
+    // Apply theme stylingBox as default if available
+    stylingBox: themeDefaults.stylingBox,
   };
 };
