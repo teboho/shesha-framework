@@ -6,6 +6,7 @@ using JetBrains.Annotations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Shesha.Authorization.Users;
+using Shesha.Configuration;
 using Shesha.ConfigurationItems;
 using Shesha.Domain;
 using Shesha.Services.Settings.Dto;
@@ -54,6 +55,19 @@ namespace Shesha.Settings
             var setting = _settingDefinitionManager.Get(module, name);
 
             var settingValue = await _settingStore.GetValueAsync(setting, context ?? GetCurrentContext());
+
+            if (setting.GetValueType() == typeof(ThemeSettings))
+            {
+                var theme = settingValue != null
+                    ? Deserialize<ThemeSettings>(settingValue)
+                    : setting.GetDefaultValue() as ThemeSettings;
+
+                return theme != null
+                    ? JObject.FromObject(
+                        theme.Normalize(),
+                        JsonSerializer.CreateDefault(new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore }))
+                    : new JObject();
+            }
 
             return settingValue != null
                 ? JObject.Parse(settingValue)
@@ -127,7 +141,7 @@ namespace Shesha.Settings
                 }
             }
 
-            settingValue.Value = JsonConvert.SerializeObject(value, setting.GetValueType(), Formatting.Indented, new JsonSerializerSettings());
+            settingValue.Value = SerializeSettingValue(value, setting);
 
             if (Deserialize(settingValue.Value, setting.GetValueType()) == null) throw new UserFriendlyException("Value does not match the type expected by the setting.");
 
@@ -174,7 +188,7 @@ namespace Shesha.Settings
                 }
             }
             
-            settingValue.Value = JsonConvert.SerializeObject(value, setting.GetValueType(), Formatting.Indented, new JsonSerializerSettings());
+            settingValue.Value = SerializeSettingValue(value, setting);
             await _settingValueRepository.InsertOrUpdateAsync(settingValue);
         }
 
@@ -219,7 +233,8 @@ namespace Shesha.Settings
         {
             if (typeof(TValue).IsClass)
             {
-                return JsonConvert.DeserializeObject<TValue>(value);
+                var deserialized = JsonConvert.DeserializeObject<TValue>(value);
+                return (TValue?)NormalizeSettingValue(deserialized, typeof(TValue));
             }
             else
                 return To<TValue>(value);
@@ -232,7 +247,8 @@ namespace Shesha.Settings
                 try 
                 {
                     // note: NullToDefaultConverter is used to convert null values to defaults for non nullable types
-                    return JsonConvert.DeserializeObject(value, targetType, new NullToDefaultConverter());
+                    var deserialized = JsonConvert.DeserializeObject(value, targetType, new NullToDefaultConverter());
+                    return NormalizeSettingValue(deserialized, targetType);
                 }
                 catch (Exception) 
                 {
@@ -283,6 +299,32 @@ namespace Shesha.Settings
             }
 
             return Convert.ChangeType(obj, targetType, CultureInfo.InvariantCulture);
+        }
+
+        private static string SerializeSettingValue(object? value, SettingDefinition setting)
+        {
+            var normalizedValue = NormalizeSettingValue(value, setting.GetValueType());
+            return JsonConvert.SerializeObject(normalizedValue, setting.GetValueType(), Formatting.Indented, new JsonSerializerSettings());
+        }
+
+        private static object? NormalizeSettingValue(object? value, Type targetType)
+        {
+            if (value == null || targetType != typeof(ThemeSettings))
+            {
+                return value;
+            }
+
+            if (value is ThemeSettings themeSettings)
+            {
+                return themeSettings.Normalize();
+            }
+
+            if (value is string json)
+            {
+                return JsonConvert.DeserializeObject<ThemeSettings>(json)?.Normalize();
+            }
+
+            return JsonConvert.DeserializeObject<ThemeSettings>(JsonConvert.SerializeObject(value))?.Normalize();
         }
     }
 }

@@ -1,11 +1,15 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace Shesha.Configuration
 {
     public class ThemeSettings
     {
+        private const string DefaultComponentStylingBox = "{\"marginBottom\":\"5\"}";
+        private const string DefaultLayoutBorderJson = "{\"borderType\":\"all\",\"border\":{\"all\":{\"width\":\"1\",\"style\":\"solid\",\"color\":\"#d9d9d9\"}},\"radius\":{\"all\":8},\"radiusType\":\"all\"}";
+        private const string DefaultLayoutShadowJson = "{\"offsetX\":2,\"offsetY\":2,\"blurRadius\":2,\"spreadRadius\":2,\"color\":\"#585757\"}";
         private static ThemeSettings? defaultInstance;
 
         public static ThemeSettings Default
@@ -33,35 +37,29 @@ namespace Shesha.Configuration
                         SidebarBackground = "#4d192b",
 
                         // New shape
-                        PageBackground = "#fafafa",
-                        ComponentBackground = "#ffffff",
+                        ComponentBackground = "#fafafa",
                         InputComponents = new InputComponentSettings()
                         {
-                            LabelAlign = "right",
                             LabelColon = true,
                             LabelSpan = 6,
                             ContentSpan = 18,
-                            StylingBox = "",
+                            StylingBox = DefaultComponentStylingBox,
                         },
                         LayoutComponents = new LayoutComponentSettings()
                         {
-                            StylingBox = "",
-                            GridGapHorizontal = 16,
-                            GridGapVertical = 16,
+                            StylingBox = DefaultComponentStylingBox,
+                            GridGapHorizontal = 8,
+                            GridGapVertical = 8,
+                            Border = CreateDefaultLayoutBorder(),
+                            Shadow = CreateDefaultLayoutShadow(),
                         },
                         StandardComponents = new StandardComponentSettings()
                         {
-                            StylingBox = "",
+                            StylingBox = DefaultComponentStylingBox,
                         },
                         InlineComponents = new InlineComponentSettings()
                         {
-                            StylingBox = "",
-                        },
-                        FormLayout = new FormLayoutSettings()
-                        {
-                            Span = 24,
-                            Layout = "horizontal",
-                            LabelAlign = "right",
+                            StylingBox = DefaultComponentStylingBox,
                         },
 
                         // Legacy shape (kept for backwards compatibility)
@@ -76,8 +74,62 @@ namespace Shesha.Configuration
                             Standard = "",
                             Inline = "",
                         },
-                    };
+                    }.Normalize();
             }
+        }
+
+        public ThemeSettings Normalize()
+        {
+            ComponentBackground ??= LayoutBackground ?? "#fafafa";
+
+            InputComponents ??= new InputComponentSettings();
+            InputComponents.LabelColon ??= true;
+            InputComponents.LabelSpan ??= LabelSpan ?? 6;
+            InputComponents.ContentSpan ??= ComponentSpan ?? 18;
+            if (string.IsNullOrWhiteSpace(InputComponents.StylingBox))
+            {
+                InputComponents.StylingBox = DefaultComponentStylingBox;
+            }
+
+            LayoutComponents ??= new LayoutComponentSettings();
+            LayoutComponents.GridGapHorizontal ??= LayoutComponents.GridGap ?? 8;
+            LayoutComponents.GridGapVertical ??= LayoutComponents.GridGap ?? 8;
+            if (string.IsNullOrWhiteSpace(LayoutComponents.StylingBox))
+            {
+                LayoutComponents.StylingBox = DefaultComponentStylingBox;
+            }
+            LayoutComponents.Border ??= CreateDefaultLayoutBorder();
+            LayoutComponents.Shadow ??= CreateDefaultLayoutShadow();
+
+            StandardComponents ??= new StandardComponentSettings();
+            if (string.IsNullOrWhiteSpace(StandardComponents.StylingBox))
+            {
+                StandardComponents.StylingBox = DefaultComponentStylingBox;
+            }
+
+            InlineComponents ??= new InlineComponentSettings();
+            if (string.IsNullOrWhiteSpace(InlineComponents.StylingBox))
+            {
+                InlineComponents.StylingBox = DefaultComponentStylingBox;
+            }
+
+            return this;
+        }
+
+        [OnDeserialized]
+        internal void OnDeserialized(StreamingContext context)
+        {
+            Normalize();
+        }
+
+        private static object CreateDefaultLayoutBorder()
+        {
+            return JsonConvert.DeserializeObject<object>(DefaultLayoutBorderJson)!;
+        }
+
+        private static object CreateDefaultLayoutShadow()
+        {
+            return JsonConvert.DeserializeObject<object>(DefaultLayoutShadowJson)!;
         }
 
         public class ApplicationSettings
@@ -176,12 +228,14 @@ namespace Shesha.Configuration
         public ThemeSettings.TextSettings? Text { get; set; }
 
         // New theme interface
+        [JsonIgnore]
         public string? PageBackground { get; set; }
         public string? ComponentBackground { get; set; }
         public ThemeSettings.InputComponentSettings? InputComponents { get; set; }
         public ThemeSettings.LayoutComponentSettings? LayoutComponents { get; set; }
         public ThemeSettings.StandardComponentSettings? StandardComponents { get; set; }
         public ThemeSettings.InlineComponentSettings? InlineComponents { get; set; }
+        [JsonIgnore]
         public ThemeSettings.FormLayoutSettings? FormLayout { get; set; }
 
         // Legacy properties kept for backwards compatibility
